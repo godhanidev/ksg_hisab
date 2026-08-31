@@ -26,6 +26,7 @@ dist-ssr
 # Build & cache artifacts
 tsconfig.tsbuildinfo
 .eslintcache
+push.bat
 
 # Environment variables
 .env
