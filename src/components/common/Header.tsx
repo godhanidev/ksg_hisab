@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  Menu, X, MapPin, Globe, Wifi, WifiOff, RefreshCw, LogOut, Shield, HardHat, CheckCircle2
+  Menu, X, Wifi, WifiOff, RefreshCw, LogOut, Shield, HardHat, CheckCircle2
 } from "lucide-react";
 import { Language, Project, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
@@ -17,10 +17,10 @@ type HeaderProps = {
   pendingSyncCount: number;
   onManualSync: () => void;
   isSyncing: boolean;
-  projects: Project[];
-  userAllowedProjects: Project[];
-  selectedSiteFilter: string;
-  onSiteFilterChange: (site: string) => void;
+  projects?: Project[];
+  userAllowedProjects?: Project[];
+  selectedSiteFilter?: string;
+  onSiteFilterChange?: (site: string) => void;
 };
 
 export function Header({
@@ -35,10 +35,6 @@ export function Header({
   pendingSyncCount,
   onManualSync,
   isSyncing,
-  projects,
-  userAllowedProjects,
-  selectedSiteFilter,
-  onSiteFilterChange,
 }: HeaderProps) {
   const t = getTranslation(lang);
   const isAdmin = currentUser.role === "admin";
@@ -78,39 +74,8 @@ export function Header({
         </div>
       </div>
 
-      {/* Right section: Language, Site Switcher, Offline status, User Profile, Logout */}
+      {/* Right section: Language, Offline status, User Profile, Logout */}
       <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-        {/* Site Selector Dropdown */}
-        <div className="flex items-center gap-1.5 rounded-2xl bg-slate-50 px-2.5 py-1.5 sm:px-3 sm:py-2 border border-slate-200 hover:border-slate-300 transition">
-          <MapPin size={14} className="text-amber-600 shrink-0" />
-          <select
-            value={selectedSiteFilter}
-            onChange={e => onSiteFilterChange(e.target.value)}
-            className="bg-transparent text-xs font-bold text-slate-800 outline-none cursor-pointer max-w-[100px] sm:max-w-[200px] truncate"
-            title={t.filterBySite}
-          >
-            {isAdmin ? (
-              <>
-                <option value="ALL">📍 {t.allSites} ({projects.length})</option>
-                {projects.map(p => (
-                  <option key={p.id} value={p.name}>🏗️ {p.name}</option>
-                ))}
-              </>
-            ) : userAllowedProjects.length > 1 ? (
-              <>
-                <option value="ALL">📍 {t.allSites} ({userAllowedProjects.length})</option>
-                {userAllowedProjects.map(p => (
-                  <option key={p.id} value={p.name}>🏗️ {p.name}</option>
-                ))}
-              </>
-            ) : userAllowedProjects.length === 1 ? (
-              <option value={userAllowedProjects[0].name}>🏗️ {userAllowedProjects[0].name}</option>
-            ) : (
-              <option value="ALL">No Site Assigned</option>
-            )}
-          </select>
-        </div>
-
         {/* Multi-Language Switcher (Requirement #7) */}
         <div className="flex items-center rounded-xl bg-slate-100 p-0.5 sm:p-1 border border-slate-200">
           <button
