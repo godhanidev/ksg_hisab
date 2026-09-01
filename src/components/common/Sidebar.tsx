@@ -39,6 +39,7 @@ export const MENU_CONFIG: MenuItemConfig[] = [
   { key: "Projects", icon: Building2, translateKey: "projects" },
   { key: "Income & Bills", icon: ReceiptIndianRupee, translateKey: "incomeBills" },
   { key: "Expenses", icon: WalletCards, translateKey: "expenses" },
+  { key: "Petty Cash & Wallets", icon: WalletCards, translateKey: "pettyCashWallets" },
   { key: "Labour", icon: Users, translateKey: "labour" },
   { key: "Material & Stock", icon: Package, translateKey: "materialStock" },
   { key: "Machinery", icon: Truck, translateKey: "machinery" },

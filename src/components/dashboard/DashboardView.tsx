@@ -16,12 +16,15 @@ import { StatCard } from "../common/StatCard";
 import { StatusBadge } from "../common/StatusBadge";
 import { VisualCharts } from "./VisualCharts";
 import { formatINR } from "../../utils/formatters";
-import { Expense, Language, Project, UserAccount } from "../../types";
+import { Expense, FundTransfer, Language, Project, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
+import { Plus, ArrowRight, User } from "lucide-react";
 
 type DashboardViewProps = {
   projects: Project[];
   expenses: Expense[];
+  fundTransfers?: FundTransfer[];
+  supervisors?: UserAccount[];
   currentUser: UserAccount;
   totalReceived: number;
   totalExpense: number;
@@ -32,11 +35,15 @@ type DashboardViewProps = {
   onViewProject360: (project: Project) => void;
   onViewAllProjects: () => void;
   onViewExpenseAttachment?: (expense: Expense) => void;
+  onNavigateToWallets?: () => void;
+  onOpenTransferModal?: (defaultSupervisorId?: number) => void;
 };
 
 export function DashboardView({
   projects,
   expenses,
+  fundTransfers = [],
+  supervisors = [],
   currentUser,
   totalReceived,
   totalExpense,
@@ -47,10 +54,30 @@ export function DashboardView({
   onViewProject360,
   onViewAllProjects,
   onViewExpenseAttachment,
+  onNavigateToWallets,
+  onOpenTransferModal,
 }: DashboardViewProps) {
-  const t = getTranslation(lang);
+  const t = getTranslation(lang) as any;
   const isAdmin = currentUser.role === "admin";
   const activeCount = projects.filter(p => p.status === "Active").length;
+
+  // Real-time Petty Cash stats
+  const totalFundsTransferred = fundTransfers.reduce((sum, ft) => sum + ft.amount, 0);
+  const totalSupervisorExpenses = expenses
+    .filter(exp => !exp.paymentSource || exp.paymentSource === "Supervisor Wallet")
+    .reduce((sum, exp) => sum + exp.amount, 0);
+  const totalCashInHand = totalFundsTransferred - totalSupervisorExpenses;
+
+  // If supervisor, calculate their specific Cash in Hand
+  const myTransfers = fundTransfers.filter(ft => ft.supervisorId === currentUser.id);
+  const myTotalReceived = myTransfers.reduce((sum, ft) => sum + ft.amount, 0);
+  const myExpenses = expenses.filter(exp => {
+    const isMe = exp.supervisorId === currentUser.id || exp.enteredBy === currentUser.name;
+    const isFromWallet = !exp.paymentSource || exp.paymentSource === "Supervisor Wallet";
+    return isMe && isFromWallet;
+  });
+  const myTotalSpent = myExpenses.reduce((sum, exp) => sum + exp.amount, 0);
+  const myCashInHand = myTotalReceived - myTotalSpent;
 
   return (
     <div className="space-y-7">
@@ -111,6 +138,71 @@ export function DashboardView({
           positive={profit >= 0}
           color={profit >= 0 ? "bg-blue-100 text-blue-800" : "bg-red-100 text-red-700"}
         />
+      </div>
+
+      {/* ─── Petty Cash & Supervisor Digital Wallet Bar (Requirement #1 & #6) ─── */}
+      <div className="rounded-3xl border border-amber-500/30 bg-gradient-to-r from-amber-50 via-white to-amber-50/50 p-5 shadow-xs">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          {/* Left info */}
+          <div className="flex items-center gap-3.5">
+            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-amber-500 text-slate-950 shadow-md shadow-amber-500/20 font-black">
+              <WalletCards size={24} />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-black text-slate-900 leading-tight">
+                  {isAdmin
+                    ? (lang === "gu" ? "સુપરવાઇઝર રોકડ સિલક (Cash in Hand)" : "Supervisor Petty Cash Flow")
+                    : (lang === "gu" ? "તમારું રોકડ વૉલેટ (Petty Cash Wallet)" : "Your Site Petty Cash Wallet")}
+                </h3>
+                <span className="rounded-full bg-amber-200/80 px-2 py-0.5 text-[10px] font-black text-amber-900">
+                  Live Sync
+                </span>
+              </div>
+              <p className="text-xs text-slate-600 mt-0.5">
+                {isAdmin
+                  ? (lang === "gu" ? "ઓફિસથી આપેલ કુલ રકમમાંથી સાઇટ પર થયેલા રોકડ ખર્ચા બાદ થતાં હાલમાં ઉપલબ્ધ સિલક." : "Real-time cash available across site supervisors after deducting site expenses.")
+                  : (lang === "gu" ? "ઓફિસથી મળેલ રકમમાંથી તમે સાઇટ પર કરેલ રોકડ ખર્ચા બાદ થતાં તમારી પાસે બાકી રોકડ." : "Current available cash in hand for your site operations.")}
+              </p>
+            </div>
+          </div>
+
+          {/* Right Metrics & Buttons */}
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Amount display */}
+            <div className="rounded-2xl bg-white px-4 py-2.5 border border-slate-200 shadow-xs">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 block">
+                {isAdmin ? (lang === "gu" ? "કુલ હાથ પર રોકડ" : "Total Cash in Hand") : (lang === "gu" ? "તમારી પાસે રોકડ" : "Your Cash in Hand")}
+              </span>
+              <span className="text-lg font-black text-emerald-700">
+                {formatINR(isAdmin ? totalCashInHand : myCashInHand)}
+              </span>
+            </div>
+
+            {/* Quick Actions */}
+            {isAdmin && onOpenTransferModal && (
+              <button
+                type="button"
+                onClick={() => onOpenTransferModal()}
+                className="flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-500 to-amber-600 px-3.5 py-2.5 text-xs font-black text-slate-950 shadow-sm hover:from-amber-400 hover:to-amber-500 transition active:scale-95"
+              >
+                <Plus size={15} />
+                <span>{lang === "gu" ? "પૈસા મોકલો" : "Issue Funds"}</span>
+              </button>
+            )}
+
+            {onNavigateToWallets && (
+              <button
+                type="button"
+                onClick={onNavigateToWallets}
+                className="flex items-center gap-1.5 rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs"
+              >
+                <span>{lang === "gu" ? "વૉલેટ હિસાબ / લેજર" : "View Wallet Ledger"}</span>
+                <ArrowRight size={14} />
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Visual Charts & Budget Breakdown */}

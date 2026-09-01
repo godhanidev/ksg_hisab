@@ -53,6 +53,8 @@ export type ExpenseCategory =
   | "Site Maintenance"
   | "Other";
 
+export type PaymentSource = "Supervisor Wallet" | "Direct Office Payment";
+
 export type Expense = {
   id: number;
   date: string;
@@ -66,6 +68,9 @@ export type Expense = {
   unitRate?: number;
   amount: number;
   paymentMode: "Cash" | "Bank Transfer / RTGS" | "Cheque" | "UPI" | "Credit / Udhar";
+  paymentSource?: PaymentSource; // "Supervisor Wallet" (default) or "Direct Office Payment"
+  supervisorId?: number;
+  supervisorName?: string;
   status: "Paid" | "Pending";
   billNumber?: string;
   attachments?: Attachment[];
@@ -187,3 +192,32 @@ export type OfflineQueueItem = {
   data: any;
   timestamp: number;
 };
+
+export type FundTransfer = {
+  id: number;
+  transferNo: string; // e.g. "FT-2026-001"
+  date: string;
+  supervisorId: number;
+  supervisorName: string;
+  project: string;
+  amount: number;
+  paymentMode: "Cash" | "Bank Transfer (NEFT/RTGS)" | "UPI" | "Cheque";
+  referenceNo?: string; // UTR or Cheque No or UPI Reference ID
+  proofAttachment?: Attachment;
+  notes?: string;
+  transferredBy: string; // Admin name
+  transferredAt: string;
+};
+
+export type WalletSummary = {
+  supervisorId: number;
+  supervisorName: string;
+  phone?: string;
+  assignedProjects: string[];
+  totalReceived: number; // Total credits from fund transfers
+  totalSpent: number;    // Total debits from supervisor wallet expenses
+  balance: number;       // Current cash in hand = totalReceived - totalSpent
+  lastTransferDate?: string;
+  lastExpenseDate?: string;
+};
+

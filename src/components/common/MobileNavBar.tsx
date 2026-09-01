@@ -18,6 +18,7 @@ type MobileNavBarProps = {
   onOpenMaterialModal: () => void;
   onOpenMachineryModal: () => void;
   onOpenReportModal: () => void;
+  onOpenTransferModal?: () => void;
   onOpenSidebar: () => void;
   onLogout: () => void;
 };
@@ -33,6 +34,7 @@ export function MobileNavBar({
   onOpenMaterialModal,
   onOpenMachineryModal,
   onOpenReportModal,
+  onOpenTransferModal,
   onOpenSidebar,
   onLogout,
 }: MobileNavBarProps) {
@@ -253,6 +255,24 @@ export function MobileNavBar({
                 <p className="text-xs font-bold text-white leading-tight">Daily DPR Log</p>
                 <p className="text-[10px] text-slate-400 mt-0.5">Site progress &amp; staff</p>
               </button>
+
+              {/* Issue Funds (Admin) */}
+              {isAdmin && onOpenTransferModal && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowQuickSheet(false);
+                    onOpenTransferModal();
+                  }}
+                  className="flex flex-col items-start p-3 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-left transition active:scale-95 col-span-2"
+                >
+                  <div className="h-9 w-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center mb-2 font-black">
+                    <Plus size={18} />
+                  </div>
+                  <p className="text-xs font-bold text-amber-400 leading-tight">Issue Funds to Supervisor</p>
+                  <p className="text-[10px] text-slate-300 mt-0.5">Credit supervisor digital petty cash wallet</p>
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -282,6 +302,22 @@ export function MobileNavBar({
 
             {/* Menu Items List */}
             <div className="grid grid-cols-2 gap-2 text-xs">
+              {/* Petty Cash & Wallets Tab */}
+              <button
+                type="button"
+                onClick={() => {
+                  setActivePage("Petty Cash & Wallets");
+                  setShowMoreMenu(false);
+                }}
+                className="flex items-center gap-2.5 p-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 font-bold text-left border border-amber-500/30 col-span-2"
+              >
+                <WalletCards size={18} className="text-amber-400" />
+                <div>
+                  <p className="leading-tight">{t.pettyCashWallets || "Petty Cash & Wallets"}</p>
+                  <p className="text-[10px] text-slate-400 font-normal mt-0.5">Live Cash in Hand &amp; Master Ledger</p>
+                </div>
+              </button>
+
               <button
                 type="button"
                 onClick={() => {

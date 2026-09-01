@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from "react";
 import { ModalWrapper } from "../common/ModalWrapper";
-import { Attachment, Expense, ExpenseCategory, Language, Project, UserAccount } from "../../types";
+import { Attachment, Expense, ExpenseCategory, Language, PaymentSource, Project, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
 import { todayStr } from "../../utils/formatters";
 import {
-  Camera, Upload, Calculator, Paperclip, X, Image as ImageIcon, MapPin, IndianRupee, Tag, Check, CalendarDays
+  Camera, Upload, Calculator, Paperclip, X, Image as ImageIcon, MapPin, IndianRupee, Tag, Check, CalendarDays, WalletCards, Building2
 } from "lucide-react";
 
 type EasyExpenseModalProps = {
@@ -163,6 +163,7 @@ export function EasyExpenseModal({
   const [totalAmount, setTotalAmount] = useState<string>("");
   const [isManualAmount, setIsManualAmount] = useState<boolean>(false);
   const [paymentMode, setPaymentMode] = useState<Expense["paymentMode"]>("Cash");
+  const [paymentSource, setPaymentSource] = useState<PaymentSource>("Supervisor Wallet");
   const [billNumber, setBillNumber] = useState<string>("");
   const [expenseDate, setExpenseDate] = useState<string>(todayStr());
 
@@ -247,6 +248,9 @@ export function EasyExpenseModal({
       unitRate: parseFloat(unitRate) || amt,
       amount: amt,
       paymentMode,
+      paymentSource,
+      supervisorId: currentUser.id,
+      supervisorName: currentUser.name,
       billNumber: billNumber.trim() || undefined,
       status: "Paid",
       enteredBy: currentUser.name,
@@ -495,7 +499,59 @@ export function EasyExpenseModal({
           </div>
         </div>
 
-        {/* 5. Payment Mode & Voucher No */}
+        {/* 5. Payment Source Selector (Requirement #5: Direct Office Payment vs Supervisor Petty Cash) */}
+        <div className="rounded-2xl border border-slate-200 bg-slate-50/80 p-3.5 space-y-2">
+          <label className="block text-xs font-bold text-slate-800">
+            {lang === "gu" ? "ચુકવણીનો સ્રોત (Payment Source) *" : "Payment Source *"}
+          </label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setPaymentSource("Supervisor Wallet")}
+              className={`flex items-start gap-2.5 rounded-xl p-2.5 text-left border transition ${
+                paymentSource === "Supervisor Wallet"
+                  ? "bg-amber-50 border-amber-400 text-amber-950 shadow-xs ring-1 ring-amber-400"
+                  : "bg-white border-slate-200 text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              <div className={`p-1 rounded-lg shrink-0 ${paymentSource === "Supervisor Wallet" ? "bg-amber-500 text-slate-950" : "bg-slate-100 text-slate-500"}`}>
+                <WalletCards size={16} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold leading-tight">
+                  {lang === "gu" ? "સુપરવાઇઝર રોકડ (Petty Cash)" : "Supervisor Petty Cash Wallet"}
+                </p>
+                <p className="text-[10px] text-slate-500 mt-0.5">
+                  {lang === "gu" ? "વૉલેટમાંથી કપાશે (Debited from Cash in Hand)" : "Debited from supervisor's Cash in Hand"}
+                </p>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setPaymentSource("Direct Office Payment")}
+              className={`flex items-start gap-2.5 rounded-xl p-2.5 text-left border transition ${
+                paymentSource === "Direct Office Payment"
+                  ? "bg-purple-50 border-purple-400 text-purple-950 shadow-xs ring-1 ring-purple-400"
+                  : "bg-white border-slate-200 text-slate-600 hover:bg-slate-100"
+              }`}
+            >
+              <div className={`p-1 rounded-lg shrink-0 ${paymentSource === "Direct Office Payment" ? "bg-purple-600 text-white" : "bg-slate-100 text-slate-500"}`}>
+                <Building2 size={16} />
+              </div>
+              <div className="min-w-0">
+                <p className="text-xs font-bold leading-tight">
+                  {lang === "gu" ? "મુખ્ય ઓફિસથી ચૂકવણી (Direct HO)" : "Direct Head Office Payment"}
+                </p>
+                <p className="text-[10px] text-slate-500 mt-0.5">
+                  {lang === "gu" ? "પ્રોજેક્ટ ખર્ચ વધશે, વૉલેટમાંથી કપાશે નહીં" : "Added to Project Cost, NO wallet deduction"}
+                </p>
+              </div>
+            </button>
+          </div>
+        </div>
+
+        {/* 6. Payment Mode & Voucher No */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">{t.paymentMode}</label>

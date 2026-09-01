@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 
 import {
-  Attachment, Bill, DailyReport, Expense, LabourWorker, Language,
+  Attachment, Bill, DailyReport, Expense, FundTransfer, LabourWorker, Language,
   Machinery, MaterialItem, Project, UserAccount
 } from "./types";
 import { getTranslation } from "./i18n/translations";
@@ -21,7 +21,7 @@ import {
 } from "./utils/exportUtils";
 import {
   initialUsers, initialProjects, initialExpenses, initialBills,
-  initialLabour, initialMaterial, initialMachinery, initialReports
+  initialLabour, initialMaterial, initialMachinery, initialReports, initialFundTransfers
 } from "./data/initialData";
 
 import { Header } from "./components/common/Header";
@@ -40,6 +40,8 @@ import { BillGeneratorModal } from "./components/bills/BillGeneratorModal";
 import { LoginPage } from "./components/auth/LoginPage";
 import { UserManagement } from "./components/auth/UserManagement";
 import { BillViewerModal } from "./components/documents/BillViewerModal";
+import { WalletHubView } from "./components/wallet/WalletHubView";
+import { FundTransferModal } from "./components/wallet/FundTransferModal";
 
 import { EasyExpenseModal } from "./components/forms/EasyExpenseModal";
 import { EasyBillModal } from "./components/forms/EasyBillModal";
@@ -92,6 +94,9 @@ export function App() {
   const [dailyReports, setDailyReports] = useState<DailyReport[]>(() =>
     loadStoredCollection<DailyReport[]>("reports", initialReports)
   );
+  const [fundTransfers, setFundTransfers] = useState<FundTransfer[]>(() =>
+    loadStoredCollection<FundTransfer[]>("fund_transfers", initialFundTransfers)
+  );
   const [users, setUsers] = useState<UserAccount[]>(initialUsers);
 
   // Modals & Lightbox Viewers State
@@ -104,6 +109,9 @@ export function App() {
   } | null>(null);
 
   const [showExpenseModal, setShowExpenseModal] = useState(false);
+  const [showTransferModal, setShowTransferModal] = useState(false);
+  const [transferSupervisorId, setTransferSupervisorId] = useState<number | undefined>(undefined);
+  const [transferProject, setTransferProject] = useState<string | undefined>(undefined);
   const [showBillModal, setShowBillModal] = useState(false);
   const [showBillGenerator, setShowBillGenerator] = useState(false);
   const [editingBill, setEditingBill] = useState<Bill | null>(null);
@@ -129,6 +137,7 @@ export function App() {
   useEffect(() => { saveStoredCollection("materials", materials); }, [materials]);
   useEffect(() => { saveStoredCollection("machinery", machinery); }, [machinery]);
   useEffect(() => { saveStoredCollection("reports", dailyReports); }, [dailyReports]);
+  useEffect(() => { saveStoredCollection("fund_transfers", fundTransfers); }, [fundTransfers]);
   useEffect(() => { saveStoredSession(currentUser); }, [currentUser]);
 
   // Online / Offline Status Listeners & Auto-Sync
@@ -228,6 +237,19 @@ export function App() {
       addToOfflineQueue({ type: "expense", action: "create", data: created });
       setPendingSyncQueue(loadOfflineQueue());
     }
+  };
+
+  const handleSaveFundTransfer = (transferData: Omit<FundTransfer, "id">) => {
+    const id = Date.now();
+    const created: FundTransfer = { ...transferData, id };
+    setFundTransfers(prev => [created, ...prev]);
+
+    setSyncToast(
+      lang === "gu"
+        ? `₹${transferData.amount.toLocaleString("en-IN")} સુપરવાઇઝર (${transferData.supervisorName}) ના વૉલેટમાં જમા થયા!`
+        : `₹${transferData.amount.toLocaleString("en-IN")} credited to ${transferData.supervisorName}'s wallet!`
+    );
+    setTimeout(() => setSyncToast(null), 4000);
   };
 
   const handleSaveBill = (newBill: Omit<Bill, "id">) => {
@@ -356,6 +378,8 @@ export function App() {
           <DashboardView
             projects={visibleProjects}
             expenses={visibleExpenses}
+            fundTransfers={fundTransfers}
+            supervisors={users}
             currentUser={currentUser}
             totalReceived={totalReceived}
             totalExpense={totalExpense}
@@ -365,6 +389,12 @@ export function App() {
             lang={lang}
             onViewProject360={p => setViewingProject360(p)}
             onViewAllProjects={() => setActivePage("Projects")}
+            onNavigateToWallets={() => setActivePage("Petty Cash & Wallets")}
+            onOpenTransferModal={supId => {
+              setTransferSupervisorId(supId);
+              setTransferProject(undefined);
+              setShowTransferModal(true);
+            }}
             onViewExpenseAttachment={exp => {
               if (exp.attachments && exp.attachments.length > 0) {
                 setViewingAttachment({
@@ -374,6 +404,34 @@ export function App() {
                   amount: formatINR(exp.amount),
                 });
               }
+            }}
+          />
+        );
+
+      case "Petty Cash & Wallets":
+        return (
+          <WalletHubView
+            projects={projects}
+            supervisors={users}
+            expenses={expenses}
+            fundTransfers={fundTransfers}
+            currentUser={currentUser}
+            lang={lang}
+            onOpenTransferModal={(supId, proj) => {
+              setTransferSupervisorId(supId);
+              setTransferProject(proj);
+              setShowTransferModal(true);
+            }}
+            onOpenExpenseModal={proj => {
+              setSelectedSiteFilter(proj || "ALL");
+              setShowExpenseModal(true);
+            }}
+            onViewAttachment={(att, title, subtitle) => {
+              setViewingAttachment({
+                attachment: att,
+                title,
+                subtitle,
+              });
             }}
           />
         );
@@ -990,6 +1048,11 @@ export function App() {
         onOpenMaterialModal={() => setShowMaterialModal(true)}
         onOpenMachineryModal={() => setShowMachineryModal(true)}
         onOpenReportModal={() => setShowReportModal(true)}
+        onOpenTransferModal={() => {
+          setTransferSupervisorId(undefined);
+          setTransferProject(undefined);
+          setShowTransferModal(true);
+        }}
         onOpenSidebar={() => setSidebarOpen(true)}
         onLogout={() => {
           if (window.confirm(t.confirmLogout)) {
@@ -1029,6 +1092,20 @@ export function App() {
           amount={viewingAttachment.amount}
           lang={lang}
           onClose={() => setViewingAttachment(null)}
+        />
+      )}
+
+      {/* Fund Transfer Modal (Requirement #1 & #3) */}
+      {showTransferModal && (
+        <FundTransferModal
+          projects={projects}
+          supervisors={users}
+          defaultSupervisorId={transferSupervisorId}
+          defaultProject={transferProject}
+          currentUser={currentUser}
+          lang={lang}
+          onSave={handleSaveFundTransfer}
+          onClose={() => setShowTransferModal(false)}
         />
       )}
 

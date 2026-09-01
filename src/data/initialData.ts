@@ -1,6 +1,4 @@
-// ─── Initial Construction & Civil Works Data ──────────────────────────────────
-
-import { Bill, DailyReport, Expense, LabourWorker, Machinery, MaterialItem, Project, UserAccount } from "../types";
+import { Bill, DailyReport, Expense, FundTransfer, LabourWorker, Machinery, MaterialItem, Project, UserAccount } from "../types";
 
 export const initialUsers: UserAccount[] = [
   {
@@ -10,7 +8,7 @@ export const initialUsers: UserAccount[] = [
     name: "Kanjibhai S. Godhani (Owner)",
     role: "admin",
     assignedProjects: [],
-    enabledModules: ["Dashboard", "Projects", "Income & Bills", "Expenses", "Labour", "Material & Stock", "Machinery", "Daily Reports", "Reports", "User Management", "Settings"],
+    enabledModules: ["Dashboard", "Projects", "Income & Bills", "Expenses", "Petty Cash & Wallets", "Labour", "Material & Stock", "Machinery", "Daily Reports", "Reports", "User Management", "Settings"],
     phone: "9825012345"
   },
   {
@@ -20,7 +18,7 @@ export const initialUsers: UserAccount[] = [
     name: "Ramesh Patel (Site Supervisor)",
     role: "supervisor",
     assignedProjects: ["Check Dam Project - Amreli"],
-    enabledModules: ["Dashboard", "Projects", "Expenses", "Labour", "Material & Stock", "Machinery", "Daily Reports"],
+    enabledModules: ["Dashboard", "Projects", "Expenses", "Petty Cash & Wallets", "Labour", "Material & Stock", "Machinery", "Daily Reports"],
     phone: "9879054321"
   },
   {
@@ -30,7 +28,7 @@ export const initialUsers: UserAccount[] = [
     name: "Suresh Desai (Site Supervisor)",
     role: "supervisor",
     assignedProjects: ["Govt Community Hall - Rajkot", "Water Pipeline & Sump - Bhavnagar"],
-    enabledModules: ["Dashboard", "Projects", "Expenses", "Labour", "Material & Stock", "Daily Reports"],
+    enabledModules: ["Dashboard", "Projects", "Expenses", "Petty Cash & Wallets", "Labour", "Material & Stock", "Daily Reports"],
     phone: "9909065432"
   },
 ];
@@ -119,6 +117,9 @@ export const initialExpenses: Expense[] = [
     unitRate: 380,
     amount: 38000,
     paymentMode: "Cash",
+    paymentSource: "Supervisor Wallet",
+    supervisorId: 2,
+    supervisorName: "Ramesh Patel",
     billNumber: "INV-SRC-884",
     status: "Paid",
     enteredBy: "Ramesh Patel",
@@ -145,6 +146,9 @@ export const initialExpenses: Expense[] = [
     unitRate: 1500,
     amount: 12000,
     paymentMode: "Cash",
+    paymentSource: "Supervisor Wallet",
+    supervisorId: 2,
+    supervisorName: "Ramesh Patel",
     billNumber: "ME-LOG-302",
     status: "Paid",
     enteredBy: "Ramesh Patel",
@@ -164,16 +168,17 @@ export const initialExpenses: Expense[] = [
     project: "Govt Community Hall - Rajkot",
     category: "Material",
     subCategory: "TMT Steel Bars",
-    description: "5 Tons 12mm & 16mm Kamdhenu TMT Steel",
+    description: "5 Tons 12mm & 16mm Kamdhenu TMT Steel (Direct HO RTGS)",
     vendor: "National Steel Traders Rajkot",
     quantity: 5000,
     unit: "Kg",
     unitRate: 64,
     amount: 320000,
     paymentMode: "Bank Transfer / RTGS",
+    paymentSource: "Direct Office Payment",
     billNumber: "NST-GST-2026-91",
     status: "Paid",
-    enteredBy: "Suresh Desai",
+    enteredBy: "Kanjibhai S. Godhani",
     attachments: [
       {
         id: "att-3",
@@ -197,6 +202,9 @@ export const initialExpenses: Expense[] = [
     unitRate: 5500,
     amount: 66000,
     paymentMode: "Cash",
+    paymentSource: "Supervisor Wallet",
+    supervisorId: 3,
+    supervisorName: "Suresh Desai",
     billNumber: "LAB-WK-34",
     status: "Paid",
     enteredBy: "Suresh Desai"
@@ -214,6 +222,9 @@ export const initialExpenses: Expense[] = [
     unitRate: 92,
     amount: 27600,
     paymentMode: "UPI",
+    paymentSource: "Supervisor Wallet",
+    supervisorId: 3,
+    supervisorName: "Suresh Desai",
     billNumber: "HP-POS-4491",
     status: "Paid",
     enteredBy: "Suresh Desai"
@@ -344,3 +355,63 @@ export const initialReports: DailyReport[] = [
     weather: "Sunny / Clear"
   }
 ];
+
+export const initialFundTransfers: FundTransfer[] = [
+  {
+    id: 1,
+    transferNo: "FT-2026-001",
+    date: "25/08/2026",
+    supervisorId: 2,
+    supervisorName: "Ramesh Patel",
+    project: "Check Dam Project - Amreli",
+    amount: 100000,
+    paymentMode: "UPI",
+    referenceNo: "UPI/202608259812/HDFC",
+    notes: "Site petty cash imprest fund for cement & daily fuel expenses",
+    proofAttachment: {
+      id: "ft-att-1",
+      name: "upi_transfer_1lakh.jpg",
+      dataUrl: SAMPLE_RECEIPT_IMG,
+      type: "image/svg+xml",
+      uploadedAt: "25/08/2026"
+    },
+    transferredBy: "Kanjibhai S. Godhani",
+    transferredAt: "25/08/2026 10:30 AM"
+  },
+  {
+    id: 2,
+    transferNo: "FT-2026-002",
+    date: "24/08/2026",
+    supervisorId: 3,
+    supervisorName: "Suresh Desai",
+    project: "Govt Community Hall - Rajkot",
+    amount: 150000,
+    paymentMode: "Bank Transfer (NEFT/RTGS)",
+    referenceNo: "NEFT-SBIN2026984210",
+    notes: "Weekly labour gang wage payment advance & shuttering wood",
+    proofAttachment: {
+      id: "ft-att-2",
+      name: "neft_bank_slip.jpg",
+      dataUrl: SAMPLE_RECEIPT_IMG,
+      type: "image/svg+xml",
+      uploadedAt: "24/08/2026"
+    },
+    transferredBy: "Kanjibhai S. Godhani",
+    transferredAt: "24/08/2026 02:15 PM"
+  },
+  {
+    id: 3,
+    transferNo: "FT-2026-003",
+    date: "28/08/2026",
+    supervisorId: 2,
+    supervisorName: "Ramesh Patel",
+    project: "Check Dam Project - Amreli",
+    amount: 50000,
+    paymentMode: "Cash",
+    referenceNo: "CASH-VOUCHER-088",
+    notes: "Direct cash handover at head office for emergency spillway work",
+    transferredBy: "Kanjibhai S. Godhani",
+    transferredAt: "28/08/2026 09:00 AM"
+  }
+];
+
