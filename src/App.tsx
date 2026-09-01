@@ -65,7 +65,9 @@ export function App() {
     return saved;
   });
   const [activePage, setActivePage] = useState<string>("Dashboard");
-  const [sidebarOpen, setSidebarOpen] = useState<boolean>(true);
+  const [sidebarOpen, setSidebarOpen] = useState<boolean>(() =>
+    typeof window !== "undefined" ? window.innerWidth >= 1024 : true
+  );
   const [selectedSiteFilter, setSelectedSiteFilter] = useState<string>("ALL");
 
   // Persistent Core Data

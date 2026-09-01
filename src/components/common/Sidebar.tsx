@@ -66,21 +66,11 @@ export function Sidebar({
   });
 
   return (
-    <>
-      {/* Mobile Backdrop overlay */}
-      {sidebarOpen && (
-        <div
-          onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-xs lg:hidden animate-in fade-in duration-200"
-          aria-hidden="true"
-        />
-      )}
-
-      <aside
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col bg-slate-950 text-slate-300 transition-all duration-300 shadow-2xl ${
-          sidebarOpen ? "w-72" : "w-0 -translate-x-full lg:w-20 lg:translate-x-0"
-        }`}
-      >
+    <aside
+      className={`hidden lg:flex fixed inset-y-0 left-0 z-50 flex-col bg-slate-950 text-slate-300 transition-all duration-300 shadow-2xl ${
+        sidebarOpen ? "w-72" : "w-20"
+      }`}
+    >
       {/* Brand Header */}
       <div className="flex h-20 items-center border-b border-slate-800/80 px-4">
         {sidebarOpen ? (
@@ -185,6 +175,5 @@ export function Sidebar({
         )}
       </div>
     </aside>
-    </>
   );
 }
