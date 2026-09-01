@@ -1,162 +1,185 @@
-import React from "react";
-import { formatINR } from "../../utils/formatters";
-import { Language, Project } from "../../types";
+import React, { useMemo } from "react";
+import { PieChart, BarChart3, TrendingUp, Wallet, Landmark } from "lucide-react";
+import { BankPayment, CashTransaction, GSTBill, Language, Project } from "../../types";
 import { getTranslation } from "../../i18n/translations";
-import { Building2, TrendingUp, WalletCards, IndianRupee, ShieldCheck, CheckCircle2 } from "lucide-react";
+import { formatINR } from "../../utils/formatters";
 
 type VisualChartsProps = {
+  cashTransactions: CashTransaction[];
+  bankPayments: BankPayment[];
+  gstBills: GSTBill[];
   projects: Project[];
-  totalContractValue: number;
-  totalReceived: number;
-  totalExpense: number;
-  profit: number;
   lang: Language;
 };
 
 export function VisualCharts({
+  cashTransactions,
+  bankPayments,
+  gstBills,
   projects,
-  totalContractValue,
-  totalReceived,
-  totalExpense,
-  profit,
   lang,
 }: VisualChartsProps) {
   const t = getTranslation(lang);
 
-  // Maximum value for proportional scaling
-  const maxVal = Math.max(totalContractValue, totalReceived + totalExpense, 1);
+  // Category breakdown for cash expenses
+  const categoryStats = useMemo(() => {
+    const map: { [cat: string]: number } = {};
+    const cashOuts = cashTransactions.filter(c => c.type === "cash_out");
+    let total = 0;
 
-  const budgetPct = Math.min(100, Math.round((totalContractValue / maxVal) * 100));
-  const receivedPct = Math.min(100, Math.round((totalReceived / maxVal) * 100));
-  const expensePct = Math.min(100, Math.round((totalExpense / maxVal) * 100));
-  const profitPct = totalReceived > 0 ? ((profit / totalReceived) * 100).toFixed(1) : "0";
+    cashOuts.forEach(c => {
+      const cat = c.category || "Other";
+      map[cat] = (map[cat] || 0) + c.amount;
+      total += c.amount;
+    });
+
+    const entries = Object.entries(map).map(([category, amount]) => ({
+      category,
+      amount,
+      pct: total > 0 ? ((amount / total) * 100).toFixed(1) : "0",
+    }));
+
+    // Sort highest first
+    return {
+      entries: entries.sort((a, b) => b.amount - a.amount),
+      total,
+    };
+  }, [cashTransactions]);
+
+  // Comparison totals
+  const totalCashGiven = cashTransactions
+    .filter(c => c.type === "cash_in")
+    .reduce((s, c) => s + c.amount, 0);
+
+  const totalCashSpent = cashTransactions
+    .filter(c => c.type === "cash_out")
+    .reduce((s, c) => s + c.amount, 0);
+
+  const totalBankSpent = bankPayments.reduce((s, b) => s + b.amount, 0);
+  const totalCombinedOut = totalCashSpent + totalBankSpent;
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
-      {/* Visual Comparison Chart Card */}
-      <div className="lg:col-span-2 rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-sm">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-6">
-          <div>
-            <h2 className="text-base sm:text-lg font-bold text-slate-900">{t.budgetVsExpense}</h2>
-            <p className="text-xs text-slate-500">{t.financialSummary}</p>
-          </div>
+    <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      {/* ── 1. Site Cash Expense Breakdown by Category ──────────────────── */}
+      <div className="rounded-3xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-xs">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700 border border-emerald-200">
-              <TrendingUp size={13} /> {profitPct}% Margin
-            </span>
+            <div className="p-1.5 rounded-lg bg-rose-50 text-rose-600">
+              <PieChart size={18} />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">
+                {lang === "gu" ? "સાઇટ રોકડ ખર્ચ વિભાજન (Category Breakdown)" : "Site Cash Expense Breakdown"}
+              </h3>
+              <p className="text-[11px] text-slate-400">JCB, Labour, Material, Tractor &amp; Miscellaneous</p>
+            </div>
           </div>
+          <span className="text-xs font-black text-rose-700">
+            {formatINR(categoryStats.total)}
+          </span>
         </div>
 
-        {/* Triple Bar Comparative Display */}
-        <div className="space-y-5">
-          {/* 1. Total Tender / Contract Budget */}
-          <div>
-            <div className="flex justify-between items-center text-xs font-semibold mb-1.5">
-              <span className="flex items-center gap-2 text-slate-700">
-                <span className="h-3 w-3 rounded-full bg-slate-900 inline-block" />
-                {t.contractValue}
-              </span>
-              <span className="font-bold text-slate-900">{formatINR(totalContractValue)}</span>
-            </div>
-            <div className="h-4 w-full rounded-full bg-slate-100 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-slate-900 transition-all duration-700"
-                style={{ width: `${budgetPct}%` }}
-              />
-            </div>
+        {categoryStats.entries.length === 0 ? (
+          <div className="py-8 text-center text-xs text-slate-400">
+            No site cash expenses recorded yet
           </div>
+        ) : (
+          <div className="space-y-3">
+            {categoryStats.entries.slice(0, 5).map((item, idx) => {
+              const barColors = [
+                "bg-rose-500",
+                "bg-amber-500",
+                "bg-blue-500",
+                "bg-purple-500",
+                "bg-emerald-500",
+              ];
+              const color = barColors[idx % barColors.length];
 
-          {/* 2. Cleared Govt Payments (Received) */}
-          <div>
-            <div className="flex justify-between items-center text-xs font-semibold mb-1.5">
-              <span className="flex items-center gap-2 text-emerald-700">
-                <span className="h-3 w-3 rounded-full bg-emerald-500 inline-block" />
-                {t.clearedGovtPayment}
-              </span>
-              <span className="font-bold text-emerald-700">{formatINR(totalReceived)}</span>
-            </div>
-            <div className="h-4 w-full rounded-full bg-slate-100 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-emerald-500 transition-all duration-700"
-                style={{ width: `${receivedPct}%` }}
-              />
-            </div>
-          </div>
-
-          {/* 3. Total Expenses Incurred */}
-          <div>
-            <div className="flex justify-between items-center text-xs font-semibold mb-1.5">
-              <span className="flex items-center gap-2 text-red-600">
-                <span className="h-3 w-3 rounded-full bg-red-500 inline-block" />
-                {t.totalExpenses}
-              </span>
-              <span className="font-bold text-red-600">{formatINR(totalExpense)}</span>
-            </div>
-            <div className="h-4 w-full rounded-full bg-slate-100 overflow-hidden">
-              <div
-                className="h-full rounded-full bg-red-500 transition-all duration-700"
-                style={{ width: `${expensePct}%` }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Quick Insights Footer */}
-        <div className="mt-7 pt-5 border-t border-slate-100 grid grid-cols-3 gap-3 text-center">
-          <div className="rounded-2xl bg-slate-50 p-3">
-            <p className="text-[11px] font-medium text-slate-500">{t.collectionRate}</p>
-            <p className="text-sm sm:text-base font-extrabold text-slate-900 mt-0.5">
-              {totalContractValue > 0 ? Math.round((totalReceived / totalContractValue) * 100) : 0}%
-            </p>
-          </div>
-          <div className="rounded-2xl bg-emerald-50/70 p-3 border border-emerald-100">
-            <p className="text-[11px] font-medium text-emerald-700">{t.netProfit}</p>
-            <p className="text-sm sm:text-base font-extrabold text-emerald-800 mt-0.5">{formatINR(profit)}</p>
-          </div>
-          <div className="rounded-2xl bg-amber-50/70 p-3 border border-amber-100">
-            <p className="text-[11px] font-medium text-amber-700">{t.pendingReceivable}</p>
-            <p className="text-sm sm:text-base font-extrabold text-amber-800 mt-0.5">
-              {formatINR(totalContractValue - totalReceived)}
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {/* Active Sites Health Mini Card */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-6 sm:p-7 shadow-sm flex flex-col justify-between">
-        <div>
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-bold text-slate-900 text-sm sm:text-base">{t.activeProjects}</h3>
-            <span className="rounded-full bg-blue-50 text-blue-700 font-bold px-2.5 py-0.5 text-xs border border-blue-200">
-              {projects.length} Sites
-            </span>
-          </div>
-
-          <div className="space-y-3.5">
-            {projects.slice(0, 4).map(p => {
-              const pProfit = p.received - p.expense;
               return (
-                <div key={p.id} className="rounded-2xl bg-slate-50 p-3.5 border border-slate-100 hover:bg-slate-100/80 transition">
-                  <div className="flex items-start justify-between gap-2 mb-1.5">
-                    <p className="font-bold text-xs sm:text-sm text-slate-900 truncate">{p.name}</p>
-                    <span className="text-[11px] font-bold text-slate-700 shrink-0">{p.progress}%</span>
+                <div key={item.category} className="space-y-1">
+                  <div className="flex items-center justify-between text-xs font-semibold">
+                    <span className="text-slate-700">{item.category}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-slate-900 font-bold">{formatINR(item.amount)}</span>
+                      <span className="text-[11px] text-slate-400 font-normal">({item.pct}%)</span>
+                    </div>
                   </div>
-                  <div className="h-2 w-full rounded-full bg-slate-200 overflow-hidden mb-2">
-                    <div className="h-full rounded-full bg-amber-500" style={{ width: `${p.progress}%` }} />
-                  </div>
-                  <div className="flex items-center justify-between text-[11px] text-slate-500">
-                    <span>Recv: <strong className="text-emerald-700">{formatINR(p.received)}</strong></span>
-                    <span>Exp: <strong className="text-red-600">{formatINR(p.expense)}</strong></span>
+                  <div className="h-2 w-full overflow-hidden rounded-full bg-slate-100">
+                    <div
+                      className={`h-full rounded-full ${color}`}
+                      style={{ width: `${item.pct}%` }}
+                    />
                   </div>
                 </div>
               );
             })}
           </div>
+        )}
+      </div>
+
+      {/* ── 2. Payment Channel Flow (Bank RTGS vs Site Cash) ─────────────── */}
+      <div className="rounded-3xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-xs">
+        <div className="flex items-center justify-between border-b border-slate-100 pb-3 mb-4">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 rounded-lg bg-blue-50 text-blue-600">
+              <BarChart3 size={18} />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-slate-900">
+                {lang === "gu" ? "ચુકવણી માધ્યમ સરખામણી" : "Payment Channel Comparison"}
+              </h3>
+              <p className="text-[11px] text-slate-400">Bank RTGS vs Site Cash Outflow</p>
+            </div>
+          </div>
+          <span className="text-xs font-black text-slate-900">
+            {formatINR(totalCombinedOut)}
+          </span>
         </div>
 
-        <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-          <span className="flex items-center gap-1"><ShieldCheck size={14} className="text-emerald-600" /> Govt Approved</span>
-          <span>KSG Audited Ledger</span>
+        <div className="space-y-4">
+          {/* Direct Office Bank Transfers */}
+          <div className="rounded-2xl bg-blue-50/60 border border-blue-100 p-3.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Landmark size={18} className="text-blue-600" />
+                <div>
+                  <p className="text-xs font-bold text-slate-900">Direct Office Bank RTGS</p>
+                  <p className="text-[10px] text-slate-500">Party / Vendor Direct Transfers</p>
+                </div>
+              </div>
+              <p className="text-sm font-black text-blue-700">{formatINR(totalBankSpent)}</p>
+            </div>
+            <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-blue-200/60">
+              <div
+                className="h-full rounded-full bg-blue-600"
+                style={{
+                  width: totalCombinedOut > 0 ? `${(totalBankSpent / totalCombinedOut) * 100}%` : "0%",
+                }}
+              />
+            </div>
+          </div>
+
+          {/* Site Cash Expenses */}
+          <div className="rounded-2xl bg-rose-50/60 border border-rose-100 p-3.5">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Wallet size={18} className="text-rose-600" />
+                <div>
+                  <p className="text-xs font-bold text-slate-900">Site Daily Cash Expenses</p>
+                  <p className="text-[10px] text-slate-500">JCB, Labour, Carting &amp; Site Cash</p>
+                </div>
+              </div>
+              <p className="text-sm font-black text-rose-700">{formatINR(totalCashSpent)}</p>
+            </div>
+            <div className="mt-2.5 h-2 w-full overflow-hidden rounded-full bg-rose-200/60">
+              <div
+                className="h-full rounded-full bg-rose-600"
+                style={{
+                  width: totalCombinedOut > 0 ? `${(totalCashSpent / totalCombinedOut) * 100}%` : "0%",
+                }}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>

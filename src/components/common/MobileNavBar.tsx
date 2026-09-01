@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import {
-  LayoutDashboard, Building2, WalletCards, ReceiptIndianRupee,
-  Menu, Plus, X, Users, Package, Truck, FileText, BarChart3,
-  Shield, LogOut, Camera, HardHat, CheckCircle2
+  LayoutDashboard, Wallet, Landmark, FileCheck, Building2,
+  Plus, X, Users, LogOut, ArrowDownLeft, ArrowUpRight
 } from "lucide-react";
 import { Language, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
@@ -12,14 +11,10 @@ type MobileNavBarProps = {
   setActivePage: (page: string) => void;
   currentUser: UserAccount;
   lang: Language;
-  onOpenExpenseModal: () => void;
-  onOpenBillModal: () => void;
-  onOpenLabourModal: () => void;
-  onOpenMaterialModal: () => void;
-  onOpenMachineryModal: () => void;
-  onOpenReportModal: () => void;
-  onOpenTransferModal?: () => void;
-  onOpenSidebar: () => void;
+  onOpenCashInModal: () => void;
+  onOpenCashOutModal: () => void;
+  onOpenBankPaymentModal: () => void;
+  onOpenGstBillModal: () => void;
   onLogout: () => void;
 };
 
@@ -28,14 +23,10 @@ export function MobileNavBar({
   setActivePage,
   currentUser,
   lang,
-  onOpenExpenseModal,
-  onOpenBillModal,
-  onOpenLabourModal,
-  onOpenMaterialModal,
-  onOpenMachineryModal,
-  onOpenReportModal,
-  onOpenTransferModal,
-  onOpenSidebar,
+  onOpenCashInModal,
+  onOpenCashOutModal,
+  onOpenBankPaymentModal,
+  onOpenGstBillModal,
   onLogout,
 }: MobileNavBarProps) {
   const t = getTranslation(lang);
@@ -43,113 +34,91 @@ export function MobileNavBar({
   const [showQuickSheet, setShowQuickSheet] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
 
-  const navItems = [
-    { id: "Dashboard", label: t.dashboard, icon: LayoutDashboard },
-    { id: "Projects", label: t.projects, icon: Building2 },
-    { id: "Expenses", label: t.expenses, icon: WalletCards },
-    { id: "Income & Bills", label: "Bills", icon: ReceiptIndianRupee },
-  ];
-
   return (
     <>
-      {/* ─── Mobile Bottom App Bar ────────────────────────────────────────── */}
+      {/* ─── Mobile Bottom Navigation Bar ───────────────────────────────── */}
       <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/80 px-2 py-1.5 shadow-[0_-8px_20px_rgba(0,0,0,0.5)]">
         <div className="flex items-center justify-around">
           {/* Dashboard Tab */}
           <button
             type="button"
             onClick={() => setActivePage("Dashboard")}
-            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition ${
+            className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition ${
               activePage === "Dashboard" ? "text-amber-400 font-bold" : "text-slate-400 hover:text-slate-200"
             }`}
           >
             <div className={`p-1 rounded-xl transition ${activePage === "Dashboard" ? "bg-amber-400/15" : ""}`}>
-              <LayoutDashboard size={20} />
+              <LayoutDashboard size={19} />
             </div>
             <span className="text-[10px] tracking-tight mt-0.5">{t.dashboard}</span>
           </button>
 
-          {/* Projects Tab */}
+          {/* Site Daily Cash Tab */}
           <button
             type="button"
-            onClick={() => setActivePage("Projects")}
-            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition ${
-              activePage === "Projects" ? "text-amber-400 font-bold" : "text-slate-400 hover:text-slate-200"
+            onClick={() => setActivePage("Site Daily Cash")}
+            className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition ${
+              activePage === "Site Daily Cash" ? "text-amber-400 font-bold" : "text-slate-400 hover:text-slate-200"
             }`}
           >
-            <div className={`p-1 rounded-xl transition ${activePage === "Projects" ? "bg-amber-400/15" : ""}`}>
-              <Building2 size={20} />
+            <div className={`p-1 rounded-xl transition ${activePage === "Site Daily Cash" ? "bg-amber-400/15" : ""}`}>
+              <Wallet size={19} />
             </div>
-            <span className="text-[10px] tracking-tight mt-0.5">{t.projects}</span>
+            <span className="text-[10px] tracking-tight mt-0.5">{lang === "gu" ? "દૈનિક રોકડ" : lang === "hi" ? "दैनिक रोकड़" : "Daily Cash"}</span>
           </button>
 
-          {/* Center Floating Action Button (FAB) for Instant Fast Entry */}
+          {/* Center Floating Action Button (FAB) */}
           <div className="relative -top-4 flex items-center justify-center">
             <button
               type="button"
               onClick={() => setShowQuickSheet(prev => !prev)}
-              aria-label="Quick Site Entry"
-              className={`flex h-13 w-13 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 to-amber-400 text-slate-950 font-black shadow-lg shadow-amber-500/30 ring-4 ring-slate-950 transition active:scale-95 ${
+              aria-label="Quick Entry"
+              className={`flex h-12 w-12 items-center justify-center rounded-full bg-gradient-to-tr from-amber-500 to-amber-400 text-slate-950 font-black shadow-lg shadow-amber-500/30 ring-4 ring-slate-950 transition active:scale-95 ${
                 showQuickSheet ? "rotate-45" : ""
               }`}
             >
-              <Plus size={28} />
+              <Plus size={26} />
             </button>
           </div>
 
-          {/* Expenses Tab */}
+          {/* Bank Payments Tab */}
           <button
             type="button"
-            onClick={() => setActivePage("Expenses")}
-            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition ${
-              activePage === "Expenses" ? "text-amber-400 font-bold" : "text-slate-400 hover:text-slate-200"
+            onClick={() => setActivePage("Bank Payments")}
+            className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition ${
+              activePage === "Bank Payments" ? "text-amber-400 font-bold" : "text-slate-400 hover:text-slate-200"
             }`}
           >
-            <div className={`p-1 rounded-xl transition ${activePage === "Expenses" ? "bg-amber-400/15" : ""}`}>
-              <WalletCards size={20} />
+            <div className={`p-1 rounded-xl transition ${activePage === "Bank Payments" ? "bg-amber-400/15" : ""}`}>
+              <Landmark size={19} />
             </div>
-            <span className="text-[10px] tracking-tight mt-0.5">{t.expenses}</span>
+            <span className="text-[10px] tracking-tight mt-0.5">{lang === "gu" ? "બેંક પેમેન્ટ" : lang === "hi" ? "बैंक भुगतान" : "Bank"}</span>
           </button>
 
-          {/* More / Menu Drawer Trigger */}
+          {/* GST Bills Tab */}
           <button
             type="button"
-            onClick={() => setShowMoreMenu(prev => !prev)}
-            className={`flex flex-col items-center justify-center py-1 px-2.5 rounded-xl transition ${
-              showMoreMenu || !["Dashboard", "Projects", "Expenses", "Income & Bills"].includes(activePage)
-                ? "text-amber-400 font-bold"
-                : "text-slate-400 hover:text-slate-200"
+            onClick={() => setActivePage("GST Bills")}
+            className={`flex flex-col items-center justify-center py-1 px-2 rounded-xl transition ${
+              activePage === "GST Bills" ? "text-amber-400 font-bold" : "text-slate-400 hover:text-slate-200"
             }`}
           >
-            <div
-              className={`p-1 rounded-xl transition ${
-                showMoreMenu || !["Dashboard", "Projects", "Expenses", "Income & Bills"].includes(activePage)
-                  ? "bg-amber-400/15"
-                  : ""
-              }`}
-            >
-              <Menu size={20} />
+            <div className={`p-1 rounded-xl transition ${activePage === "GST Bills" ? "bg-amber-400/15" : ""}`}>
+              <FileCheck size={19} />
             </div>
-            <span className="text-[10px] tracking-tight mt-0.5">
-              {lang === "gu" ? "મેનૂ" : lang === "hi" ? "अन्य" : "Menu"}
-            </span>
+            <span className="text-[10px] tracking-tight mt-0.5">{lang === "gu" ? "GST બીલ" : lang === "hi" ? "GST बिल" : "GST Bills"}</span>
           </button>
         </div>
       </nav>
 
-      {/* ─── Mobile Fast Entry Bottom Sheet ──────────────────────────────── */}
+      {/* ─── Mobile Fast Entry Sheet ────────────────────────────────────── */}
       {showQuickSheet && (
-        <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-slate-900 border-t border-slate-800 rounded-t-3xl p-5 space-y-4 shadow-2xl animate-in slide-in-from-bottom duration-250">
+        <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end bg-slate-950/75 backdrop-blur-sm animate-in fade-in duration-150">
+          <div className="bg-slate-900 border-t border-slate-800 rounded-t-3xl p-5 space-y-4 shadow-2xl animate-in slide-in-from-bottom duration-200">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-2">
-                <div className="h-8 w-8 rounded-xl bg-amber-400 text-slate-950 flex items-center justify-center font-black text-xs">
-                  KSG
-                </div>
-                <div>
-                  <h3 className="text-sm font-black text-white">Fast Site Action &amp; Data Entry</h3>
-                  <p className="text-[11px] text-amber-400">Select what you want to log right now</p>
-                </div>
+              <div>
+                <h3 className="text-sm font-black text-white">{t.quickAdd}</h3>
+                <p className="text-[11px] text-amber-400">Select what you want to add right now</p>
               </div>
               <button
                 onClick={() => setShowQuickSheet(false)}
@@ -160,275 +129,72 @@ export function MobileNavBar({
             </div>
 
             <div className="grid grid-cols-2 gap-2.5">
-              {/* Daily Expense & Camera Bill */}
+              {/* Cash In (જમા) */}
               <button
                 type="button"
                 onClick={() => {
                   setShowQuickSheet(false);
-                  onOpenExpenseModal();
+                  onOpenCashInModal();
                 }}
-                className="flex flex-col items-start p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-left transition active:scale-95"
-              >
-                <div className="h-9 w-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-2">
-                  <Camera size={18} />
-                </div>
-                <p className="text-xs font-bold text-white leading-tight">Daily Expense</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">Attach bill photo</p>
-              </button>
-
-              {/* Generate RA Bill */}
-              <button
-                type="button"
-                onClick={() => {
-                  setShowQuickSheet(false);
-                  onOpenBillModal();
-                }}
-                className="flex flex-col items-start p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-left transition active:scale-95"
+                className="flex flex-col items-start p-3.5 rounded-2xl bg-emerald-500/15 hover:bg-emerald-500/25 border border-emerald-500/30 text-left transition active:scale-95"
               >
                 <div className="h-9 w-9 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center mb-2">
-                  <ReceiptIndianRupee size={18} />
+                  <ArrowDownLeft size={20} />
                 </div>
-                <p className="text-xs font-bold text-white leading-tight">Govt RA Bill</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">Itemized invoice</p>
+                <p className="text-xs font-bold text-white leading-tight">{t.addCashIn}</p>
+                <p className="text-[10px] text-emerald-400 mt-0.5">Office to Site / Supervisor</p>
               </button>
 
-              {/* Labour Wage */}
+              {/* Cash Out (ઉધાર) */}
               <button
                 type="button"
                 onClick={() => {
                   setShowQuickSheet(false);
-                  onOpenLabourModal();
+                  onOpenCashOutModal();
                 }}
-                className="flex flex-col items-start p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-left transition active:scale-95"
+                className="flex flex-col items-start p-3.5 rounded-2xl bg-red-500/15 hover:bg-red-500/25 border border-red-500/30 text-left transition active:scale-95"
               >
-                <div className="h-9 w-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center mb-2">
-                  <Users size={18} />
+                <div className="h-9 w-9 rounded-xl bg-red-500/20 text-red-400 flex items-center justify-center mb-2">
+                  <ArrowUpRight size={20} />
                 </div>
-                <p className="text-xs font-bold text-white leading-tight">Labour Wages</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">Artisans &amp; staff</p>
+                <p className="text-xs font-bold text-white leading-tight">{t.addCashOut}</p>
+                <p className="text-[10px] text-red-400 mt-0.5">JCB, Labour, Material, Kharchi</p>
               </button>
 
-              {/* Material Stock */}
-              <button
-                type="button"
-                onClick={() => {
-                  setShowQuickSheet(false);
-                  onOpenMaterialModal();
-                }}
-                className="flex flex-col items-start p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-left transition active:scale-95"
-              >
-                <div className="h-9 w-9 rounded-xl bg-purple-500/20 text-purple-400 flex items-center justify-center mb-2">
-                  <Package size={18} />
-                </div>
-                <p className="text-xs font-bold text-white leading-tight">Material Stock</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">Cement, Steel, Sand</p>
-              </button>
-
-              {/* Machinery Log */}
-              <button
-                type="button"
-                onClick={() => {
-                  setShowQuickSheet(false);
-                  onOpenMachineryModal();
-                }}
-                className="flex flex-col items-start p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-left transition active:scale-95"
-              >
-                <div className="h-9 w-9 rounded-xl bg-orange-500/20 text-orange-400 flex items-center justify-center mb-2">
-                  <Truck size={18} />
-                </div>
-                <p className="text-xs font-bold text-white leading-tight">Machinery Log</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">JCB, Mixer, Tractor</p>
-              </button>
-
-              {/* Daily Site Progress Report */}
-              <button
-                type="button"
-                onClick={() => {
-                  setShowQuickSheet(false);
-                  onOpenReportModal();
-                }}
-                className="flex flex-col items-start p-3 rounded-2xl bg-white/5 hover:bg-white/10 border border-white/10 text-left transition active:scale-95"
-              >
-                <div className="h-9 w-9 rounded-xl bg-sky-500/20 text-sky-400 flex items-center justify-center mb-2">
-                  <FileText size={18} />
-                </div>
-                <p className="text-xs font-bold text-white leading-tight">Daily DPR Log</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">Site progress &amp; staff</p>
-              </button>
-
-              {/* Issue Funds (Admin) */}
-              {isAdmin && onOpenTransferModal && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setShowQuickSheet(false);
-                    onOpenTransferModal();
-                  }}
-                  className="flex flex-col items-start p-3 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-left transition active:scale-95 col-span-2"
-                >
-                  <div className="h-9 w-9 rounded-xl bg-amber-500 text-slate-950 flex items-center justify-center mb-2 font-black">
-                    <Plus size={18} />
-                  </div>
-                  <p className="text-xs font-bold text-amber-400 leading-tight">Issue Funds to Supervisor</p>
-                  <p className="text-[10px] text-slate-300 mt-0.5">Credit supervisor digital petty cash wallet</p>
-                </button>
-              )}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ─── Mobile Full Menu Drawer ──────────────────────────────────────── */}
-      {showMoreMenu && (
-        <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end bg-slate-950/70 backdrop-blur-sm animate-in fade-in duration-200">
-          <div className="bg-slate-950 border-t border-slate-800 rounded-t-3xl p-5 space-y-4 shadow-2xl max-h-[85vh] overflow-y-auto animate-in slide-in-from-bottom duration-250">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-              <div className="flex items-center gap-3">
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white p-1 border border-slate-700 shadow-sm">
-                  <img src="/logo.png" alt="KS" className="h-full w-full object-contain" />
-                </div>
-                <div>
-                  <h3 className="text-sm font-black text-white">{currentUser.name}</h3>
-                  <p className="text-xs text-amber-400 font-semibold">{isAdmin ? t.adminRole : t.supervisorRole}</p>
-                </div>
-              </div>
-              <button
-                onClick={() => setShowMoreMenu(false)}
-                className="p-1.5 rounded-full bg-white/10 text-slate-400 hover:text-white"
-              >
-                <X size={18} />
-              </button>
-            </div>
-
-            {/* Menu Items List */}
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              {/* Petty Cash & Wallets Tab */}
-              <button
-                type="button"
-                onClick={() => {
-                  setActivePage("Petty Cash & Wallets");
-                  setShowMoreMenu(false);
-                }}
-                className="flex items-center gap-2.5 p-3 rounded-xl bg-amber-500/15 hover:bg-amber-500/25 text-amber-300 font-bold text-left border border-amber-500/30 col-span-2"
-              >
-                <WalletCards size={18} className="text-amber-400" />
-                <div>
-                  <p className="leading-tight">{t.pettyCashWallets || "Petty Cash & Wallets"}</p>
-                  <p className="text-[10px] text-slate-400 font-normal mt-0.5">Live Cash in Hand &amp; Master Ledger</p>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setActivePage("Income & Bills");
-                  setShowMoreMenu(false);
-                }}
-                className="flex items-center gap-2.5 p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold text-left border border-white/5"
-              >
-                <ReceiptIndianRupee size={16} className="text-amber-400" />
-                <span>Govt RA Bills</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setActivePage("Labour");
-                  setShowMoreMenu(false);
-                }}
-                className="flex items-center gap-2.5 p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold text-left border border-white/5"
-              >
-                <Users size={16} className="text-blue-400" />
-                <span>{t.labour}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setActivePage("Material & Stock");
-                  setShowMoreMenu(false);
-                }}
-                className="flex items-center gap-2.5 p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold text-left border border-white/5"
-              >
-                <Package size={16} className="text-purple-400" />
-                <span>{t.materialStock}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setActivePage("Machinery");
-                  setShowMoreMenu(false);
-                }}
-                className="flex items-center gap-2.5 p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold text-left border border-white/5"
-              >
-                <Truck size={16} className="text-orange-400" />
-                <span>{t.machinery}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setActivePage("Daily Reports");
-                  setShowMoreMenu(false);
-                }}
-                className="flex items-center gap-2.5 p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold text-left border border-white/5"
-              >
-                <FileText size={16} className="text-sky-400" />
-                <span>{t.dailyReports}</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => {
-                  setActivePage("Reports");
-                  setShowMoreMenu(false);
-                }}
-                className="flex items-center gap-2.5 p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold text-left border border-white/5"
-              >
-                <BarChart3 size={16} className="text-emerald-400" />
-                <span>{t.reports}</span>
-              </button>
-
+              {/* Direct Bank Payment */}
               {isAdmin && (
                 <button
                   type="button"
                   onClick={() => {
-                    setActivePage("User Management");
-                    setShowMoreMenu(false);
+                    setShowQuickSheet(false);
+                    onOpenBankPaymentModal();
                   }}
-                  className="flex items-center gap-2.5 p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold text-left border border-white/5"
+                  className="flex flex-col items-start p-3.5 rounded-2xl bg-blue-500/15 hover:bg-blue-500/25 border border-blue-500/30 text-left transition active:scale-95"
                 >
-                  <Shield size={16} className="text-amber-400" />
-                  <span>User &amp; Roles</span>
+                  <div className="h-9 w-9 rounded-xl bg-blue-500/20 text-blue-400 flex items-center justify-center mb-2">
+                    <Landmark size={20} />
+                  </div>
+                  <p className="text-xs font-bold text-white leading-tight">{t.addBankPayment}</p>
+                  <p className="text-[10px] text-blue-400 mt-0.5">Party RTGS / NEFT / Cheque</p>
                 </button>
               )}
 
+              {/* GST Bill */}
               <button
                 type="button"
                 onClick={() => {
-                  setActivePage("Settings");
-                  setShowMoreMenu(false);
+                  setShowQuickSheet(false);
+                  onOpenGstBillModal();
                 }}
-                className="flex items-center gap-2.5 p-3 rounded-xl bg-white/5 hover:bg-white/10 text-white font-bold text-left border border-white/5"
+                className={`flex flex-col items-start p-3.5 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-left transition active:scale-95 ${
+                  !isAdmin ? "col-span-2" : ""
+                }`}
               >
-                <HardHat size={16} className="text-slate-400" />
-                <span>Contractor Profile</span>
-              </button>
-            </div>
-
-            {/* Logout Button */}
-            <div className="pt-2 border-t border-slate-800">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowMoreMenu(false);
-                  onLogout();
-                }}
-                className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-red-500/15 hover:bg-red-500/25 text-red-300 font-bold text-xs border border-red-500/20 transition"
-              >
-                <LogOut size={15} />
-                <span>{t.logout}</span>
+                <div className="h-9 w-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-2">
+                  <FileCheck size={20} />
+                </div>
+                <p className="text-xs font-bold text-white leading-tight">{t.addGstBill}</p>
+                <p className="text-[10px] text-amber-400 mt-0.5">Tax invoice with auto GST</p>
               </button>
             </div>
           </div>

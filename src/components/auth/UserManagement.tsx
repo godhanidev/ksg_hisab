@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Shield, HardHat, Plus, Edit, Trash2, X, Check, Lock, User, Phone, MapPin } from "lucide-react";
+import { Shield, HardHat, Plus, Edit, Trash2, Check, Lock, User, Phone, MapPin } from "lucide-react";
 import { Language, Project, Role, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
 import { ModalWrapper } from "../common/ModalWrapper";
@@ -10,11 +10,6 @@ type UserManagementProps = {
   projects: Project[];
   lang: Language;
 };
-
-const ALL_MODULES = [
-  "Dashboard", "Projects", "Income & Bills", "Expenses", "Labour",
-  "Material & Stock", "Machinery", "Daily Reports", "Reports"
-];
 
 export function UserManagement({
   users,
@@ -33,7 +28,6 @@ export function UserManagement({
     role: Role;
     phone: string;
     assignedProjects: string[];
-    enabledModules: string[];
   }>({
     username: "",
     password: "",
@@ -41,7 +35,6 @@ export function UserManagement({
     role: "supervisor",
     phone: "",
     assignedProjects: [],
-    enabledModules: ["Dashboard", "Projects", "Expenses", "Labour", "Material & Stock", "Daily Reports"],
   });
 
   const openAdd = () => {
@@ -53,7 +46,6 @@ export function UserManagement({
       role: "supervisor",
       phone: "",
       assignedProjects: projects.length > 0 ? [projects[0].name] : [],
-      enabledModules: ["Dashboard", "Projects", "Expenses", "Labour", "Material & Stock", "Daily Reports"],
     });
     setShowModal(true);
   };
@@ -67,7 +59,6 @@ export function UserManagement({
       role: u.role,
       phone: u.phone || "",
       assignedProjects: [...u.assignedProjects],
-      enabledModules: [...u.enabledModules],
     });
     setShowModal(true);
   };
@@ -78,15 +69,6 @@ export function UserManagement({
       assignedProjects: f.assignedProjects.includes(p)
         ? f.assignedProjects.filter(x => x !== p)
         : [...f.assignedProjects, p],
-    }));
-  };
-
-  const toggleModule = (m: string) => {
-    setForm(f => ({
-      ...f,
-      enabledModules: f.enabledModules.includes(m)
-        ? f.enabledModules.filter(x => x !== m)
-        : [...f.enabledModules, m],
     }));
   };
 
@@ -113,12 +95,12 @@ export function UserManagement({
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-900">{t.userManagement}</h1>
           <p className="text-xs sm:text-sm text-slate-500">
-            Create supervisor accounts, assign specific construction sites &amp; enforce RBAC access restrictions.
+            Create supervisor accounts, assign specific construction sites &amp; enforce site-level access isolation.
           </p>
         </div>
 
@@ -193,7 +175,7 @@ export function UserManagement({
               </div>
 
               <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-[11px] text-slate-400 font-mono">PWD / Site Staff</span>
+                <span className="text-[11px] text-slate-400 font-mono">Site Supervisor</span>
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => openEdit(u)}
@@ -220,14 +202,12 @@ export function UserManagement({
 
       {/* User Form Modal */}
       {showModal && (
-        <ModalWrapper onClose={() => setShowModal(false)} maxWidth="max-w-xl">
-          <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-5">
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">{editUser ? "Edit User Access" : "Add New User Account"}</h2>
-              <p className="text-xs text-slate-500">Configure role &amp; site access permissions</p>
-            </div>
-          </div>
-
+        <ModalWrapper
+          isOpen={showModal}
+          onClose={() => setShowModal(false)}
+          title={editUser ? "Edit User Access" : "Add New User Account"}
+          subtitle="Configure role &amp; site access permissions"
+        >
           <form onSubmit={handleSave} className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
@@ -237,7 +217,7 @@ export function UserManagement({
                   required
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  placeholder="e.g. Ramesh Patel (Supervisor)"
+                  placeholder="e.g. Rajubhai (Supervisor)"
                   className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-slate-800"
                 />
               </div>
@@ -250,7 +230,7 @@ export function UserManagement({
                   className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold outline-none focus:border-slate-800"
                 >
                   <option value="supervisor">Site Supervisor (Restricted to assigned site)</option>
-                  <option value="admin">Owner / Admin (Full Access to all sites &amp; P&amp;L)</option>
+                  <option value="admin">Owner / Admin (Full Access to all sites)</option>
                 </select>
               </div>
             </div>
@@ -263,7 +243,7 @@ export function UserManagement({
                   required
                   value={form.username}
                   onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
-                  placeholder="e.g. ramesh123"
+                  placeholder="e.g. rajubhai"
                   className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-slate-800"
                 />
               </div>
@@ -275,7 +255,7 @@ export function UserManagement({
                   required
                   value={form.password}
                   onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                  placeholder="password123"
+                  placeholder="raju@2026"
                   className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-slate-800"
                 />
               </div>

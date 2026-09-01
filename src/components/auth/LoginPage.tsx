@@ -64,18 +64,21 @@ export function LoginPage({ users, onLogin, lang, onLanguageChange }: LoginPageP
           <div className="inline-flex items-center gap-1 rounded-full bg-white/10 p-1 border border-white/10 mt-3 backdrop-blur">
             <Globe size={12} className="text-slate-400 ml-2 mr-0.5" />
             <button
+              type="button"
               onClick={() => onLanguageChange("en")}
               className={`px-2.5 py-0.5 text-[11px] font-bold rounded-full transition ${lang === "en" ? "bg-amber-400 text-slate-950" : "text-slate-300 hover:text-white"}`}
             >
               English
             </button>
             <button
+              type="button"
               onClick={() => onLanguageChange("gu")}
               className={`px-2.5 py-0.5 text-[11px] font-bold rounded-full transition ${lang === "gu" ? "bg-amber-400 text-slate-950" : "text-slate-300 hover:text-white"}`}
             >
               ગુજરાતી
             </button>
             <button
+              type="button"
               onClick={() => onLanguageChange("hi")}
               className={`px-2.5 py-0.5 text-[11px] font-bold rounded-full transition ${lang === "hi" ? "bg-amber-400 text-slate-950" : "text-slate-300 hover:text-white"}`}
             >
@@ -96,7 +99,7 @@ export function LoginPage({ users, onLogin, lang, onLanguageChange }: LoginPageP
                   required
                   value={username}
                   onChange={e => setUsername(e.target.value)}
-                  placeholder="admin / supervisor1"
+                  placeholder="admin / rajubhai"
                   className="w-full rounded-xl bg-white/10 border border-white/15 text-white placeholder-slate-500 pl-10 pr-4 py-2.5 text-sm outline-none focus:border-amber-400 focus:bg-white/15 transition"
                 />
               </div>
@@ -150,62 +153,35 @@ export function LoginPage({ users, onLogin, lang, onLanguageChange }: LoginPageP
             </button>
           </form>
 
-          {/* Quick Demo Role Accounts */}
+          {/* Quick Demo Accounts (RBAC) */}
           <div className="mt-6 pt-5 border-t border-white/10">
             <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 text-center mb-2.5">
               1-Click Demo Accounts (RBAC)
             </p>
             <div className="space-y-2">
-              <button
-                type="button"
-                onClick={() => handleQuickLogin(users[0])}
-                className="w-full flex items-center justify-between rounded-xl bg-white/5 hover:bg-white/10 p-2.5 text-left border border-white/10 transition"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="h-7 w-7 rounded-lg bg-white p-0.5 flex items-center justify-center overflow-hidden shrink-0">
-                    <img src="/logo.png" alt="KS" className="h-full w-full object-contain" />
+              {users.slice(0, 3).map(u => (
+                <button
+                  key={u.id}
+                  type="button"
+                  onClick={() => handleQuickLogin(u)}
+                  className="w-full flex items-center justify-between rounded-xl bg-white/5 hover:bg-white/10 p-2.5 text-left border border-white/10 transition"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="h-7 w-7 rounded-lg bg-white p-0.5 flex items-center justify-center overflow-hidden shrink-0">
+                      <img src="/logo.png" alt="KS" className="h-full w-full object-contain" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-white">{u.name}</p>
+                      <p className="text-[10px] text-slate-400 truncate max-w-[200px]">
+                        {u.role === "admin" ? "All Sites • Head Office" : u.assignedProjects[0] || "Site"}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-xs font-bold text-white">Owner / Admin</p>
-                    <p className="text-[10px] text-slate-400">All Sites &bull; Full P&amp;L</p>
-                  </div>
-                </div>
-                <span className="text-[10px] font-mono text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded">admin</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickLogin(users[1])}
-                className="w-full flex items-center justify-between rounded-xl bg-white/5 hover:bg-white/10 p-2.5 text-left border border-white/10 transition"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="h-7 w-7 rounded-lg bg-white p-0.5 flex items-center justify-center overflow-hidden shrink-0">
-                    <img src="/logo.png" alt="KS" className="h-full w-full object-contain" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-white">Supervisor 1 (Ramesh)</p>
-                    <p className="text-[10px] text-slate-400">Assigned: Check Dam Amreli</p>
-                  </div>
-                </div>
-                <span className="text-[10px] font-mono text-blue-400 bg-blue-400/10 px-2 py-0.5 rounded">supervisor1</span>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleQuickLogin(users[2])}
-                className="w-full flex items-center justify-between rounded-xl bg-white/5 hover:bg-white/10 p-2.5 text-left border border-white/10 transition"
-              >
-                <div className="flex items-center gap-2">
-                  <div className="h-7 w-7 rounded-lg bg-white p-0.5 flex items-center justify-center overflow-hidden shrink-0">
-                    <img src="/logo.png" alt="KS" className="h-full w-full object-contain" />
-                  </div>
-                  <div>
-                    <p className="text-xs font-bold text-white">Supervisor 2 (Suresh)</p>
-                    <p className="text-[10px] text-slate-400">Rajkot &amp; Bhavnagar Sites</p>
-                  </div>
-                </div>
-                <span className="text-[10px] font-mono text-sky-400 bg-sky-400/10 px-2 py-0.5 rounded">supervisor2</span>
-              </button>
+                  <span className="text-[10px] font-mono text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded">
+                    {u.username}
+                  </span>
+                </button>
+              ))}
             </div>
           </div>
         </div>

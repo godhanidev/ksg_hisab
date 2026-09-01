@@ -2,13 +2,22 @@
 
 import { OfflineQueueItem } from "../types";
 
-const QUEUE_KEY = "ksg_offline_queue_v3";
-const LANG_KEY = "ksg_lang_v3";
-const USER_KEY = "ksg_user_session_v3";
+const STORAGE_VERSION = "v5";
+const QUEUE_KEY = `ksg_offline_queue_${STORAGE_VERSION}`;
+const LANG_KEY = `ksg_lang_${STORAGE_VERSION}`;
+const USER_KEY = `ksg_user_session_${STORAGE_VERSION}`;
+
+// Automatically purge legacy version caches
+if (typeof localStorage !== "undefined") {
+  try {
+    const legacyKeys = ["ksg_daily_cash_v4", "ksg_bank_payments_v4", "ksg_gst_bills_v4", "ksg_projects_v4", "ksg_users_v4"];
+    legacyKeys.forEach(k => localStorage.removeItem(k));
+  } catch {}
+}
 
 export function loadStoredCollection<T>(collectionKey: string, fallback: T): T {
   try {
-    const raw = localStorage.getItem(`ksg_${collectionKey}_v3`);
+    const raw = localStorage.getItem(`ksg_${collectionKey}_${STORAGE_VERSION}`);
     if (!raw) return fallback;
     const parsed = JSON.parse(raw);
     if (Array.isArray(fallback) && !Array.isArray(parsed)) {
@@ -23,7 +32,7 @@ export function loadStoredCollection<T>(collectionKey: string, fallback: T): T {
 
 export function saveStoredCollection(collectionKey: string, data: any): void {
   try {
-    localStorage.setItem(`ksg_${collectionKey}_v3`, JSON.stringify(data));
+    localStorage.setItem(`ksg_${collectionKey}_${STORAGE_VERSION}`, JSON.stringify(data));
   } catch (err) {
     console.error(`Failed to save ${collectionKey}:`, err);
   }
@@ -79,7 +88,7 @@ export function clearOfflineQueue(): void {
 export function getStoredLanguage(): "en" | "gu" | "hi" {
   const lang = localStorage.getItem(LANG_KEY);
   if (lang === "gu" || lang === "hi" || lang === "en") return lang;
-  return "en";
+  return "gu"; // Default to Gujarati
 }
 
 export function setStoredLanguage(lang: "en" | "gu" | "hi"): void {

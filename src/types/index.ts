@@ -1,4 +1,4 @@
-// ─── KSG Hisab Type Definitions ───────────────────────────────────────────────
+// ─── KSG Hisab Type Definitions (3 Core Modules Architecture) ─────────────────
 
 export type Language = "en" | "gu" | "hi";
 
@@ -11,7 +11,6 @@ export type UserAccount = {
   name: string;
   role: Role;
   assignedProjects: string[]; // empty = all (admin), specific names for supervisors
-  enabledModules: string[];   // which sidebar items user can see
   phone?: string;
 };
 
@@ -41,183 +40,67 @@ export type Project = {
   notes?: string;
 };
 
-export type ExpenseCategory =
-  | "Material"
-  | "Labour"
-  | "Machinery"
-  | "Fuel"
-  | "Transport"
-  | "Subcontractor"
-  | "Govt Royalty & Fees"
-  | "Food & Refreshment"
-  | "Site Maintenance"
-  | "Other";
+// ── 1. Site Daily Cash / Expense (Petty Cash & Supervisor Wallet) ─────────────
+export type CashTransactionType = "cash_in" | "cash_out";
 
-export type PaymentSource = "Supervisor Wallet" | "Direct Office Payment";
-
-export type Expense = {
+export type CashTransaction = {
   id: number;
   date: string;
-  description: string;
+  type: CashTransactionType; // "cash_in" = જમા (Office to Supervisor), "cash_out" = ઉધાર / ખર્ચ (Site Expense)
+  details: string;           // e.g. "Cash to Rajubhai" or "JCB Bhut Pagla", "MP Labour Kharchi"
+  amount: number;            // Amount in INR
   project: string;
-  category: ExpenseCategory;
-  subCategory?: string;
-  vendor: string;
-  quantity?: number;
-  unit?: string;
-  unitRate?: number;
-  amount: number;
-  paymentMode: "Cash" | "Bank Transfer / RTGS" | "Cheque" | "UPI" | "Credit / Udhar";
-  paymentSource?: PaymentSource; // "Supervisor Wallet" (default) or "Direct Office Payment"
+  category?: string;         // e.g. "JCB", "Labour", "Tractor", "Material", "Pooja", "Other"
   supervisorId?: number;
   supervisorName?: string;
-  status: "Paid" | "Pending";
-  billNumber?: string;
+  paymentMode: "Cash" | "UPI" | "Cheque";
+  voucherNo?: string;
   attachments?: Attachment[];
-  enteredBy?: string;
-  syncedOffline?: boolean;
-};
-
-export type BillLineItem = {
-  id: string;
-  itemNo: string; // e.g. "Item 1", "SOR-14.2"
-  description: string; // Description of work / measurement
-  unit: string; // "Cu.M", "Sq.M", "R.M", "MT", "Nos", "LS", "Bags"
-  quantity: number;
-  rate: number;
-  amount: number;
-};
-
-export type BillDeductions = {
-  securityDepositPercent: number; // e.g. 5%
-  securityDepositAmount: number;
-  tdsPercent: number; // e.g. 2%
-  tdsAmount: number;
-  gstTdsPercent: number; // e.g. 2%
-  gstTdsAmount: number;
-  labourCessPercent: number; // e.g. 1%
-  labourCessAmount: number;
-  royaltyOrPenalty: number;
-  otherDeduction: number;
-  totalDeductions: number;
-};
-
-export type Bill = {
-  id: number;
-  billNo: string; // e.g. "KSG/RA-01/2026-27"
-  billType?: "RA Bill" | "Final Bill" | "Advance Bill" | "Tax Invoice" | "Material Supply Bill" | "Subcontractor Bill";
-  raBillNo?: string; // e.g. "1st R.A. Bill"
-  date: string;
-  project: string;
-  department?: string; // e.g. "Irrigation Dept"
-  workOrderNo?: string; // Tender / Work Order No
-  mbBookNo?: string; // Measurement Book reference
-  description: string;
-  items?: BillLineItem[];
-  grossAmount?: number;
-  gstPercent?: number; // 18%
-  gstAmount?: number;
-  deductions?: BillDeductions;
-  netPayable?: number;
-  amount: number; // Total billed / gross
-  received: number; // Cleared from Govt Treasury
-  status: "Received" | "Partial" | "Pending";
-  paymentReference?: string;
-  tenderItemRef?: string;
-  attachments?: Attachment[];
-  syncedOffline?: boolean;
+  enteredBy: string;
   notes?: string;
 };
 
-export type LabourWorker = {
-  id: number;
-  name: string;
-  role: "Mason" | "Carpenter" | "Helper" | "Barbender" | "Welder" | "Electrician" | "Plumber" | "Supervisor";
-  project: string;
-  phone: string;
-  dailyWage: number;
-  daysWorked: number;
-  totalEarned: number;
-  paid: number;
-  status: "Active" | "Inactive";
-};
-
-export type MaterialCategory = "Binding" | "Steel" | "Aggregate" | "Masonry" | "Plumbing" | "Electrical" | "Finishing" | "Other";
-
-export type MaterialItem = {
-  id: number;
-  name: string;
-  category: MaterialCategory;
-  unit: string;
-  quantity: number;
-  minStock: number;
-  pricePerUnit: number;
-  project: string;
-  lastUpdated: string;
-  supplierName?: string;
-};
-
-export type Machinery = {
-  id: number;
-  name: string;
-  type: "Excavator (JCB)" | "Concrete Mixer" | "Tractor & Trolley" | "Vibrator / Compactor" | "Water Pump" | "Crane" | "Generator" | "Dumper" | "Other";
-  registrationNo: string;
-  project: string;
-  dailyRate: number;
-  daysUsed: number;
-  totalCost: number;
-  status: "In Use" | "Available" | "Under Maintenance";
-  operatorName?: string;
-};
-
-export type DailyReport = {
+// ── 2. Direct Office Bank Payment (Bank RTGS / Transfers to Parties) ─────────
+export type BankPayment = {
   id: number;
   date: string;
+  partyName: string;         // e.g. "Vrajesh Traders", "Ashish Buildcon", "Shree Vrajesh Steel"
+  amount: number;            // Amount in INR
   project: string;
-  reportedBy: string;
-  labourCount: number;
-  workDone: string;
-  materialUsed: string;
-  issues: string;
-  progress: number;
-  weather?: "Sunny / Clear" | "Rainy / Wet" | "Cloudy" | "Extreme Heat";
+  paymentMode: "RTGS / NEFT" | "Cheque" | "Net Banking" | "Direct Transfer";
+  referenceNo?: string;      // UTR or Cheque No
+  category?: string;         // e.g. "Material", "Subcontractor", "Steel", "Transport"
   attachments?: Attachment[];
-  syncedOffline?: boolean;
+  enteredBy: string;
+  notes?: string;
 };
 
+// ── 3. GST Bills (Tax Invoices with Auto Calculations) ────────────────────────
+export type GSTBill = {
+  id: number;
+  date: string;
+  billNo: string;            // e.g. "413", "25-26/4128"
+  partyName: string;         // e.g. "Khodiyar Sales", "Shree Vrajesh Steel Traders"
+  product: string;           // e.g. "HDPE Pipe", "Steel", "Cement"
+  project: string;
+  basicAmount: number;       // Base amount before tax
+  gstRate: number;           // GST % (e.g. 18, 5, 12, 28)
+  gstAmount: number;         // Auto-calculated: basicAmount * (gstRate / 100)
+  totalAmount: number;       // Auto-calculated: basicAmount + gstAmount
+  status: "Paid" | "Pending" | "Partial";
+  paymentReference?: string;
+  attachments?: Attachment[];
+  notes?: string;
+  enteredBy: string;
+};
+
+// ── Offline Sync Queue ────────────────────────────────────────────────────────
 export type OfflineQueueItem = {
   id: string;
-  type: "expense" | "bill" | "labour" | "material" | "machinery" | "report";
+  module: "daily_cash" | "bank_payment" | "gst_bill" | "project";
   action: "create" | "update" | "delete";
   data: any;
   timestamp: number;
 };
 
-export type FundTransfer = {
-  id: number;
-  transferNo: string; // e.g. "FT-2026-001"
-  date: string;
-  supervisorId: number;
-  supervisorName: string;
-  project: string;
-  amount: number;
-  paymentMode: "Cash" | "Bank Transfer (NEFT/RTGS)" | "UPI" | "Cheque";
-  referenceNo?: string; // UTR or Cheque No or UPI Reference ID
-  proofAttachment?: Attachment;
-  notes?: string;
-  transferredBy: string; // Admin name
-  transferredAt: string;
-};
-
-export type WalletSummary = {
-  supervisorId: number;
-  supervisorName: string;
-  phone?: string;
-  assignedProjects: string[];
-  totalReceived: number; // Total credits from fund transfers
-  totalSpent: number;    // Total debits from supervisor wallet expenses
-  balance: number;       // Current cash in hand = totalReceived - totalSpent
-  lastTransferDate?: string;
-  lastExpenseDate?: string;
-};
 

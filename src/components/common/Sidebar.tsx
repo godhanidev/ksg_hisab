@@ -1,19 +1,12 @@
 import React from "react";
 import {
   LayoutDashboard,
+  Wallet,
+  Landmark,
+  FileCheck,
   Building2,
-  ReceiptIndianRupee,
-  WalletCards,
   Users,
-  Package,
-  Truck,
-  FileText,
-  BarChart3,
-  Settings,
-  Shield,
-  HardHat,
   ChevronRight,
-  Layers,
 } from "lucide-react";
 import { Language, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
@@ -30,23 +23,17 @@ type SidebarProps = {
 type MenuItemConfig = {
   key: string;
   icon: React.ElementType;
-  translateKey: string;
+  translateKey: keyof ReturnType<typeof getTranslation>;
   adminOnly?: boolean;
 };
 
 export const MENU_CONFIG: MenuItemConfig[] = [
   { key: "Dashboard", icon: LayoutDashboard, translateKey: "dashboard" },
+  { key: "Site Daily Cash", icon: Wallet, translateKey: "siteDailyCash" },
+  { key: "Bank Payments", icon: Landmark, translateKey: "bankPayments" },
+  { key: "GST Bills", icon: FileCheck, translateKey: "gstBills" },
   { key: "Projects", icon: Building2, translateKey: "projects" },
-  { key: "Income & Bills", icon: ReceiptIndianRupee, translateKey: "incomeBills" },
-  { key: "Expenses", icon: WalletCards, translateKey: "expenses" },
-  { key: "Petty Cash & Wallets", icon: WalletCards, translateKey: "pettyCashWallets" },
-  { key: "Labour", icon: Users, translateKey: "labour" },
-  { key: "Material & Stock", icon: Package, translateKey: "materialStock" },
-  { key: "Machinery", icon: Truck, translateKey: "machinery" },
-  { key: "Daily Reports", icon: FileText, translateKey: "dailyReports" },
-  { key: "Reports", icon: BarChart3, translateKey: "reports" },
-  { key: "User Management", icon: Shield, translateKey: "userManagement", adminOnly: true },
-  { key: "Settings", icon: Settings, translateKey: "settings", adminOnly: true },
+  { key: "User Management", icon: Users, translateKey: "userManagement", adminOnly: true },
 ];
 
 export function Sidebar({
@@ -57,13 +44,12 @@ export function Sidebar({
   currentUser,
   lang,
 }: SidebarProps) {
-  const t = getTranslation(lang) as any;
+  const t = getTranslation(lang);
   const isAdmin = currentUser.role === "admin";
 
   const visibleMenuItems = MENU_CONFIG.filter(item => {
     if (item.adminOnly && !isAdmin) return false;
-    if (isAdmin) return true;
-    return currentUser.enabledModules.includes(item.key);
+    return true;
   });
 
   return (
@@ -87,8 +73,8 @@ export function Sidebar({
               />
             </div>
             <div className="min-w-0">
-              <h1 className="whitespace-nowrap text-lg font-black tracking-wide text-white">K.S.Godhani</h1>
-              <p className="whitespace-nowrap text-[11px] font-medium text-amber-400/90">Civil &amp; Govt Contractor</p>
+              <h1 className="whitespace-nowrap text-lg font-black tracking-wide text-white">{t.appName}</h1>
+              <p className="whitespace-nowrap text-[11px] font-medium text-amber-400/90">{t.appSubtitle}</p>
             </div>
           </div>
         ) : (
@@ -120,7 +106,7 @@ export function Sidebar({
                 setActivePage(key);
                 if (window.innerWidth < 1024) setSidebarOpen(false);
               }}
-              title={label}
+              title={String(label)}
               className={`group flex w-full items-center gap-3.5 rounded-2xl px-3.5 py-3 text-xs sm:text-sm font-semibold transition-all duration-150 ${
                 active
                   ? "bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-bold shadow-lg shadow-amber-500/20"
@@ -130,7 +116,7 @@ export function Sidebar({
               <Icon size={20} className={active ? "text-slate-950" : "text-slate-400 group-hover:text-amber-400 transition"} />
               {sidebarOpen && (
                 <div className="flex flex-1 items-center justify-between truncate text-left">
-                  <span className="truncate">{label}</span>
+                  <span className="truncate">{String(label)}</span>
                   {active && <ChevronRight size={14} className="opacity-80 shrink-0" />}
                 </div>
               )}
@@ -156,7 +142,7 @@ export function Sidebar({
             <div className="min-w-0 flex-1">
               <p className="text-xs font-bold text-white truncate">{currentUser.name}</p>
               <p className="text-[10px] text-amber-400/80 font-semibold truncate">
-                {isAdmin ? t.adminRole : `${t.supervisorRole} (${currentUser.assignedProjects.length} Sites)`}
+                {isAdmin ? t.adminRole : `${t.supervisorRole} (${currentUser.assignedProjects.length > 0 ? currentUser.assignedProjects[0] : "Site"})`}
               </p>
             </div>
           </div>

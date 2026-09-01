@@ -4,7 +4,7 @@ import { Language, Project, UserAccount } from "../../types";
 import { formatINR } from "../../utils/formatters";
 import { getTranslation } from "../../i18n/translations";
 import { StatusBadge } from "../common/StatusBadge";
-import { exportSiteSummaryExcel } from "../../utils/exportUtils";
+import { exportConsolidatedSiteExcel } from "../../utils/exportUtils";
 
 type ProjectsViewProps = {
   projects: Project[];
@@ -40,7 +40,7 @@ export function ProjectsView({
   });
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
       {/* Top Controls Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -48,14 +48,16 @@ export function ProjectsView({
             {t.projects} ({projects.length})
           </h1>
           <p className="text-xs sm:text-sm text-slate-500">
-            {isAdmin ? "Manage all government civil contracts and construction sites." : "Your assigned project sites (Click 360° Hisab to inspect site ledger)."}
+            {isAdmin
+              ? "Manage all government civil contracts and construction sites."
+              : "Your assigned project sites (Click Site 360° to inspect ledger)."}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           {isAdmin && (
             <button
-              onClick={() => exportSiteSummaryExcel(projects, [], [])}
+              onClick={() => exportConsolidatedSiteExcel(projects, [], [], [])}
               className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition shadow-xs"
             >
               <Download size={15} />
@@ -104,18 +106,17 @@ export function ProjectsView({
         </div>
       </div>
 
-      {/* Projects Grid Card View / Table */}
+      {/* Projects Grid / Table */}
       <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[1000px]">
+          <table className="w-full min-w-[900px]">
             <thead className="bg-slate-50 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">
               <tr>
                 <th className="px-6 py-4">Site / Project</th>
                 <th className="px-6 py-4">Govt Department</th>
-                <th className="px-6 py-4">Sanctioned Value</th>
-                <th className="px-6 py-4">Execution Progress</th>
-                <th className="px-6 py-4">Cleared Govt Payment</th>
-                <th className="px-6 py-4">Site Expenses</th>
+                <th className="px-6 py-4">Tender Value</th>
+                <th className="px-6 py-4">Supervisor</th>
+                <th className="px-6 py-4">Work Progress</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-center">360° Site Hisab</th>
               </tr>
@@ -134,6 +135,7 @@ export function ProjectsView({
                   </td>
                   <td className="px-6 py-4 text-slate-600 text-xs">{p.department}</td>
                   <td className="px-6 py-4 font-bold text-slate-900">{formatINR(p.value)}</td>
+                  <td className="px-6 py-4 text-slate-700 font-semibold">{p.supervisorName || "-"}</td>
                   <td className="px-6 py-4">
                     <div className="flex items-center gap-2">
                       <div className="h-2 w-20 overflow-hidden rounded-full bg-slate-200">
@@ -142,8 +144,6 @@ export function ProjectsView({
                       <span className="font-semibold text-xs text-slate-700">{p.progress}%</span>
                     </div>
                   </td>
-                  <td className="px-6 py-4 text-emerald-700 font-bold">{formatINR(p.received)}</td>
-                  <td className="px-6 py-4 text-red-600 font-bold">{formatINR(p.expense)}</td>
                   <td className="px-6 py-4">
                     <StatusBadge status={p.status} lang={lang} />
                   </td>
@@ -153,7 +153,7 @@ export function ProjectsView({
                         onClick={() => onView360(p)}
                         className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-slate-800 transition shadow-xs"
                       >
-                        <Eye size={13} /> {t.site360Hisab}
+                        <Eye size={13} /> Site 360°
                       </button>
 
                       {isAdmin && (

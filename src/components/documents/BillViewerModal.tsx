@@ -27,7 +27,10 @@ export function BillViewerModal({
   const handleZoomOut = () => setScale(s => Math.max(0.5, s - 0.25));
   const handleReset = () => setScale(1);
 
-  const isImage = attachment.dataUrl.startsWith("data:image") || attachment.type.includes("image");
+  const isImage =
+    attachment.dataUrl.startsWith("data:image") ||
+    attachment.type.includes("image") ||
+    attachment.dataUrl.startsWith("data:image/svg");
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-3 sm:p-6 backdrop-blur-md animate-in fade-in duration-200">
@@ -42,7 +45,7 @@ export function BillViewerModal({
               <div className="flex items-center gap-2">
                 <h3 className="font-bold text-sm sm:text-base text-white">{title}</h3>
                 <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-400 border border-emerald-500/30">
-                  <ShieldCheck size={11} /> {t.auditVerified}
+                  <ShieldCheck size={11} /> Verified Bill
                 </span>
               </div>
               <p className="text-xs text-slate-400">{subtitle} {amount ? `• Amount: ${amount}` : ""}</p>
@@ -57,7 +60,7 @@ export function BillViewerModal({
                   type="button"
                   onClick={handleZoomOut}
                   className="rounded-lg p-1.5 hover:bg-slate-700 text-slate-300"
-                  title={t.zoomOut}
+                  title="Zoom Out"
                 >
                   <ZoomOut size={16} />
                 </button>
@@ -66,7 +69,7 @@ export function BillViewerModal({
                   type="button"
                   onClick={handleZoomIn}
                   className="rounded-lg p-1.5 hover:bg-slate-700 text-slate-300"
-                  title={t.zoomIn}
+                  title="Zoom In"
                 >
                   <ZoomIn size={16} />
                 </button>
@@ -86,10 +89,10 @@ export function BillViewerModal({
               href={attachment.dataUrl}
               download={attachment.name || "KSG_Bill_Receipt"}
               className="flex items-center gap-1.5 rounded-xl bg-amber-500 px-3.5 py-2 text-xs font-bold text-slate-950 hover:bg-amber-400 transition shadow-sm"
-              title={t.downloadOriginal}
+              title="Download File"
             >
               <Download size={15} />
-              <span className="hidden sm:inline">{t.downloadOriginal}</span>
+              <span className="hidden sm:inline">Download</span>
             </a>
 
             {/* Close */}
@@ -127,7 +130,7 @@ export function BillViewerModal({
                 download={attachment.name}
                 className="inline-flex items-center gap-2 rounded-xl bg-amber-500 px-4 py-2 text-xs font-bold text-slate-950 hover:bg-amber-400"
               >
-                <Download size={16} /> {t.downloadOriginal}
+                <Download size={16} /> Download
               </a>
             </div>
           )}

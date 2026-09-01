@@ -1,65 +1,57 @@
 import React, { useState } from "react";
 import {
-  X, Building2, MapPin, IndianRupee, WalletCards, ReceiptIndianRupee, Users, Package,
-  Truck, FileText, Printer, Download, Eye, Paperclip, CheckCircle2, AlertTriangle, Calendar
+  X, Building2, MapPin, Wallet, Landmark, FileCheck, Printer, Download,
+  ArrowDownLeft, ArrowUpRight, Paperclip, CheckCircle2, AlertTriangle, Calendar
 } from "lucide-react";
-import { Bill, DailyReport, Expense, LabourWorker, Language, Machinery, MaterialItem, Project } from "../../types";
+import {
+  Attachment, BankPayment, CashTransaction, GSTBill, Language, Project
+} from "../../types";
 import { formatINR } from "../../utils/formatters";
 import { getTranslation } from "../../i18n/translations";
 import { StatusBadge } from "../common/StatusBadge";
-import { printAuditReport, exportExpensesExcel, exportBillsExcel } from "../../utils/exportUtils";
+import { printAuditReport, exportCashTransactionsExcel } from "../../utils/exportUtils";
 
 type Project360ModalProps = {
   project: Project;
-  bills: Bill[];
-  expenses: Expense[];
-  labour: LabourWorker[];
-  materials: MaterialItem[];
-  machinery: Machinery[];
-  reports: DailyReport[];
+  cashTransactions: CashTransaction[];
+  bankPayments: BankPayment[];
+  gstBills: GSTBill[];
   lang: Language;
   onClose: () => void;
-  onViewAttachment?: (att: any, title: string) => void;
+  onViewAttachment?: (data: { attachment: Attachment; title: string; subtitle?: string; amount?: string }) => void;
 };
 
 export function Project360Modal({
   project,
-  bills,
-  expenses,
-  labour,
-  materials,
-  machinery,
-  reports,
+  cashTransactions,
+  bankPayments,
+  gstBills,
   lang,
   onClose,
   onViewAttachment,
 }: Project360ModalProps) {
   const t = getTranslation(lang);
-  const [activeTab, setActiveTab] = useState<"overview" | "expenses" | "bills" | "labour" | "materials" | "machinery" | "reports">("overview");
+  const [activeTab, setActiveTab] = useState<"overview" | "cash" | "bank" | "gst">("overview");
 
-  // Strict Site Filtered Data
-  const siteBills = bills.filter(b => b.project === project.name);
-  const siteExpenses = expenses.filter(e => e.project === project.name);
-  const siteLabour = labour.filter(l => l.project === project.name);
-  const siteMaterials = materials.filter(m => m.project === project.name);
-  const siteMachinery = machinery.filter(m => m.project === project.name);
-  const siteReports = reports.filter(r => r.project === project.name);
+  // Filter for this specific project site
+  const siteCash = cashTransactions.filter(c => c.project === project.name);
+  const siteBank = bankPayments.filter(b => b.project === project.name);
+  const siteGST = gstBills.filter(g => g.project === project.name);
 
-  const totalExp = siteExpenses.reduce((s, e) => s + e.amount, 0);
-  const totalRecv = siteBills.reduce((s, b) => s + b.received, 0);
-  const profit = totalRecv - totalExp;
-  const profitMargin = totalRecv > 0 ? ((profit / totalRecv) * 100).toFixed(1) : "0";
+  const totalCashIn = siteCash.filter(c => c.type === "cash_in").reduce((s, c) => s + c.amount, 0);
+  const totalCashOut = siteCash.filter(c => c.type === "cash_out").reduce((s, c) => s + c.amount, 0);
+  const cashInHand = totalCashIn - totalCashOut;
+  const totalBank = siteBank.reduce((s, b) => s + b.amount, 0);
+  const totalGst = siteGST.reduce((s, g) => s + g.totalAmount, 0);
+  const totalProjectCost = totalCashOut + totalBank;
 
   const handlePrintAudit = () => {
     printAuditReport({
-      title: `360° Site Financial Audit - ${project.name}`,
+      title: `360° Site Hisab & Audit - ${project.name}`,
       project,
-      expenses: siteExpenses,
-      bills: siteBills,
-      labour: siteLabour,
-      materials: siteMaterials,
-      machinery: siteMachinery,
-      reports: siteReports,
+      cashTransactions: siteCash,
+      bankPayments: siteBank,
+      gstBills: siteGST,
     });
   };
 
@@ -67,7 +59,7 @@ export function Project360Modal({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-3 sm:p-6 backdrop-blur-md animate-in fade-in duration-200">
       <div className="relative flex flex-col w-full max-w-5xl max-h-[94vh] rounded-3xl bg-white shadow-2xl overflow-hidden border border-slate-100">
         {/* Modal Top Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 bg-slate-900 p-5 sm:px-7 text-white gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 bg-slate-950 p-5 sm:px-7 text-white gap-3">
           <div className="flex items-center gap-3">
             <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500 text-slate-950 font-black text-lg shadow-md shrink-0">
               <Building2 size={24} />
@@ -87,16 +79,16 @@ export function Project360Modal({
             <button
               onClick={handlePrintAudit}
               className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-3.5 py-2 text-xs font-bold text-slate-950 hover:bg-amber-400 transition shadow-sm"
-              title="Print Official CA/Govt Audit Report"
+              title="Print Official Site Audit Statement"
             >
               <Printer size={15} />
               <span>{t.exportPdf}</span>
             </button>
 
             <button
-              onClick={() => exportExpensesExcel(siteExpenses, project.name)}
+              onClick={() => exportCashTransactionsExcel(siteCash, project.name)}
               className="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 px-3.5 py-2 text-xs font-bold text-white transition border border-white/10"
-              title="Export Site Expenses to Excel"
+              title="Export Site Cash Ledger to Excel"
             >
               <Download size={15} />
               <span className="hidden sm:inline">Excel</span>
@@ -115,13 +107,10 @@ export function Project360Modal({
         {/* Tab Navigation */}
         <div className="flex border-b border-slate-200 bg-slate-50 px-5 sm:px-7 overflow-x-auto gap-2 py-2">
           {[
-            { id: "overview", label: "Overview & P&L", icon: Building2 },
-            { id: "bills", label: `Govt Bills (${siteBills.length})`, icon: ReceiptIndianRupee },
-            { id: "expenses", label: `Expenses (${siteExpenses.length})`, icon: WalletCards },
-            { id: "labour", label: `Labour (${siteLabour.length})`, icon: Users },
-            { id: "materials", label: `Stock (${siteMaterials.length})`, icon: Package },
-            { id: "machinery", label: `Machinery (${siteMachinery.length})`, icon: Truck },
-            { id: "reports", label: `Daily Logs (${siteReports.length})`, icon: FileText },
+            { id: "overview", label: "Overview & Totals", icon: Building2 },
+            { id: "cash", label: `Daily Cash (${siteCash.length})`, icon: Wallet },
+            { id: "bank", label: `Bank Payments (${siteBank.length})`, icon: Landmark },
+            { id: "gst", label: `GST Bills (${siteGST.length})`, icon: FileCheck },
           ].map(tab => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -129,7 +118,7 @@ export function Project360Modal({
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`flex items-center gap-1.5 rounded-xl px-3.5 py-2 text-xs font-bold whitespace-nowrap transition ${
+                className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-xs font-bold whitespace-nowrap transition ${
                   active
                     ? "bg-slate-900 text-white shadow-xs"
                     : "text-slate-600 hover:bg-slate-200/70"
@@ -147,28 +136,32 @@ export function Project360Modal({
           {activeTab === "overview" && (
             <div className="space-y-6">
               {/* Site KPI Grid */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-                <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4">
-                  <p className="text-[11px] font-bold text-slate-500 uppercase">Contract Budget</p>
-                  <p className="text-lg sm:text-xl font-extrabold text-slate-900 mt-1">{formatINR(project.value)}</p>
-                  <p className="text-[10px] text-slate-400 mt-1">Sanctioned Tender Value</p>
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+                <div className="rounded-2xl bg-slate-50 border border-slate-200 p-3.5">
+                  <p className="text-[10px] font-bold text-slate-500 uppercase">Tender Value</p>
+                  <p className="text-base sm:text-lg font-extrabold text-slate-900 mt-1">{formatINR(project.value)}</p>
                 </div>
-                <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-4">
-                  <p className="text-[11px] font-bold text-emerald-800 uppercase">Cleared Payment</p>
-                  <p className="text-lg sm:text-xl font-extrabold text-emerald-800 mt-1">{formatINR(totalRecv)}</p>
-                  <p className="text-[10px] text-emerald-600 mt-1">Received from Treasury</p>
+                <div className="rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5">
+                  <p className="text-[10px] font-bold text-emerald-800 uppercase">Cash Given (જમા)</p>
+                  <p className="text-base sm:text-lg font-extrabold text-emerald-800 mt-1">{formatINR(totalCashIn)}</p>
                 </div>
-                <div className="rounded-2xl bg-red-50 border border-red-200 p-4">
-                  <p className="text-[11px] font-bold text-red-800 uppercase">Site Expenses</p>
-                  <p className="text-lg sm:text-xl font-extrabold text-red-800 mt-1">{formatINR(totalExp)}</p>
-                  <p className="text-[10px] text-red-600 mt-1">Material, Labour &amp; Plant</p>
+                <div className="rounded-2xl bg-rose-50 border border-rose-200 p-3.5">
+                  <p className="text-[10px] font-bold text-rose-800 uppercase">Cash Spent (ઉધાર)</p>
+                  <p className="text-base sm:text-lg font-extrabold text-rose-800 mt-1">{formatINR(totalCashOut)}</p>
                 </div>
-                <div className="rounded-2xl bg-blue-50 border border-blue-200 p-4">
-                  <p className="text-[11px] font-bold text-blue-800 uppercase">Site Profit Position</p>
-                  <p className={`text-lg sm:text-xl font-extrabold mt-1 ${profit >= 0 ? "text-blue-900" : "text-red-700"}`}>
-                    {formatINR(profit)}
+                <div className="rounded-2xl bg-blue-50 border border-blue-200 p-3.5">
+                  <p className="text-[10px] font-bold text-blue-800 uppercase">Cash in Hand</p>
+                  <p className={`text-base sm:text-lg font-extrabold mt-1 ${cashInHand >= 0 ? "text-blue-900" : "text-red-700"}`}>
+                    {formatINR(cashInHand)}
                   </p>
-                  <p className="text-[10px] text-blue-700 font-bold mt-1">{profitMargin}% Net Margin</p>
+                </div>
+                <div className="rounded-2xl bg-indigo-50 border border-indigo-200 p-3.5">
+                  <p className="text-[10px] font-bold text-indigo-800 uppercase">Bank RTGS</p>
+                  <p className="text-base sm:text-lg font-extrabold text-indigo-900 mt-1">{formatINR(totalBank)}</p>
+                </div>
+                <div className="rounded-2xl bg-slate-900 text-white p-3.5">
+                  <p className="text-[10px] font-bold text-amber-400 uppercase">Total Site Cost</p>
+                  <p className="text-base sm:text-lg font-extrabold text-white mt-1">{formatINR(totalProjectCost)}</p>
                 </div>
               </div>
 
@@ -183,61 +176,18 @@ export function Project360Modal({
                 </div>
                 {project.notes && (
                   <p className="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                    <strong>Site Notes: </strong> {project.notes}
+                    <strong>Site Description: </strong> {project.notes}
                   </p>
                 )}
               </div>
             </div>
           )}
 
-          {activeTab === "bills" && (
+          {activeTab === "cash" && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h3 className="font-bold text-sm text-slate-900">Government Running Account (RA) Bills</h3>
-                <button
-                  onClick={() => exportBillsExcel(siteBills, project.name)}
-                  className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1"
-                >
-                  <Download size={13} /> Export Bills CSV
-                </button>
-              </div>
-
-              <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
-                <table className="w-full text-xs">
-                  <thead className="bg-slate-50 text-slate-500 font-bold uppercase">
-                    <tr>
-                      <th className="p-3 text-left">Bill No</th>
-                      <th className="p-3 text-left">Date</th>
-                      <th className="p-3 text-left">Stage / Description</th>
-                      <th className="p-3 text-right">Bill Amount</th>
-                      <th className="p-3 text-right">Cleared (Rs)</th>
-                      <th className="p-3 text-right">Pending</th>
-                      <th className="p-3 text-center">Status</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {siteBills.map(b => (
-                      <tr key={b.id} className="hover:bg-slate-50">
-                        <td className="p-3 font-bold text-slate-900">{b.billNo}</td>
-                        <td className="p-3 font-mono">{b.date}</td>
-                        <td className="p-3">{b.description}</td>
-                        <td className="p-3 text-right font-bold text-slate-900">{formatINR(b.amount)}</td>
-                        <td className="p-3 text-right font-bold text-emerald-700">{formatINR(b.received)}</td>
-                        <td className="p-3 text-right font-bold text-amber-700">{formatINR(b.amount - b.received)}</td>
-                        <td className="p-3 text-center"><StatusBadge status={b.status} lang={lang} /></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "expenses" && (
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h3 className="font-bold text-sm text-slate-900">Site Daily Expenses &amp; Bills</h3>
-                <span className="text-xs font-bold text-red-600">Total: {formatINR(totalExp)}</span>
+                <h3 className="font-bold text-sm text-slate-900">{t.siteDailyCash}</h3>
+                <span className="text-xs font-bold text-slate-600">Balance: {formatINR(cashInHand)}</span>
               </div>
 
               <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
@@ -245,33 +195,48 @@ export function Project360Modal({
                   <thead className="bg-slate-50 text-slate-500 font-bold uppercase">
                     <tr>
                       <th className="p-3 text-left">Date</th>
+                      <th className="p-3 text-left">Type</th>
+                      <th className="p-3 text-left">Details</th>
                       <th className="p-3 text-left">Category</th>
-                      <th className="p-3 text-left">Description</th>
-                      <th className="p-3 text-left">Vendor / Receiver</th>
-                      <th className="p-3 text-right">Qty / Unit</th>
-                      <th className="p-3 text-right">Amount (Rs)</th>
-                      <th className="p-3 text-center">Bill Attachment</th>
+                      <th className="p-3 text-right">Cash In</th>
+                      <th className="p-3 text-right">Cash Out</th>
+                      <th className="p-3 text-center">Receipt</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {siteExpenses.map(e => (
-                      <tr key={e.id} className="hover:bg-slate-50">
-                        <td className="p-3 font-mono">{e.date}</td>
-                        <td className="p-3 font-semibold text-slate-800">{e.category}</td>
-                        <td className="p-3">{e.description}</td>
-                        <td className="p-3 text-slate-600">{e.vendor}</td>
-                        <td className="p-3 text-right font-mono">{e.quantity ? `${e.quantity} ${e.unit || ""}` : "-"}</td>
-                        <td className="p-3 text-right font-bold text-red-600">{formatINR(e.amount)}</td>
+                    {siteCash.map(c => (
+                      <tr key={c.id} className="hover:bg-slate-50">
+                        <td className="p-3 font-mono">{c.date}</td>
+                        <td className="p-3 font-bold">
+                          <span className={c.type === "cash_in" ? "text-emerald-700" : "text-rose-700"}>
+                            {c.type === "cash_in" ? "જમા (In)" : "ઉધાર (Out)"}
+                          </span>
+                        </td>
+                        <td className="p-3 font-medium">{c.details}</td>
+                        <td className="p-3 text-slate-600">{c.category || "-"}</td>
+                        <td className="p-3 text-right font-bold text-emerald-700">
+                          {c.type === "cash_in" ? formatINR(c.amount) : "-"}
+                        </td>
+                        <td className="p-3 text-right font-bold text-rose-700">
+                          {c.type === "cash_out" ? formatINR(c.amount) : "-"}
+                        </td>
                         <td className="p-3 text-center">
-                          {e.attachments && e.attachments.length > 0 ? (
+                          {c.attachments && c.attachments.length > 0 ? (
                             <button
-                              onClick={() => onViewAttachment?.(e.attachments![0], `${e.category}: ${e.description}`)}
-                              className="inline-flex items-center gap-1 rounded-lg bg-blue-50 hover:bg-blue-100 text-blue-700 px-2 py-1 font-bold"
+                              onClick={() =>
+                                onViewAttachment?.({
+                                  attachment: c.attachments![0],
+                                  title: c.details,
+                                  subtitle: `${c.project} • ${c.date}`,
+                                  amount: formatINR(c.amount),
+                                })
+                              }
+                              className="text-blue-600 hover:text-blue-800"
                             >
-                              <Paperclip size={12} /> View
+                              <Paperclip size={14} />
                             </button>
                           ) : (
-                            <span className="text-slate-400 text-[11px]">-</span>
+                            "-"
                           )}
                         </td>
                       </tr>
@@ -282,66 +247,34 @@ export function Project360Modal({
             </div>
           )}
 
-          {activeTab === "labour" && (
+          {activeTab === "bank" && (
             <div className="space-y-4">
-              <h3 className="font-bold text-sm text-slate-900">Assigned Labour Gang &amp; Wages</h3>
-              <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
-                <table className="w-full text-xs">
-                  <thead className="bg-slate-50 text-slate-500 font-bold uppercase">
-                    <tr>
-                      <th className="p-3 text-left">Worker Name</th>
-                      <th className="p-3 text-left">Role</th>
-                      <th className="p-3 text-left">Phone</th>
-                      <th className="p-3 text-right">Daily Wage</th>
-                      <th className="p-3 text-right">Days</th>
-                      <th className="p-3 text-right">Total Earned</th>
-                      <th className="p-3 text-right">Paid</th>
-                      <th className="p-3 text-right">Due</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-slate-100">
-                    {siteLabour.map(l => (
-                      <tr key={l.id} className="hover:bg-slate-50">
-                        <td className="p-3 font-bold text-slate-900">{l.name}</td>
-                        <td className="p-3">{l.role}</td>
-                        <td className="p-3 font-mono text-slate-500">{l.phone}</td>
-                        <td className="p-3 text-right font-mono">{formatINR(l.dailyWage)}</td>
-                        <td className="p-3 text-right font-mono">{l.daysWorked}d</td>
-                        <td className="p-3 text-right font-bold text-slate-900">{formatINR(l.totalEarned)}</td>
-                        <td className="p-3 text-right font-bold text-emerald-700">{formatINR(l.paid)}</td>
-                        <td className="p-3 text-right font-bold text-red-600">{formatINR(l.totalEarned - l.paid)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-sm text-slate-900">{t.bankPayments}</h3>
+                <span className="text-xs font-bold text-blue-700">Total: {formatINR(totalBank)}</span>
               </div>
-            </div>
-          )}
 
-          {activeTab === "materials" && (
-            <div className="space-y-4">
-              <h3 className="font-bold text-sm text-slate-900">Site Materials &amp; Inventory Stock</h3>
               <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
                 <table className="w-full text-xs">
                   <thead className="bg-slate-50 text-slate-500 font-bold uppercase">
                     <tr>
-                      <th className="p-3 text-left">Material</th>
+                      <th className="p-3 text-left">Date</th>
+                      <th className="p-3 text-left">Party Name</th>
                       <th className="p-3 text-left">Category</th>
-                      <th className="p-3 text-right">Quantity</th>
-                      <th className="p-3 text-right">Min Stock</th>
-                      <th className="p-3 text-right">Unit Rate</th>
-                      <th className="p-3 text-right">Stock Value</th>
+                      <th className="p-3 text-left">Mode</th>
+                      <th className="p-3 text-left">Ref / UTR</th>
+                      <th className="p-3 text-right">Amount (Rs)</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {siteMaterials.map(m => (
-                      <tr key={m.id} className="hover:bg-slate-50">
-                        <td className="p-3 font-bold text-slate-900">{m.name}</td>
-                        <td className="p-3">{m.category}</td>
-                        <td className="p-3 text-right font-bold">{m.quantity} {m.unit}</td>
-                        <td className="p-3 text-right text-slate-500">{m.minStock} {m.unit}</td>
-                        <td className="p-3 text-right font-mono">{formatINR(m.pricePerUnit)}</td>
-                        <td className="p-3 text-right font-bold text-emerald-800">{formatINR(m.quantity * m.pricePerUnit)}</td>
+                    {siteBank.map(b => (
+                      <tr key={b.id} className="hover:bg-slate-50">
+                        <td className="p-3 font-mono">{b.date}</td>
+                        <td className="p-3 font-bold text-slate-900">{b.partyName}</td>
+                        <td className="p-3 text-slate-600">{b.category || "-"}</td>
+                        <td className="p-3">{b.paymentMode}</td>
+                        <td className="p-3 font-mono">{b.referenceNo || "-"}</td>
+                        <td className="p-3 text-right font-black text-blue-700">{formatINR(b.amount)}</td>
                       </tr>
                     ))}
                   </tbody>
@@ -350,61 +283,44 @@ export function Project360Modal({
             </div>
           )}
 
-          {activeTab === "machinery" && (
+          {activeTab === "gst" && (
             <div className="space-y-4">
-              <h3 className="font-bold text-sm text-slate-900">Deployed Machinery &amp; Equipment</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="font-bold text-sm text-slate-900">{t.gstBills}</h3>
+                <span className="text-xs font-bold text-purple-700">Total: {formatINR(totalGst)}</span>
+              </div>
+
               <div className="overflow-x-auto rounded-2xl border border-slate-200 bg-white">
                 <table className="w-full text-xs">
                   <thead className="bg-slate-50 text-slate-500 font-bold uppercase">
                     <tr>
-                      <th className="p-3 text-left">Machine Name</th>
-                      <th className="p-3 text-left">Type</th>
-                      <th className="p-3 text-left">Reg No</th>
-                      <th className="p-3 text-right">Daily Rate</th>
-                      <th className="p-3 text-right">Days Used</th>
-                      <th className="p-3 text-right">Total Cost</th>
+                      <th className="p-3 text-left">Bill No</th>
+                      <th className="p-3 text-left">Date</th>
+                      <th className="p-3 text-left">Party Name</th>
+                      <th className="p-3 text-left">Product</th>
+                      <th className="p-3 text-right">Basic Amount</th>
+                      <th className="p-3 text-center">GST %</th>
+                      <th className="p-3 text-right">GST Amount</th>
+                      <th className="p-3 text-right">Total Amount</th>
                       <th className="p-3 text-center">Status</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
-                    {siteMachinery.map(m => (
-                      <tr key={m.id} className="hover:bg-slate-50">
-                        <td className="p-3 font-bold text-slate-900">{m.name}</td>
-                        <td className="p-3">{m.type}</td>
-                        <td className="p-3 font-mono text-slate-500">{m.registrationNo}</td>
-                        <td className="p-3 text-right font-mono">{formatINR(m.dailyRate)}</td>
-                        <td className="p-3 text-right font-mono">{m.daysUsed}d</td>
-                        <td className="p-3 text-right font-bold text-red-600">{formatINR(m.totalCost)}</td>
-                        <td className="p-3 text-center"><StatusBadge status={m.status} lang={lang} /></td>
+                    {siteGST.map(g => (
+                      <tr key={g.id} className="hover:bg-slate-50">
+                        <td className="p-3 font-mono font-bold text-slate-900">{g.billNo}</td>
+                        <td className="p-3 font-mono">{g.date}</td>
+                        <td className="p-3 font-semibold">{g.partyName}</td>
+                        <td className="p-3">{g.product}</td>
+                        <td className="p-3 text-right">{formatINR(g.basicAmount)}</td>
+                        <td className="p-3 text-center">{g.gstRate}%</td>
+                        <td className="p-3 text-right text-emerald-700">{formatINR(g.gstAmount)}</td>
+                        <td className="p-3 text-right font-bold text-slate-900">{formatINR(g.totalAmount)}</td>
+                        <td className="p-3 text-center">{g.status}</td>
                       </tr>
                     ))}
                   </tbody>
                 </table>
-              </div>
-            </div>
-          )}
-
-          {activeTab === "reports" && (
-            <div className="space-y-4">
-              <h3 className="font-bold text-sm text-slate-900">Daily Site Progress Logs</h3>
-              <div className="space-y-3">
-                {siteReports.map(r => (
-                  <div key={r.id} className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-xs">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="font-mono font-bold text-slate-900 bg-white px-2.5 py-1 rounded-lg border">
-                        📅 {r.date} &bull; By: {r.reportedBy}
-                      </span>
-                      <span className="font-bold text-amber-800 bg-amber-100 px-2.5 py-1 rounded-lg">
-                        {r.progress}% Work Completed
-                      </span>
-                    </div>
-                    <p className="text-slate-800 mt-1"><strong>Work Done: </strong>{r.workDone}</p>
-                    <p className="text-slate-600 mt-0.5"><strong>Material Used: </strong>{r.materialUsed}</p>
-                    {r.issues !== "None" && (
-                      <p className="text-amber-700 mt-0.5"><strong>Issues: </strong>{r.issues}</p>
-                    )}
-                  </div>
-                ))}
               </div>
             </div>
           )}
