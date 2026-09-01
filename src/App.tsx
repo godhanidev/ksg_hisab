@@ -13,6 +13,11 @@ import {
   initialUsers, initialProjects, initialCashTransactions,
   initialBankPayments, initialGSTBills
 } from "./data/initialData";
+import { loadStoredFirebaseConfig } from "./services/firebaseConfig";
+import {
+  initFirestore, getActiveFirestore, subscribeToCollection,
+  saveDocumentToCloud, deleteDocumentFromCloud
+} from "./services/firestoreSync";
 
 import { Header } from "./components/common/Header";
 import { Sidebar } from "./components/common/Sidebar";
@@ -30,6 +35,7 @@ import { CashTransactionModal } from "./components/forms/CashTransactionModal";
 import { BankPaymentModal } from "./components/forms/BankPaymentModal";
 import { GSTBillModal } from "./components/forms/GSTBillModal";
 import { BillViewerModal } from "./components/documents/BillViewerModal";
+import { CloudSyncModal } from "./components/common/CloudSyncModal";
 
 export function App() {
   // ── Language & Online / Offline Sync State ──────────────────────────────
@@ -40,6 +46,12 @@ export function App() {
   const [pendingSyncQueue, setPendingSyncQueue] = useState(loadOfflineQueue());
   const [isSyncing, setIsSyncing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // ── Firebase Cloud Live Sync State ──────────────────────────────────────
+  const [isCloudConnected, setIsCloudConnected] = useState<boolean>(() => {
+    return !!loadStoredFirebaseConfig();
+  });
+  const [showCloudModal, setShowCloudModal] = useState(false);
 
   // ── User Session & Navigation State ─────────────────────────────────────
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
@@ -98,6 +110,62 @@ export function App() {
   const t = getTranslation(lang);
   const isAdmin = currentUser?.role === "admin";
 
+  // ── Initialize Firestore & Subscriptions on Mount / Config Change ───────
+  useEffect(() => {
+    const config = loadStoredFirebaseConfig();
+    if (!config) {
+      setIsCloudConnected(false);
+      return;
+    }
+
+    const db = initFirestore(config);
+    if (!db) {
+      setIsCloudConnected(false);
+      return;
+    }
+
+    setIsCloudConnected(true);
+
+    // Subscribe to real-time updates for all 5 collections
+    const unsubCash = subscribeToCollection<CashTransaction>("daily_cash", cloudCash => {
+      if (cloudCash.length > 0) {
+        setCashTransactions(cloudCash);
+      }
+    });
+
+    const unsubBank = subscribeToCollection<BankPayment>("bank_payments", cloudBank => {
+      if (cloudBank.length > 0) {
+        setBankPayments(cloudBank);
+      }
+    });
+
+    const unsubGst = subscribeToCollection<GSTBill>("gst_bills", cloudGst => {
+      if (cloudGst.length > 0) {
+        setGstBills(cloudGst);
+      }
+    });
+
+    const unsubProjects = subscribeToCollection<Project>("projects", cloudProjects => {
+      if (cloudProjects.length > 0) {
+        setProjects(cloudProjects);
+      }
+    });
+
+    const unsubUsers = subscribeToCollection<UserAccount>("users", cloudUsers => {
+      if (cloudUsers.length > 0) {
+        setUsers(cloudUsers);
+      }
+    });
+
+    return () => {
+      if (unsubCash) unsubCash();
+      if (unsubBank) unsubBank();
+      if (unsubGst) unsubGst();
+      if (unsubProjects) unsubProjects();
+      if (unsubUsers) unsubUsers();
+    };
+  }, [isCloudConnected]);
+
   // ── Persist Collections to LocalStorage ─────────────────────────────────
   useEffect(() => { saveStoredCollection("projects", projects); }, [projects]);
   useEffect(() => { saveStoredCollection("daily_cash", cashTransactions); }, [cashTransactions]);
@@ -135,7 +203,7 @@ export function App() {
       setIsSyncing(false);
       showToast(
         lang === "gu"
-          ? `${queue.length} ઓફલાઇન એન્ટ્રીઓ સફળતાપૂર્વક સમન્વયિત થઇ!`
+          ? `${queue.length} ઓફલાઇન એન્ટ્રીઓ સમન્વયિત થઇ!`
           : `Synced ${queue.length} offline entries successfully!`
       );
     }, 800);
@@ -159,28 +227,34 @@ export function App() {
   };
 
   // ── CRUD: Site Daily Cash ───────────────────────────────────────────────
-  const handleSaveCashTransaction = (txData: Omit<CashTransaction, "id"> | CashTransaction) => {
+  const handleSaveCashTransaction = async (txData: Omit<CashTransaction, "id"> | CashTransaction) => {
+    let savedTx: CashTransaction;
     if ("id" in txData && txData.id) {
-      // Edit existing
+      savedTx = txData as CashTransaction;
       setCashTransactions(prev =>
-        prev.map(item => (item.id === txData.id ? (txData as CashTransaction) : item))
+        prev.map(item => (item.id === savedTx.id ? savedTx : item))
       );
       if (!isOnline) {
-        addToOfflineQueue({ module: "daily_cash", action: "update", data: txData });
+        addToOfflineQueue({ module: "daily_cash", action: "update", data: savedTx });
         setPendingSyncQueue(loadOfflineQueue());
       }
     } else {
-      // Create new
-      const newTx: CashTransaction = {
+      savedTx = {
         ...txData,
         id: Date.now(),
       };
-      setCashTransactions(prev => [newTx, ...prev]);
+      setCashTransactions(prev => [savedTx, ...prev]);
       if (!isOnline) {
-        addToOfflineQueue({ module: "daily_cash", action: "create", data: newTx });
+        addToOfflineQueue({ module: "daily_cash", action: "create", data: savedTx });
         setPendingSyncQueue(loadOfflineQueue());
       }
     }
+
+    // Push to Cloud Firestore if connected
+    if (isCloudConnected) {
+      saveDocumentToCloud("daily_cash", savedTx);
+    }
+
     showToast(t.recordSavedSuccess);
   };
 
@@ -190,30 +264,40 @@ export function App() {
       addToOfflineQueue({ module: "daily_cash", action: "delete", data: { id } });
       setPendingSyncQueue(loadOfflineQueue());
     }
+    if (isCloudConnected) {
+      deleteDocumentFromCloud("daily_cash", id);
+    }
     showToast(t.recordDeletedSuccess);
   };
 
   // ── CRUD: Direct Office Bank Payments ───────────────────────────────────
-  const handleSaveBankPayment = (paymentData: Omit<BankPayment, "id"> | BankPayment) => {
+  const handleSaveBankPayment = async (paymentData: Omit<BankPayment, "id"> | BankPayment) => {
+    let savedPayment: BankPayment;
     if ("id" in paymentData && paymentData.id) {
+      savedPayment = paymentData as BankPayment;
       setBankPayments(prev =>
-        prev.map(item => (item.id === paymentData.id ? (paymentData as BankPayment) : item))
+        prev.map(item => (item.id === savedPayment.id ? savedPayment : item))
       );
       if (!isOnline) {
-        addToOfflineQueue({ module: "bank_payment", action: "update", data: paymentData });
+        addToOfflineQueue({ module: "bank_payment", action: "update", data: savedPayment });
         setPendingSyncQueue(loadOfflineQueue());
       }
     } else {
-      const newPayment: BankPayment = {
+      savedPayment = {
         ...paymentData,
         id: Date.now(),
       };
-      setBankPayments(prev => [newPayment, ...prev]);
+      setBankPayments(prev => [savedPayment, ...prev]);
       if (!isOnline) {
-        addToOfflineQueue({ module: "bank_payment", action: "create", data: newPayment });
+        addToOfflineQueue({ module: "bank_payment", action: "create", data: savedPayment });
         setPendingSyncQueue(loadOfflineQueue());
       }
     }
+
+    if (isCloudConnected) {
+      saveDocumentToCloud("bank_payments", savedPayment);
+    }
+
     showToast(t.recordSavedSuccess);
   };
 
@@ -223,30 +307,40 @@ export function App() {
       addToOfflineQueue({ module: "bank_payment", action: "delete", data: { id } });
       setPendingSyncQueue(loadOfflineQueue());
     }
+    if (isCloudConnected) {
+      deleteDocumentFromCloud("bank_payments", id);
+    }
     showToast(t.recordDeletedSuccess);
   };
 
   // ── CRUD: GST Bills ─────────────────────────────────────────────────────
-  const handleSaveGSTBill = (billData: Omit<GSTBill, "id"> | GSTBill) => {
+  const handleSaveGSTBill = async (billData: Omit<GSTBill, "id"> | GSTBill) => {
+    let savedBill: GSTBill;
     if ("id" in billData && billData.id) {
+      savedBill = billData as GSTBill;
       setGstBills(prev =>
-        prev.map(item => (item.id === billData.id ? (billData as GSTBill) : item))
+        prev.map(item => (item.id === savedBill.id ? savedBill : item))
       );
       if (!isOnline) {
-        addToOfflineQueue({ module: "gst_bill", action: "update", data: billData });
+        addToOfflineQueue({ module: "gst_bill", action: "update", data: savedBill });
         setPendingSyncQueue(loadOfflineQueue());
       }
     } else {
-      const newBill: GSTBill = {
+      savedBill = {
         ...billData,
         id: Date.now(),
       };
-      setGstBills(prev => [newBill, ...prev]);
+      setGstBills(prev => [savedBill, ...prev]);
       if (!isOnline) {
-        addToOfflineQueue({ module: "gst_bill", action: "create", data: newBill });
+        addToOfflineQueue({ module: "gst_bill", action: "create", data: savedBill });
         setPendingSyncQueue(loadOfflineQueue());
       }
     }
+
+    if (isCloudConnected) {
+      saveDocumentToCloud("gst_bills", savedBill);
+    }
+
     showToast(t.recordSavedSuccess);
   };
 
@@ -256,21 +350,30 @@ export function App() {
       addToOfflineQueue({ module: "gst_bill", action: "delete", data: { id } });
       setPendingSyncQueue(loadOfflineQueue());
     }
+    if (isCloudConnected) {
+      deleteDocumentFromCloud("gst_bills", id);
+    }
     showToast(t.recordDeletedSuccess);
   };
 
   // ── CRUD: Projects ──────────────────────────────────────────────────────
   const handleSaveProject = (projectData: Omit<Project, "id"> | Project) => {
+    let savedProject: Project;
     if ("id" in projectData && projectData.id) {
+      savedProject = projectData as Project;
       setProjects(prev =>
-        prev.map(item => (item.id === projectData.id ? (projectData as Project) : item))
+        prev.map(item => (item.id === savedProject.id ? savedProject : item))
       );
     } else {
-      const newProject: Project = {
+      savedProject = {
         ...projectData,
         id: Date.now(),
       };
-      setProjects(prev => [...prev, newProject]);
+      setProjects(prev => [...prev, savedProject]);
+    }
+
+    if (isCloudConnected) {
+      saveDocumentToCloud("projects", savedProject);
     }
     showToast("Project site saved successfully!");
   };
@@ -278,6 +381,9 @@ export function App() {
   const handleDeleteProject = (id: number) => {
     if (window.confirm("Are you sure you want to delete this construction site?")) {
       setProjects(prev => prev.filter(item => item.id !== id));
+      if (isCloudConnected) {
+        deleteDocumentFromCloud("projects", id);
+      }
       showToast("Project deleted successfully");
     }
   };
@@ -337,6 +443,8 @@ export function App() {
           pendingSyncCount={pendingSyncQueue.length}
           onManualSync={triggerAutoSync}
           isSyncing={isSyncing}
+          isCloudConnected={isCloudConnected}
+          onOpenCloudModal={() => setShowCloudModal(true)}
           projects={projects}
           userAllowedProjects={userAllowedProjects}
           selectedSiteFilter={selectedSiteFilter}
@@ -571,6 +679,22 @@ export function App() {
           onClose={() => setViewingAttachment(null)}
         />
       )}
+
+      {/* 7. Real-Time Cloud Sync Modal */}
+      <CloudSyncModal
+        isOpen={showCloudModal}
+        onClose={() => setShowCloudModal(false)}
+        isCloudConnected={isCloudConnected}
+        onConfigUpdated={() => {
+          setIsCloudConnected(!!loadStoredFirebaseConfig());
+        }}
+        projects={projects}
+        cashTransactions={cashTransactions}
+        bankPayments={bankPayments}
+        gstBills={gstBills}
+        users={users}
+        lang={lang}
+      />
     </div>
   );
 }

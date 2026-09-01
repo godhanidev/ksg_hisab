@@ -1,6 +1,7 @@
 import React from "react";
 import {
-  Menu, X, Wifi, WifiOff, RefreshCw, LogOut, Shield, HardHat, CheckCircle2
+  Menu, X, Wifi, WifiOff, RefreshCw, LogOut, Shield, HardHat, CheckCircle2,
+  Cloud, CloudOff, Database
 } from "lucide-react";
 import { Language, Project, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
@@ -17,6 +18,8 @@ type HeaderProps = {
   pendingSyncCount: number;
   onManualSync: () => void;
   isSyncing: boolean;
+  isCloudConnected?: boolean;
+  onOpenCloudModal?: () => void;
   projects?: Project[];
   userAllowedProjects?: Project[];
   selectedSiteFilter?: string;
@@ -35,6 +38,8 @@ export function Header({
   pendingSyncCount,
   onManualSync,
   isSyncing,
+  isCloudConnected = false,
+  onOpenCloudModal,
 }: HeaderProps) {
   const t = getTranslation(lang);
   const isAdmin = currentUser.role === "admin";
@@ -74,9 +79,35 @@ export function Header({
         </div>
       </div>
 
-      {/* Right section: Language, Offline status, User Profile, Logout */}
+      {/* Right section: Cloud Sync, Language, Offline status, User Profile, Logout */}
       <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-        {/* Multi-Language Switcher (Requirement #7) */}
+        {/* Cloud Sync Button */}
+        {onOpenCloudModal && (
+          <button
+            type="button"
+            onClick={onOpenCloudModal}
+            className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold transition border ${
+              isCloudConnected
+                ? "bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100"
+                : "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100"
+            }`}
+            title="Configure Real-Time Cloud Sync"
+          >
+            {isCloudConnected ? (
+              <>
+                <Database size={14} className="text-emerald-600" />
+                <span className="hidden sm:inline">Cloud Live</span>
+              </>
+            ) : (
+              <>
+                <Cloud size={14} className="text-amber-600" />
+                <span className="hidden sm:inline">Connect Cloud</span>
+              </>
+            )}
+          </button>
+        )}
+
+        {/* Multi-Language Switcher */}
         <div className="flex items-center rounded-xl bg-slate-100 p-0.5 sm:p-1 border border-slate-200">
           <button
             type="button"
@@ -104,7 +135,7 @@ export function Header({
           </button>
         </div>
 
-        {/* Offline Status Badge & Sync (Requirement #8) */}
+        {/* Offline Status Badge & Sync */}
         <div className="hidden lg:flex items-center gap-2">
           {isOnline ? (
             <div className="flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
