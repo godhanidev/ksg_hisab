@@ -388,6 +388,27 @@ export function App() {
     }
   };
 
+  // ── CRUD: Users ─────────────────────────────────────────────────────────
+  const handleSaveUser = (userData: UserAccount) => {
+    setUsers(prev =>
+      prev.some(u => u.id === userData.id)
+        ? prev.map(u => (u.id === userData.id ? userData : u))
+        : [...prev, userData]
+    );
+    if (isCloudConnected) {
+      saveDocumentToCloud("users", userData);
+    }
+    showToast("User account saved successfully!");
+  };
+
+  const handleDeleteUser = (id: number) => {
+    setUsers(prev => prev.filter(u => u.id !== id));
+    if (isCloudConnected) {
+      deleteDocumentFromCloud("users", id);
+    }
+    showToast("User deleted successfully");
+  };
+
   // If user is not logged in, show Login Screen
   if (!currentUser) {
     return (
@@ -575,9 +596,10 @@ export function App() {
           {activePage === "User Management" && isAdmin && (
             <UserManagement
               users={users}
-              setUsers={setUsers}
               projects={projects}
               lang={lang}
+              onSaveUser={handleSaveUser}
+              onDeleteUser={handleDeleteUser}
             />
           )}
         </main>

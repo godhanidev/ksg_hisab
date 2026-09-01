@@ -6,16 +6,18 @@ import { ModalWrapper } from "../common/ModalWrapper";
 
 type UserManagementProps = {
   users: UserAccount[];
-  setUsers: React.Dispatch<React.SetStateAction<UserAccount[]>>;
   projects: Project[];
   lang: Language;
+  onSaveUser: (user: UserAccount) => void;
+  onDeleteUser: (id: number) => void;
 };
 
 export function UserManagement({
   users,
-  setUsers,
   projects,
   lang,
+  onSaveUser,
+  onDeleteUser,
 }: UserManagementProps) {
   const t = getTranslation(lang);
   const [showModal, setShowModal] = useState(false);
@@ -76,11 +78,12 @@ export function UserManagement({
     e.preventDefault();
     if (!form.username.trim() || !form.password.trim() || !form.name.trim()) return;
 
-    if (editUser) {
-      setUsers(prev => prev.map(u => (u.id === editUser.id ? { ...u, ...form } : u)));
-    } else {
-      setUsers(prev => [...prev, { id: Date.now(), ...form }]);
-    }
+    const userToSave: UserAccount = {
+      id: editUser ? editUser.id : Date.now(),
+      ...form,
+    };
+
+    onSaveUser(userToSave);
     setShowModal(false);
   };
 
@@ -90,7 +93,7 @@ export function UserManagement({
       return;
     }
     if (window.confirm("Are you sure you want to delete this user?")) {
-      setUsers(prev => prev.filter(u => u.id !== id));
+      onDeleteUser(id);
     }
   };
 
