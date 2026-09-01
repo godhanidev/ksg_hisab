@@ -49,7 +49,7 @@ export function Header({
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <button
           onClick={() => setSidebarOpen(o => !o)}
-          className="rounded-xl p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition shrink-0"
+          className="hidden lg:flex rounded-xl p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition shrink-0 items-center justify-center"
           aria-label="Toggle Sidebar"
         >
           {sidebarOpen ? <X size={19} /> : <Menu size={19} />}
