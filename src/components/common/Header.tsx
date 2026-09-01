@@ -45,7 +45,7 @@ export function Header({
 
   return (
     <header className="sticky top-0 z-30 flex h-16 sm:h-20 items-center justify-between border-b border-slate-200/80 bg-white/95 px-3 sm:px-8 backdrop-blur shadow-xs">
-      {/* Left section: Hamburger & Page Title */}
+      {/* Left section: Desktop Sidebar Toggle / Mobile Company Logo & Page Title */}
       <div className="flex items-center gap-2 sm:gap-3 min-w-0">
         <button
           onClick={() => setSidebarOpen(o => !o)}
@@ -54,6 +54,20 @@ export function Header({
         >
           {sidebarOpen ? <X size={19} /> : <Menu size={19} />}
         </button>
+
+        {/* Company Logo on Mobile (in place of upper-left menu bar) */}
+        <div className="flex lg:hidden h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1 shadow-xs border border-slate-200">
+          <img
+            src="/logo.png"
+            alt="K.S.Godhani Logo"
+            className="h-full w-full object-contain"
+            onError={(e) => {
+              const target = e.target as HTMLImageElement;
+              target.style.display = 'none';
+            }}
+          />
+        </div>
+
         <div className="min-w-0">
           <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 font-medium truncate">
             <span>K.S.Godhani</span>
@@ -158,7 +172,7 @@ export function Header({
         </div>
 
         {/* User Pill with Role Indicator */}
-        <div className="flex items-center gap-2.5 pl-2 border-l border-slate-200">
+        <div className="hidden md:flex items-center gap-2.5 pl-2 border-l border-slate-200">
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white p-0.5 shadow-xs border border-slate-200 overflow-hidden">
             <img
               src="/logo.png"
