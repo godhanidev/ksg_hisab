@@ -100,7 +100,7 @@ export function ProjectsView({
                 <th className="px-6 py-4">Site / Project</th>
                 <th className="px-6 py-4">Govt Department</th>
                 <th className="px-6 py-4">Tender Value</th>
-                <th className="px-6 py-4">Supervisor</th>
+                <th className="px-6 py-4">Site In-charge</th>
                 <th className="px-6 py-4 text-center">Actions</th>
               </tr>
             </thead>

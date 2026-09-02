@@ -165,18 +165,18 @@ export function ProjectModal({
           </div>
         </div>
 
-        {/* Assigned Supervisor & Location */}
+        {/* Assigned Site In-charge & Location */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">
-              Assigned Site Supervisor
+              Site In-charge (સાઇટ ઇન-ચાર્જ)
             </label>
             <input
               type="text"
               list="supervisor-suggestions"
               value={supervisorName}
               onChange={e => setSupervisorName(e.target.value)}
-              placeholder="e.g. Rajubhai, Mahesh Patel"
+              placeholder="e.g. Partner, Engineer or Supervisor Name"
               className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
             />
             <datalist id="supervisor-suggestions">
