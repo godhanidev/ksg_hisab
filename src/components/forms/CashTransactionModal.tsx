@@ -32,17 +32,6 @@ const COMMON_CATEGORIES = [
   "Other",
 ];
 
-const QUICK_SUGGESTIONS = [
-  "JCB Digging Work",
-  "MP Labour Weekly Kharchi",
-  "Labour Upad / Advance",
-  "Tractor Carting",
-  "Chuno + Tape + Dori",
-  "Diesel 20 Litres",
-  "Site Pooja / Muhrat",
-  "Cash Top-up from Office",
-];
-
 export function CashTransactionModal({
   isOpen,
   onClose,
@@ -64,7 +53,6 @@ export function CashTransactionModal({
   const [amount, setAmount] = useState<string>("");
   const [paymentMode, setPaymentMode] = useState<"Cash" | "UPI" | "Cheque">("Cash");
   const [voucherNo, setVoucherNo] = useState<string>("");
-  const [notes, setNotes] = useState<string>("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -79,7 +67,6 @@ export function CashTransactionModal({
       setAmount(editingTransaction.amount ? String(editingTransaction.amount) : "");
       setPaymentMode(editingTransaction.paymentMode || "Cash");
       setVoucherNo(editingTransaction.voucherNo || "");
-      setNotes(editingTransaction.notes || "");
       setAttachments(editingTransaction.attachments || []);
     } else {
       setType(defaultType);
@@ -95,7 +82,6 @@ export function CashTransactionModal({
       setAmount("");
       setPaymentMode("Cash");
       setVoucherNo("");
-      setNotes("");
       setAttachments([]);
     }
     setErrorMsg(null);
@@ -155,7 +141,7 @@ export function CashTransactionModal({
       amount: numAmount,
       paymentMode,
       voucherNo: voucherNo.trim() || undefined,
-      notes: notes.trim() || undefined,
+      notes: editingTransaction?.notes,
       supervisorId: currentUser.id,
       supervisorName: currentUser.name,
       enteredBy: currentUser.name,
@@ -268,7 +254,7 @@ export function CashTransactionModal({
           </div>
         </div>
 
-        {/* Details & Quick Chips */}
+        {/* Details Input */}
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">
             {t.details} *
@@ -285,20 +271,6 @@ export function CashTransactionModal({
             }
             className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm font-medium text-slate-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
           />
-
-          {/* Quick suggestions chips */}
-          <div className="mt-1.5 flex flex-wrap gap-1.5">
-            {QUICK_SUGGESTIONS.map(sug => (
-              <button
-                key={sug}
-                type="button"
-                onClick={() => setDetails(sug)}
-                className="rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition"
-              >
-                + {sug}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Amount & Category */}
@@ -438,20 +410,6 @@ export function CashTransactionModal({
               </label>
             </div>
           )}
-        </div>
-
-        {/* Notes / Remarks */}
-        <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">
-            {t.notes}
-          </label>
-          <input
-            type="text"
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            placeholder="Additional details, receiver name, or remarks"
-            className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-          />
         </div>
 
         {/* Submit & Cancel Buttons */}
