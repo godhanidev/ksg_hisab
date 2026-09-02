@@ -1,7 +1,7 @@
 import React from "react";
 import {
   Menu, X, Wifi, WifiOff, RefreshCw, LogOut, Shield, HardHat, CheckCircle2,
-  Cloud, CloudOff, Database
+  Cloud, CloudOff, Database, KeyRound
 } from "lucide-react";
 import { Language, Project, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
@@ -13,6 +13,7 @@ type HeaderProps = {
   setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
   currentUser: UserAccount;
   onLogout: () => void;
+  onOpenChangePassword?: () => void;
   lang: Language;
   onLanguageChange: (lang: Language) => void;
   isOnline: boolean;
@@ -33,6 +34,7 @@ export function Header({
   setSidebarOpen,
   currentUser,
   onLogout,
+  onOpenChangePassword,
   lang,
   onLanguageChange,
   isOnline,
@@ -143,7 +145,13 @@ export function Header({
         </div>
 
         {/* User Pill with Role Indicator */}
-        <div className="hidden md:flex items-center gap-2.5 pl-2 border-l border-slate-200">
+        <div
+          onClick={onOpenChangePassword}
+          className={`flex items-center gap-2.5 pl-2 border-l border-slate-200 ${
+            onOpenChangePassword ? "cursor-pointer hover:opacity-80 transition" : ""
+          }`}
+          title="Click to Change Password"
+        >
           <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white p-0.5 shadow-xs border border-slate-200 overflow-hidden">
             <img
               src="/logo.png"
@@ -160,6 +168,19 @@ export function Header({
             <p className="text-[10px] font-semibold text-slate-500">{getShortRoleLabel(currentUser.role)}</p>
           </div>
         </div>
+
+        {/* Change Password Button */}
+        {onOpenChangePassword && (
+          <button
+            type="button"
+            onClick={onOpenChangePassword}
+            title={lang === "gu" ? "પાસવર્ડ બદલો" : "Change Password"}
+            className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white p-2 sm:px-3 sm:py-2 text-xs font-semibold text-slate-700 hover:bg-amber-50 hover:border-amber-300 hover:text-amber-800 transition shadow-2xs"
+          >
+            <KeyRound size={15} className="text-amber-600" />
+            <span className="hidden lg:inline">{lang === "gu" ? "પાસવર્ડ બદલો" : "Password"}</span>
+          </button>
+        )}
 
         {/* Logout Button */}
         <button

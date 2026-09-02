@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Shield, HardHat, Plus, Edit, Trash2, Check, Lock, User, Phone, MapPin, Briefcase } from "lucide-react";
+import { Shield, HardHat, Plus, Edit, Trash2, Check, Lock, User, Phone, MapPin, Briefcase, Eye, EyeOff } from "lucide-react";
 import { Language, Project, Role, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
 import { ModalWrapper } from "../common/ModalWrapper";
@@ -22,6 +22,8 @@ export function UserManagement({
   const t = getTranslation(lang);
   const [showModal, setShowModal] = useState(false);
   const [editUser, setEditUser] = useState<UserAccount | null>(null);
+  const [showPasswords, setShowPasswords] = useState<Record<number, boolean>>({});
+  const [showFormPassword, setShowFormPassword] = useState(false);
 
   const [form, setForm] = useState<{
     username: string;
@@ -49,6 +51,7 @@ export function UserManagement({
       phone: "",
       assignedProjects: projects.length > 0 ? [projects[0].name] : [],
     });
+    setShowFormPassword(false);
     setShowModal(true);
   };
 
@@ -62,6 +65,7 @@ export function UserManagement({
       phone: u.phone || "",
       assignedProjects: [...u.assignedProjects],
     });
+    setShowFormPassword(false);
     setShowModal(true);
   };
 
@@ -104,15 +108,15 @@ export function UserManagement({
           label: "Owner / Admin",
           bg: "bg-amber-100 text-amber-800 border border-amber-200",
         };
-      case "site_engineer":
-        return {
-          label: "Site Engineer",
-          bg: "bg-blue-100 text-blue-800 border border-blue-200",
-        };
       case "site_partner":
         return {
           label: "Site Partner",
           bg: "bg-purple-100 text-purple-800 border border-purple-200",
+        };
+      case "site_engineer":
+        return {
+          label: "Site Engineer",
+          bg: "bg-blue-100 text-blue-800 border border-blue-200",
         };
       case "supervisor":
       default:
@@ -147,6 +151,7 @@ export function UserManagement({
         {users.map(u => {
           const isAdmin = u.role === "admin";
           const badge = getRoleBadge(u.role);
+          const isPassRevealed = Boolean(showPasswords[u.id]);
 
           return (
             <div
@@ -177,6 +182,25 @@ export function UserManagement({
                   >
                     {badge.label}
                   </span>
+                </div>
+
+                {/* Password / Login Credentials for Admin */}
+                <div className="rounded-xl bg-slate-50 border border-slate-100 p-2.5 flex items-center justify-between text-xs">
+                  <div className="flex items-center gap-2 min-w-0">
+                    <Lock size={13} className="text-slate-400 shrink-0" />
+                    <span className="text-slate-500 font-medium text-[11px]">Password:</span>
+                    <span className="font-mono font-bold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200 truncate">
+                      {isPassRevealed ? u.password : "••••••••"}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowPasswords(prev => ({ ...prev, [u.id]: !prev[u.id] }))}
+                    className="text-slate-400 hover:text-slate-700 p-1 shrink-0 transition"
+                    title={isPassRevealed ? "Hide Password" : "Show Password"}
+                  >
+                    {isPassRevealed ? <EyeOff size={14} /> : <Eye size={14} />}
+                  </button>
                 </div>
 
                 {/* Assigned Sites section */}
@@ -281,14 +305,23 @@ export function UserManagement({
 
               <div>
                 <label className="block text-xs font-bold text-slate-700 mb-1">Password *</label>
-                <input
-                  type="text"
-                  required
-                  value={form.password}
-                  onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                  placeholder="e.g. raju@2026"
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-mono font-bold outline-none focus:border-slate-800"
-                />
+                <div className="relative">
+                  <input
+                    type={showFormPassword ? "text" : "password"}
+                    required
+                    value={form.password}
+                    onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                    placeholder="e.g. raju@2026"
+                    className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 pr-10 text-sm font-mono font-bold outline-none focus:border-slate-800"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowFormPassword(!showFormPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    {showFormPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                  </button>
+                </div>
               </div>
             </div>
 
