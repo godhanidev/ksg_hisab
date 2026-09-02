@@ -67,7 +67,6 @@ export function Project360Modal({
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-lg sm:text-xl font-extrabold text-white">{project.name}</h2>
-                <StatusBadge status={project.status} lang={lang} />
               </div>
               <p className="text-xs text-slate-300 mt-0.5 flex items-center gap-1">
                 <MapPin size={12} className="text-amber-400" /> {project.location || project.department} &bull; Code: {project.code}

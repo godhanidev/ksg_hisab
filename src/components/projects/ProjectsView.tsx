@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { Plus, Search, Filter, Eye, Trash2, Building2, MapPin, Download, Printer } from "lucide-react";
+import { Plus, Search, Eye, Trash2, Building2, MapPin, Download } from "lucide-react";
 import { Language, Project, UserAccount } from "../../types";
 import { formatINR } from "../../utils/formatters";
 import { getTranslation } from "../../i18n/translations";
-import { StatusBadge } from "../common/StatusBadge";
 import { exportConsolidatedSiteExcel } from "../../utils/exportUtils";
 
 type ProjectsViewProps = {
@@ -28,15 +27,14 @@ export function ProjectsView({
   const t = getTranslation(lang);
   const isAdmin = currentUser.role === "admin";
   const [search, setSearch] = useState("");
-  const [statusFilter, setStatusFilter] = useState("All");
 
   const filtered = projects.filter(p => {
-    const matchSearch =
+    return (
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       p.code.toLowerCase().includes(search.toLowerCase()) ||
-      p.department.toLowerCase().includes(search.toLowerCase());
-    const matchStatus = statusFilter === "All" || p.status === statusFilter;
-    return matchSearch && matchStatus;
+      p.department.toLowerCase().includes(search.toLowerCase()) ||
+      (p.supervisorName && p.supervisorName.toLowerCase().includes(search.toLowerCase()))
+    );
   });
 
   return (
@@ -78,45 +76,29 @@ export function ProjectsView({
       </div>
 
       {/* Filter and Search */}
-      <div className="flex flex-col sm:flex-row gap-3 rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xs">
-        <div className="flex flex-1 items-center gap-2.5 rounded-xl border border-slate-200 px-3.5 py-2 bg-slate-50/50">
+      <div className="rounded-2xl border border-slate-200 bg-white p-3.5 shadow-xs">
+        <div className="flex items-center gap-2.5 rounded-xl border border-slate-200 px-3.5 py-2 bg-slate-50/50">
           <Search size={16} className="text-slate-400" />
           <input
             type="text"
             value={search}
             onChange={e => setSearch(e.target.value)}
-            placeholder={`${t.search} (name, code, department)...`}
+            placeholder={`${t.search} (name, code, department, supervisor)...`}
             className="w-full bg-transparent text-xs sm:text-sm outline-none"
           />
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Filter size={15} className="text-slate-400" />
-          <select
-            value={statusFilter}
-            onChange={e => setStatusFilter(e.target.value)}
-            className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold bg-white outline-none"
-          >
-            <option value="All">All Statuses</option>
-            <option value="Active">Active</option>
-            <option value="Completed">Completed</option>
-            <option value="Pending">Pending</option>
-            <option value="On Hold">On Hold</option>
-          </select>
         </div>
       </div>
 
       {/* Projects Grid / Table */}
       <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full min-w-[900px]">
+          <table className="w-full min-w-[800px]">
             <thead className="bg-slate-50 text-left text-[11px] font-bold uppercase tracking-wider text-slate-500">
               <tr>
                 <th className="px-6 py-4">Site / Project</th>
                 <th className="px-6 py-4">Govt Department</th>
                 <th className="px-6 py-4">Tender Value</th>
                 <th className="px-6 py-4">Supervisor</th>
-                <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-center">360° Site Hisab</th>
               </tr>
             </thead>
@@ -135,9 +117,6 @@ export function ProjectsView({
                   <td className="px-6 py-4 text-slate-600 text-xs">{p.department}</td>
                   <td className="px-6 py-4 font-bold text-slate-900">{formatINR(p.value)}</td>
                   <td className="px-6 py-4 text-slate-700 font-semibold">{p.supervisorName || "-"}</td>
-                  <td className="px-6 py-4">
-                    <StatusBadge status={p.status} lang={lang} />
-                  </td>
                   <td className="px-6 py-4 text-center">
                     <div className="flex items-center justify-center gap-2">
                       <button

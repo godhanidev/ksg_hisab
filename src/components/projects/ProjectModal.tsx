@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Building2, Check, AlertCircle, MapPin, User, Calendar, DollarSign } from "lucide-react";
+import { Building2, Check, AlertCircle, MapPin, User, DollarSign } from "lucide-react";
 import { Language, Project, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
 import { formatINR } from "../../utils/formatters";
@@ -28,7 +28,6 @@ export function ProjectModal({
   const [name, setName] = useState("");
   const [department, setDepartment] = useState("Gujarat Water Supply & Sewerage Board (GWSSB)");
   const [value, setValue] = useState("");
-  const [status, setStatus] = useState<Project["status"]>("Active");
   const [startDate, setStartDate] = useState("");
   const [targetDate, setTargetDate] = useState("");
   const [location, setLocation] = useState("");
@@ -41,7 +40,6 @@ export function ProjectModal({
       setName(editingProject.name);
       setDepartment(editingProject.department);
       setValue(String(editingProject.value));
-      setStatus(editingProject.status);
       setStartDate(editingProject.startDate || "");
       setTargetDate(editingProject.targetDate || "");
       setLocation(editingProject.location || "");
@@ -51,7 +49,6 @@ export function ProjectModal({
       setName("");
       setDepartment("Gujarat Water Supply & Sewerage Board (GWSSB)");
       setValue("");
-      setStatus("Active");
       setStartDate("01/03/2026");
       setTargetDate("31/12/2026");
       setLocation("");
@@ -84,11 +81,11 @@ export function ProjectModal({
       progress: 0,
       received: editingProject ? editingProject.received : 0,
       expense: editingProject ? editingProject.expense : 0,
-      status,
+      status: editingProject ? editingProject.status : "Active",
       startDate,
       targetDate,
       location: location.trim() || undefined,
-      supervisorName: supervisorName || undefined,
+      supervisorName: supervisorName.trim() || undefined,
       notes: editingProject?.notes,
     };
 
@@ -168,7 +165,7 @@ export function ProjectModal({
           </div>
         </div>
 
-        {/* Assigned Supervisor & Status */}
+        {/* Assigned Supervisor & Location */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">
@@ -191,33 +188,16 @@ export function ProjectModal({
 
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">
-              Project Status
+              Location / Site Address
             </label>
-            <select
-              value={status}
-              onChange={e => setStatus(e.target.value as any)}
+            <input
+              type="text"
+              value={location}
+              onChange={e => setLocation(e.target.value)}
+              placeholder="e.g. Devgadh Baria, Dahod District"
               className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-            >
-              <option value="Active">Active (કાર્યરત)</option>
-              <option value="Completed">Completed (પૂર્ણ)</option>
-              <option value="Pending">Pending (બાકી)</option>
-              <option value="On Hold">On Hold (સ્થગિત)</option>
-            </select>
+            />
           </div>
-        </div>
-
-        {/* Location / Site Address */}
-        <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">
-            Location / Site Address
-          </label>
-          <input
-            type="text"
-            value={location}
-            onChange={e => setLocation(e.target.value)}
-            placeholder="e.g. Devgadh Baria, Dahod District"
-            className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-          />
         </div>
 
         {/* Action Buttons */}
