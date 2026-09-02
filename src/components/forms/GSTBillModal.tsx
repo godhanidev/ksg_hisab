@@ -17,16 +17,6 @@ type GSTBillModalProps = {
   lang: Language;
 };
 
-const COMMON_PARTIES = [
-  "Khodiyar Sales and Service",
-  "Shree Vrajesh Steel Traders",
-  "National Steel Traders Rajkot",
-  "Gujarat Cement Agency",
-  "Ambuja / UltraTech Cements",
-  "Supreme Pipes & Fittings",
-  "Vrajesh Traders",
-];
-
 const COMMON_PRODUCTS = [
   "HDPE Pipe",
   "Steel / TMT Bars",
@@ -61,7 +51,6 @@ export function GSTBillModal({
   const [gstRate, setGstRate] = useState<number>(18);
   const [status, setStatus] = useState<"Paid" | "Pending" | "Partial">("Paid");
   const [paymentReference, setPaymentReference] = useState<string>("");
-  const [notes, setNotes] = useState<string>("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -81,7 +70,6 @@ export function GSTBillModal({
       setGstRate(editingBill.gstRate || 18);
       setStatus(editingBill.status || "Paid");
       setPaymentReference(editingBill.paymentReference || "");
-      setNotes(editingBill.notes || "");
       setAttachments(editingBill.attachments || []);
     } else {
       setDate(todayStr());
@@ -97,7 +85,6 @@ export function GSTBillModal({
       setGstRate(18);
       setStatus("Paid");
       setPaymentReference("");
-      setNotes("");
       setAttachments([]);
     }
     setErrorMsg(null);
@@ -140,15 +127,15 @@ export function GSTBillModal({
       setErrorMsg("Please select a project site");
       return;
     }
-    if (numBasic <= 0) {
+    if (isNaN(numBasic) || numBasic <= 0) {
       setErrorMsg("Please enter a valid basic amount greater than zero");
       return;
     }
 
     const payload = {
       ...(editingBill ? { id: editingBill.id } : {}),
-      date,
       billNo: billNo.trim(),
+      date,
       partyName: partyName.trim(),
       product,
       project,
@@ -158,7 +145,7 @@ export function GSTBillModal({
       totalAmount: calculatedTotalAmount,
       status,
       paymentReference: paymentReference.trim() || undefined,
-      notes: notes.trim() || undefined,
+      notes: editingBill?.notes,
       enteredBy: currentUser.name,
       attachments: attachments.length > 0 ? attachments : undefined,
     };
@@ -171,7 +158,7 @@ export function GSTBillModal({
     <ModalWrapper
       isOpen={isOpen}
       onClose={onClose}
-      title={editingBill ? `${t.edit}: Invoice #${editingBill.billNo}` : t.addGstBill}
+      title={editingBill ? `${t.edit}: ${editingBill.billNo}` : t.addGstBill}
       subtitle={
         lang === "gu"
           ? "જીએસટી ટેક્સ ઇન્વોઇસ બીલ, મૂળ રકમ અને જીએસટી ઓટો કેલ્ક્યુલેશન"
@@ -220,7 +207,7 @@ export function GSTBillModal({
           </div>
         </div>
 
-        {/* Party Name & Suggestions */}
+        {/* Party Name Input */}
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">
             {t.partyName} *
@@ -233,18 +220,6 @@ export function GSTBillModal({
             placeholder="e.g. Khodiyar Sales and Service, Shree Vrajesh Steel Traders"
             className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
           />
-          <div className="mt-1.5 flex flex-wrap gap-1.5">
-            {COMMON_PARTIES.map(p => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => setPartyName(p)}
-                className="rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition"
-              >
-                + {p}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Product / Material & Project Site */}
@@ -433,20 +408,6 @@ export function GSTBillModal({
               />
             </label>
           )}
-        </div>
-
-        {/* Notes */}
-        <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">
-            {t.notes}
-          </label>
-          <input
-            type="text"
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            placeholder="Vehicle number, dispatch slip, or notes"
-            className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
-          />
         </div>
 
         {/* Submit Buttons */}
