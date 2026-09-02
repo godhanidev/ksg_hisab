@@ -116,7 +116,6 @@ export function ProjectsView({
                 <th className="px-6 py-4">Govt Department</th>
                 <th className="px-6 py-4">Tender Value</th>
                 <th className="px-6 py-4">Supervisor</th>
-                <th className="px-6 py-4">Work Progress</th>
                 <th className="px-6 py-4">Status</th>
                 <th className="px-6 py-4 text-center">360° Site Hisab</th>
               </tr>
@@ -136,14 +135,6 @@ export function ProjectsView({
                   <td className="px-6 py-4 text-slate-600 text-xs">{p.department}</td>
                   <td className="px-6 py-4 font-bold text-slate-900">{formatINR(p.value)}</td>
                   <td className="px-6 py-4 text-slate-700 font-semibold">{p.supervisorName || "-"}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      <div className="h-2 w-20 overflow-hidden rounded-full bg-slate-200">
-                        <div className="h-full bg-slate-900 rounded-full" style={{ width: `${p.progress}%` }} />
-                      </div>
-                      <span className="font-semibold text-xs text-slate-700">{p.progress}%</span>
-                    </div>
-                  </td>
                   <td className="px-6 py-4">
                     <StatusBadge status={p.status} lang={lang} />
                   </td>

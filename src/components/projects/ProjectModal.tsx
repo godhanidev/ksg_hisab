@@ -28,7 +28,6 @@ export function ProjectModal({
   const [name, setName] = useState("");
   const [department, setDepartment] = useState("Gujarat Water Supply & Sewerage Board (GWSSB)");
   const [value, setValue] = useState("");
-  const [progress, setProgress] = useState("0");
   const [status, setStatus] = useState<Project["status"]>("Active");
   const [startDate, setStartDate] = useState("");
   const [targetDate, setTargetDate] = useState("");
@@ -43,7 +42,6 @@ export function ProjectModal({
       setName(editingProject.name);
       setDepartment(editingProject.department);
       setValue(String(editingProject.value));
-      setProgress(String(editingProject.progress));
       setStatus(editingProject.status);
       setStartDate(editingProject.startDate || "");
       setTargetDate(editingProject.targetDate || "");
@@ -55,7 +53,6 @@ export function ProjectModal({
       setName("");
       setDepartment("Gujarat Water Supply & Sewerage Board (GWSSB)");
       setValue("");
-      setProgress("0");
       setStatus("Active");
       setStartDate("01/03/2026");
       setTargetDate("31/12/2026");
@@ -71,7 +68,6 @@ export function ProjectModal({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const numValue = parseFloat(value);
-    const numProgress = parseInt(progress, 10);
 
     if (!name.trim()) {
       setErrorMsg("Please enter site / project name");
@@ -88,7 +84,7 @@ export function ProjectModal({
       name: name.trim(),
       department: department.trim(),
       value: numValue,
-      progress: isNaN(numProgress) ? 0 : Math.min(100, Math.max(0, numProgress)),
+      progress: 0,
       received: editingProject ? editingProject.received : 0,
       expense: editingProject ? editingProject.expense : 0,
       status,
@@ -229,34 +225,18 @@ export function ProjectModal({
           </div>
         </div>
 
-        {/* Location & Progress */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Location / Site Address
-            </label>
-            <input
-              type="text"
-              value={location}
-              onChange={e => setLocation(e.target.value)}
-              placeholder="e.g. Devgadh Baria, Dahod District"
-              className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Work Progress ({progress}%)
-            </label>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={progress}
-              onChange={e => setProgress(e.target.value)}
-              className="w-full accent-amber-500"
-            />
-          </div>
+        {/* Location / Site Address */}
+        <div>
+          <label className="block text-xs font-bold text-slate-700 mb-1">
+            Location / Site Address
+          </label>
+          <input
+            type="text"
+            value={location}
+            onChange={e => setLocation(e.target.value)}
+            placeholder="e.g. Devgadh Baria, Dahod District"
+            className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+          />
         </div>
 
         {/* Notes */}

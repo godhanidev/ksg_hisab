@@ -165,21 +165,14 @@ export function Project360Modal({
                 </div>
               </div>
 
-              {/* Progress and Work Status Details */}
-              <div className="rounded-2xl border border-slate-200 bg-white p-5 space-y-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="font-bold text-sm text-slate-900">Work Execution Progress</h3>
-                  <span className="font-extrabold text-slate-900">{project.progress}% Complete</span>
-                </div>
-                <div className="h-3 w-full rounded-full bg-slate-100 overflow-hidden">
-                  <div className="h-full rounded-full bg-amber-500 transition-all duration-700" style={{ width: `${project.progress}%` }} />
-                </div>
-                {project.notes && (
-                  <p className="text-xs text-slate-600 bg-slate-50 p-3 rounded-xl border border-slate-100">
+              {/* Site Description & Notes */}
+              {project.notes && (
+                <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                  <p className="text-xs text-slate-600">
                     <strong>Site Description: </strong> {project.notes}
                   </p>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           )}
 
