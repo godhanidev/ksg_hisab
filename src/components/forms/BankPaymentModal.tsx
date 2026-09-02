@@ -217,6 +217,8 @@ export function BankPaymentModal({
               </span>
               <input
                 type="number"
+                inputMode="decimal"
+                pattern="[0-9]*"
                 step="any"
                 min="1"
                 value={amount}
