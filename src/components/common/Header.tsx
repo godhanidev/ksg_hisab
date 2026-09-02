@@ -80,34 +80,8 @@ export function Header({
         </div>
       </div>
 
-      {/* Right section: Cloud Sync, Language, Offline status, User Profile, Logout */}
+      {/* Right section: Language, Offline status, User Profile, Logout */}
       <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-        {/* Cloud Sync Button */}
-        {onOpenCloudModal && (
-          <button
-            type="button"
-            onClick={onOpenCloudModal}
-            className={`flex items-center gap-1.5 rounded-xl px-2.5 py-1.5 text-xs font-bold transition border ${
-              isCloudConnected
-                ? "bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100"
-                : "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100"
-            }`}
-            title="Configure Real-Time Cloud Sync"
-          >
-            {isCloudConnected ? (
-              <>
-                <Database size={14} className="text-emerald-600" />
-                <span className="hidden sm:inline">Cloud Live</span>
-              </>
-            ) : (
-              <>
-                <Cloud size={14} className="text-amber-600" />
-                <span className="hidden sm:inline">Connect Cloud</span>
-              </>
-            )}
-          </button>
-        )}
-
         {/* Multi-Language Switcher */}
         <div className="flex items-center rounded-xl bg-slate-100 p-0.5 sm:p-1 border border-slate-200">
           <button
