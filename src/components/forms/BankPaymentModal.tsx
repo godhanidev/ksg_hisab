@@ -17,16 +17,6 @@ type BankPaymentModalProps = {
   lang: Language;
 };
 
-const COMMON_PARTIES = [
-  "Vrajesh Traders",
-  "Ashish Buildcon",
-  "Shree Vrajesh Steel Traders",
-  "Khodiyar Sales and Service",
-  "National Steel Traders Rajkot",
-  "Gujarat Cement Agency",
-  "Krishna Earthmovers",
-];
-
 const COMMON_CATEGORIES = [
   "Steel",
   "Cement",
@@ -56,7 +46,6 @@ export function BankPaymentModal({
   const [paymentMode, setPaymentMode] = useState<BankPayment["paymentMode"]>("RTGS / NEFT");
   const [referenceNo, setReferenceNo] = useState<string>("");
   const [category, setCategory] = useState<string>("Material & Spares");
-  const [notes, setNotes] = useState<string>("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -69,7 +58,6 @@ export function BankPaymentModal({
       setPaymentMode(editingPayment.paymentMode);
       setReferenceNo(editingPayment.referenceNo || "");
       setCategory(editingPayment.category || "Material & Spares");
-      setNotes(editingPayment.notes || "");
       setAttachments(editingPayment.attachments || []);
     } else {
       setDate(todayStr());
@@ -83,7 +71,6 @@ export function BankPaymentModal({
       setPaymentMode("RTGS / NEFT");
       setReferenceNo("");
       setCategory("Material & Spares");
-      setNotes("");
       setAttachments([]);
     }
     setErrorMsg(null);
@@ -137,7 +124,7 @@ export function BankPaymentModal({
       paymentMode,
       referenceNo: referenceNo.trim() || undefined,
       category: category || "Other",
-      notes: notes.trim() || undefined,
+      notes: editingPayment?.notes,
       enteredBy: currentUser.name,
       attachments: attachments.length > 0 ? attachments : undefined,
     };
@@ -203,7 +190,7 @@ export function BankPaymentModal({
           </div>
         </div>
 
-        {/* Party Name & Suggestions */}
+        {/* Party Name Input */}
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">
             {t.partyName} *
@@ -216,18 +203,6 @@ export function BankPaymentModal({
             placeholder="e.g. Vrajesh Traders, Ashish Buildcon, Shree Vrajesh Steel"
             className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           />
-          <div className="mt-1.5 flex flex-wrap gap-1.5">
-            {COMMON_PARTIES.map(p => (
-              <button
-                key={p}
-                type="button"
-                onClick={() => setPartyName(p)}
-                className="rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] font-medium text-slate-600 hover:bg-slate-200 hover:text-slate-900 transition"
-              >
-                + {p}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* Amount & Category */}
@@ -350,20 +325,6 @@ export function BankPaymentModal({
               />
             </label>
           )}
-        </div>
-
-        {/* Notes */}
-        <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">
-            {t.notes}
-          </label>
-          <input
-            type="text"
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            placeholder="Remarks or purchase bill reference"
-            className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
-          />
         </div>
 
         {/* Submit Buttons */}
