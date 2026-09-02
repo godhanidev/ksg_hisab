@@ -55,7 +55,7 @@ export function ProjectModal({
       setStartDate("01/03/2026");
       setTargetDate("31/12/2026");
       setLocation("");
-      setSupervisorName(supervisors.length > 0 ? supervisors[0].name : "Rajubhai");
+      setSupervisorName("");
     }
     setErrorMsg(null);
   }, [editingProject, isOpen, supervisors]);
@@ -174,20 +174,19 @@ export function ProjectModal({
             <label className="block text-xs font-bold text-slate-700 mb-1">
               Assigned Site Supervisor
             </label>
-            <select
+            <input
+              type="text"
+              list="supervisor-suggestions"
               value={supervisorName}
               onChange={e => setSupervisorName(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-            >
-              <option value="Rajubhai">Rajubhai</option>
-              <option value="Ramesh Patel">Ramesh Patel</option>
-              <option value="Suresh Desai">Suresh Desai</option>
+              placeholder="e.g. Rajubhai, Mahesh Patel"
+              className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+            />
+            <datalist id="supervisor-suggestions">
               {supervisors.map(s => (
-                <option key={s.id} value={s.name}>
-                  {s.name}
-                </option>
+                <option key={s.id} value={s.name} />
               ))}
-            </select>
+            </datalist>
           </div>
 
           <div>
