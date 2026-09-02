@@ -16,7 +16,7 @@ import {
 import { loadStoredFirebaseConfig } from "./services/firebaseConfig";
 import {
   initFirestore, getActiveFirestore, subscribeToCollection,
-  saveDocumentToCloud, deleteDocumentFromCloud
+  saveDocumentToCloud, deleteDocumentFromCloud, ensureInitialCloudSeed
 } from "./services/firestoreSync";
 
 import { Header } from "./components/common/Header";
@@ -112,49 +112,34 @@ export function App() {
 
   // ── Initialize Firestore & Subscriptions on Mount / Config Change ───────
   useEffect(() => {
-    const config = loadStoredFirebaseConfig();
-    if (!config) {
-      setIsCloudConnected(false);
-      return;
-    }
-
-    const db = initFirestore(config);
+    const db = initFirestore();
     if (!db) {
       setIsCloudConnected(false);
       return;
     }
 
     setIsCloudConnected(true);
+    ensureInitialCloudSeed();
 
-    // Subscribe to real-time updates for all 5 collections
+    // Subscribe to real-time updates for all 5 collections directly from Cloud
     const unsubCash = subscribeToCollection<CashTransaction>("daily_cash", cloudCash => {
-      if (cloudCash.length > 0) {
-        setCashTransactions(cloudCash);
-      }
+      setCashTransactions(cloudCash);
     });
 
     const unsubBank = subscribeToCollection<BankPayment>("bank_payments", cloudBank => {
-      if (cloudBank.length > 0) {
-        setBankPayments(cloudBank);
-      }
+      setBankPayments(cloudBank);
     });
 
     const unsubGst = subscribeToCollection<GSTBill>("gst_bills", cloudGst => {
-      if (cloudGst.length > 0) {
-        setGstBills(cloudGst);
-      }
+      setGstBills(cloudGst);
     });
 
     const unsubProjects = subscribeToCollection<Project>("projects", cloudProjects => {
-      if (cloudProjects.length > 0) {
-        setProjects(cloudProjects);
-      }
+      setProjects(cloudProjects);
     });
 
     const unsubUsers = subscribeToCollection<UserAccount>("users", cloudUsers => {
-      if (cloudUsers.length > 0) {
-        setUsers(cloudUsers);
-      }
+      setUsers(cloudUsers);
     });
 
     return () => {

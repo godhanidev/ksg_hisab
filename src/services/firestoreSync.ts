@@ -3,16 +3,20 @@
 import { initializeApp, getApps, FirebaseApp } from "firebase/app";
 import {
   getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot,
-  Firestore, Unsubscribe
+  Firestore, Unsubscribe, getDocs
 } from "firebase/firestore";
-import { FirebaseConfig, loadStoredFirebaseConfig } from "./firebaseConfig";
+import { FirebaseConfig, loadStoredFirebaseConfig, DEFAULT_FIREBASE_CONFIG } from "./firebaseConfig";
 import { BankPayment, CashTransaction, GSTBill, Project, UserAccount } from "../types";
+import {
+  initialProjects, initialCashTransactions, initialBankPayments,
+  initialGSTBills, initialUsers
+} from "../data/initialData";
 
 let firestoreInstance: Firestore | null = null;
 let firebaseAppInstance: FirebaseApp | null = null;
 
 export function initFirestore(customConfig?: FirebaseConfig | null): Firestore | null {
-  const config = customConfig || loadStoredFirebaseConfig();
+  const config = customConfig || loadStoredFirebaseConfig() || DEFAULT_FIREBASE_CONFIG;
   if (!config || !config.apiKey || !config.projectId) {
     return null;
   }
@@ -60,7 +64,7 @@ export function subscribeToCollection<T extends { id: number }>(
         snapshot.forEach(docSnap => {
           items.push(docSnap.data() as T);
         });
-        // Sort items by date or id descending
+        // Sort items by id descending
         items.sort((a, b) => b.id - a.id);
         onData(items);
       },
@@ -112,43 +116,37 @@ export async function deleteDocumentFromCloud(
   }
 }
 
-// ── 1-Click Initial Cloud Migration ───────────────────────────────────────────
+// ── Safe One-Time Initial Seed (Runs ONLY if Cloud Collections are Completely Empty) ──
 
-export async function pushAllLocalDataToCloud(
-  projects: Project[],
-  cashTransactions: CashTransaction[],
-  bankPayments: BankPayment[],
-  gstBills: GSTBill[],
-  users: UserAccount[]
-): Promise<{ success: boolean; count: number }> {
+export async function ensureInitialCloudSeed(): Promise<void> {
   const db = getActiveFirestore();
-  if (!db) return { success: false, count: 0 };
+  if (!db) return;
 
-  let count = 0;
   try {
-    for (const p of projects) {
+    // Check if cloud already has daily_cash or projects
+    const checkSnap = await getDocs(collection(db, "projects"));
+    if (checkSnap.size > 0) {
+      // Cloud already has data - NEVER overwrite!
+      return;
+    }
+
+    console.log("Firestore cloud is empty, seeding initial Dahod project and records...");
+    for (const p of initialProjects) {
       await saveDocumentToCloud("projects", p);
-      count++;
     }
-    for (const c of cashTransactions) {
+    for (const c of initialCashTransactions) {
       await saveDocumentToCloud("daily_cash", c);
-      count++;
     }
-    for (const b of bankPayments) {
+    for (const b of initialBankPayments) {
       await saveDocumentToCloud("bank_payments", b);
-      count++;
     }
-    for (const g of gstBills) {
+    for (const g of initialGSTBills) {
       await saveDocumentToCloud("gst_bills", g);
-      count++;
     }
-    for (const u of users) {
+    for (const u of initialUsers) {
       await saveDocumentToCloud("users", u);
-      count++;
     }
-    return { success: true, count };
   } catch (err) {
-    console.error("Failed to migrate data to cloud:", err);
-    return { success: false, count };
+    console.error("Error checking/seeding initial Firestore cloud data:", err);
   }
 }
