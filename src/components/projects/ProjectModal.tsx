@@ -33,7 +33,6 @@ export function ProjectModal({
   const [targetDate, setTargetDate] = useState("");
   const [location, setLocation] = useState("");
   const [supervisorName, setSupervisorName] = useState("");
-  const [notes, setNotes] = useState("");
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -47,7 +46,6 @@ export function ProjectModal({
       setTargetDate(editingProject.targetDate || "");
       setLocation(editingProject.location || "");
       setSupervisorName(editingProject.supervisorName || "");
-      setNotes(editingProject.notes || "");
     } else {
       setCode(`PRJ-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`);
       setName("");
@@ -58,7 +56,6 @@ export function ProjectModal({
       setTargetDate("31/12/2026");
       setLocation("");
       setSupervisorName(supervisors.length > 0 ? supervisors[0].name : "Rajubhai");
-      setNotes("");
     }
     setErrorMsg(null);
   }, [editingProject, isOpen, supervisors]);
@@ -80,7 +77,7 @@ export function ProjectModal({
 
     const payload = {
       ...(editingProject ? { id: editingProject.id } : {}),
-      code: code.trim(),
+      code: code.trim() || `PRJ-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`,
       name: name.trim(),
       department: department.trim(),
       value: numValue,
@@ -92,7 +89,7 @@ export function ProjectModal({
       targetDate,
       location: location.trim() || undefined,
       supervisorName: supervisorName || undefined,
-      notes: notes.trim() || undefined,
+      notes: editingProject?.notes,
     };
 
     onSave(payload as any);
@@ -114,34 +111,19 @@ export function ProjectModal({
           </div>
         )}
 
-        {/* Site Name & Code */}
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-          <div className="sm:col-span-2">
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Site / Project Name *
-            </label>
-            <input
-              type="text"
-              value={name}
-              onChange={e => setName(e.target.value)}
-              required
-              placeholder="e.g. Dahod Devgadh Baria Package 2"
-              className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-            />
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              Site Code *
-            </label>
-            <input
-              type="text"
-              value={code}
-              onChange={e => setCode(e.target.value)}
-              required
-              className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm font-mono text-slate-700 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-            />
-          </div>
+        {/* Site / Project Name */}
+        <div>
+          <label className="block text-xs font-bold text-slate-700 mb-1">
+            Site / Project Name *
+          </label>
+          <input
+            type="text"
+            value={name}
+            onChange={e => setName(e.target.value)}
+            required
+            placeholder="e.g. Dahod Devgadh Baria Package 2"
+            className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+          />
         </div>
 
         {/* Department & Tender Value */}
@@ -235,20 +217,6 @@ export function ProjectModal({
             value={location}
             onChange={e => setLocation(e.target.value)}
             placeholder="e.g. Devgadh Baria, Dahod District"
-            className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
-          />
-        </div>
-
-        {/* Notes */}
-        <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">
-            Site Description / Notes
-          </label>
-          <textarea
-            value={notes}
-            onChange={e => setNotes(e.target.value)}
-            rows={2}
-            placeholder="Pipeline laying, foundation, masonry work details"
             className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
           />
         </div>
