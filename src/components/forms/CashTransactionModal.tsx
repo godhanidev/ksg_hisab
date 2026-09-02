@@ -5,7 +5,7 @@ import {
 } from "lucide-react";
 import { Attachment, CashTransaction, CashTransactionType, Language, Project, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
-import { formatINR, todayStr } from "../../utils/formatters";
+import { formatINR, todayStr, toInputDateFormat, fromInputDateFormat } from "../../utils/formatters";
 import { ModalWrapper } from "../common/ModalWrapper";
 
 type CashTransactionModalProps = {
@@ -238,18 +238,20 @@ export function CashTransactionModal({
             </select>
           </div>
 
-          {/* Date */}
+          {/* Date with Calendar Picker */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              {t.date} (DD/MM/YYYY) *
+            <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+              <span>{t.date} *</span>
+              <span className="text-[11px] font-mono font-semibold text-amber-800 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-200">
+                📅 {date || todayStr()}
+              </span>
             </label>
             <input
-              type="text"
-              value={date}
-              onChange={e => setDate(e.target.value)}
+              type="date"
+              value={toInputDateFormat(date)}
+              onChange={e => setDate(fromInputDateFormat(e.target.value))}
               required
-              placeholder="e.g. 10/03/2026"
-              className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+              className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm font-semibold text-slate-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 cursor-pointer"
             />
           </div>
         </div>
