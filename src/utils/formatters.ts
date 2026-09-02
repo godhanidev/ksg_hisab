@@ -58,3 +58,33 @@ export const fromInputDateFormat = (val: string): string => {
   }
   return val;
 };
+
+// Return full localized label for User Roles (Admin, Site Partner, Site Engineer, Supervisor)
+export const getUserRoleLabel = (role: string, lang: string = "en"): string => {
+  switch (role) {
+    case "admin":
+      return lang === "gu" ? "એડમિન / ઓનર" : lang === "hi" ? "एडमिन / ओनर" : "Admin (Head Office)";
+    case "site_partner":
+      return lang === "gu" ? "સાઇટ પાર્ટનર" : lang === "hi" ? "साइट पार्टनर" : "Site Partner";
+    case "site_engineer":
+      return lang === "gu" ? "સાઇટ એન્જિનિયર" : lang === "hi" ? "साइट इंजीनियर" : "Site Engineer";
+    case "supervisor":
+    default:
+      return lang === "gu" ? "સાઇટ સુપરવાઇઝર" : lang === "hi" ? "साइट सुपरवाइजर" : "Site Supervisor";
+  }
+};
+
+// Return short English display label for header and chips
+export const getShortRoleLabel = (role: string): string => {
+  switch (role) {
+    case "admin":
+      return "Owner / Admin";
+    case "site_partner":
+      return "Site Partner";
+    case "site_engineer":
+      return "Site Engineer";
+    case "supervisor":
+    default:
+      return "Site Supervisor";
+  }
+};

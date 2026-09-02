@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Language, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
+import { getShortRoleLabel } from "../../utils/formatters";
 
 type SidebarProps = {
   sidebarOpen: boolean;
@@ -142,7 +143,7 @@ export function Sidebar({
             <div className="min-w-0 flex-1">
               <p className="text-xs font-bold text-white truncate">{currentUser.name}</p>
               <p className="text-[10px] text-amber-400/80 font-semibold truncate">
-                {isAdmin ? t.adminRole : `${t.supervisorRole} (${currentUser.assignedProjects.length > 0 ? currentUser.assignedProjects[0] : "Site"})`}
+                {isAdmin ? t.adminRole : `${getShortRoleLabel(currentUser.role)} (${currentUser.assignedProjects.length > 0 ? currentUser.assignedProjects[0] : "Site"})`}
               </p>
             </div>
           </div>

@@ -159,6 +159,24 @@ export function App() {
   useEffect(() => { saveStoredCollection("users", users); }, [users]);
   useEffect(() => { saveStoredSession(currentUser); }, [currentUser]);
 
+  // ── Real-time synchronization of active currentUser when users collection changes ──
+  useEffect(() => {
+    if (currentUser && users.length > 0) {
+      const liveUser = users.find(
+        u => u.id === currentUser.id || u.username.toLowerCase() === currentUser.username.toLowerCase()
+      );
+      if (
+        liveUser &&
+        (liveUser.role !== currentUser.role ||
+          liveUser.name !== currentUser.name ||
+          JSON.stringify(liveUser.assignedProjects) !== JSON.stringify(currentUser.assignedProjects))
+      ) {
+        setCurrentUser(liveUser);
+        saveStoredSession(liveUser);
+      }
+    }
+  }, [users]);
+
   // ── Online / Offline Event Listeners ────────────────────────────────────
   useEffect(() => {
     const handleOnline = () => {

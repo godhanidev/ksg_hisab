@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { Language, Project, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
+import { getShortRoleLabel } from "../../utils/formatters";
 
 type HeaderProps = {
   activePage: string;
@@ -73,7 +74,7 @@ export function Header({
           <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 font-medium truncate">
             <span>K.S.Godhani</span>
             <span>/</span>
-            <span className="text-slate-500">{isAdmin ? t.adminRole : t.supervisorRole}</span>
+            <span className="text-slate-500 font-semibold">{getShortRoleLabel(currentUser.role)}</span>
           </div>
           <h2 className="text-base sm:text-xl font-black text-slate-900 leading-tight truncate">{activePage}</h2>
         </div>
@@ -182,7 +183,7 @@ export function Header({
           </div>
           <div className="hidden xl:block text-left">
             <p className="text-xs font-bold text-slate-900 leading-tight truncate max-w-[140px]">{currentUser.name}</p>
-            <p className="text-[10px] font-medium text-slate-500">{isAdmin ? t.adminRole : t.supervisorRole}</p>
+            <p className="text-[10px] font-semibold text-slate-500">{getShortRoleLabel(currentUser.role)}</p>
           </div>
         </div>
 

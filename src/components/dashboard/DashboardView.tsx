@@ -8,7 +8,7 @@ import {
   Attachment, BankPayment, CashTransaction, GSTBill, Language, Project, UserAccount
 } from "../../types";
 import { getTranslation } from "../../i18n/translations";
-import { formatINR } from "../../utils/formatters";
+import { formatINR, getUserRoleLabel } from "../../utils/formatters";
 import { VisualCharts } from "./VisualCharts";
 
 type DashboardViewProps = {
@@ -175,7 +175,7 @@ export function DashboardView({
           <div className="flex items-center gap-2">
             <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse" />
             <span className="text-xs font-bold uppercase tracking-wider text-amber-400">
-              {isAdmin ? t.adminRole : t.supervisorRole}
+              {getUserRoleLabel(currentUser.role, lang)}
             </span>
           </div>
           <h1 className="text-xl sm:text-3xl font-black mt-1.5 tracking-tight text-white">
