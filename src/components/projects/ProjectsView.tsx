@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Plus, Search, Eye, Trash2, Building2, MapPin, Download } from "lucide-react";
+import { Plus, Search, Eye, Pencil, Trash2, Building2, MapPin, Download } from "lucide-react";
 import { Language, Project, UserAccount } from "../../types";
 import { formatINR } from "../../utils/formatters";
 import { getTranslation } from "../../i18n/translations";
@@ -11,6 +11,7 @@ type ProjectsViewProps = {
   currentUser: UserAccount;
   lang: Language;
   onAddNew: () => void;
+  onEdit: (project: Project) => void;
   onDelete: (id: number) => void;
   onView360: (project: Project) => void;
 };
@@ -21,6 +22,7 @@ export function ProjectsView({
   currentUser,
   lang,
   onAddNew,
+  onEdit,
   onDelete,
   onView360,
 }: ProjectsViewProps) {
@@ -99,7 +101,7 @@ export function ProjectsView({
                 <th className="px-6 py-4">Govt Department</th>
                 <th className="px-6 py-4">Tender Value</th>
                 <th className="px-6 py-4">Supervisor</th>
-                <th className="px-6 py-4 text-center">360° Site Hisab</th>
+                <th className="px-6 py-4 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-xs sm:text-sm">
@@ -118,13 +120,23 @@ export function ProjectsView({
                   <td className="px-6 py-4 font-bold text-slate-900">{formatINR(p.value)}</td>
                   <td className="px-6 py-4 text-slate-700 font-semibold">{p.supervisorName || "-"}</td>
                   <td className="px-6 py-4 text-center">
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex items-center justify-center gap-1.5">
                       <button
                         onClick={() => onView360(p)}
-                        className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3.5 py-1.5 text-xs font-bold text-white hover:bg-slate-800 transition shadow-xs"
+                        className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-slate-800 transition shadow-xs"
                       >
                         <Eye size={13} /> Site 360°
                       </button>
+
+                      {isAdmin && (
+                        <button
+                          onClick={() => onEdit(p)}
+                          className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
+                          title={t.edit}
+                        >
+                          <Pencil size={15} />
+                        </button>
+                      )}
 
                       {isAdmin && (
                         <button

@@ -573,6 +573,10 @@ export function App() {
                 setEditingProject(null);
                 setShowProjectModal(true);
               }}
+              onEdit={p => {
+                setEditingProject(p);
+                setShowProjectModal(true);
+              }}
               onDelete={handleDeleteProject}
               onView360={p => setViewingProject360(p)}
             />
