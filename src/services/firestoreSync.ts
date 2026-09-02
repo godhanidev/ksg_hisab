@@ -45,6 +45,13 @@ export function getActiveFirestore(): Firestore | null {
   return firestoreInstance;
 }
 
+// ── Sanitize Data for Firestore (Remove undefined values that cause setDoc to fail) ──
+function cleanForFirestore<T>(data: T): Record<string, any> {
+  return JSON.parse(
+    JSON.stringify(data, (_, value) => (value === undefined ? null : value))
+  );
+}
+
 // ── Real-Time Sync Subscriptions ──────────────────────────────────────────────
 
 export function subscribeToCollection<T extends { id: number }>(
@@ -90,8 +97,9 @@ export async function saveDocumentToCloud<T extends { id: number }>(
   if (!db) return false;
 
   try {
+    const cleaned = cleanForFirestore(data);
     const docRef = doc(db, collectionName, String(data.id));
-    await setDoc(docRef, data, { merge: true });
+    await setDoc(docRef, cleaned, { merge: true });
     return true;
   } catch (err) {
     console.error(`Error saving document to ${collectionName}:`, err);
