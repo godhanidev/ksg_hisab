@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Shield, HardHat, Plus, Edit, Trash2, Check, Lock, User, Phone, MapPin } from "lucide-react";
+import { Shield, HardHat, Plus, Edit, Trash2, Check, Lock, User, Phone, MapPin, Briefcase } from "lucide-react";
 import { Language, Project, Role, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
 import { ModalWrapper } from "../common/ModalWrapper";
@@ -97,13 +97,39 @@ export function UserManagement({
     }
   };
 
+  const getRoleBadge = (role: Role) => {
+    switch (role) {
+      case "admin":
+        return {
+          label: "Owner / Admin",
+          bg: "bg-amber-100 text-amber-800 border border-amber-200",
+        };
+      case "site_engineer":
+        return {
+          label: "Site Engineer",
+          bg: "bg-blue-100 text-blue-800 border border-blue-200",
+        };
+      case "site_partner":
+        return {
+          label: "Site Partner",
+          bg: "bg-purple-100 text-purple-800 border border-purple-200",
+        };
+      case "supervisor":
+      default:
+        return {
+          label: "Site Supervisor",
+          bg: "bg-sky-100 text-sky-800 border border-sky-200",
+        };
+    }
+  };
+
   return (
     <div className="space-y-6 pb-20">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl sm:text-2xl font-bold text-slate-900">{t.userManagement}</h1>
           <p className="text-xs sm:text-sm text-slate-500">
-            Create supervisor accounts, assign specific construction sites &amp; enforce site-level access isolation.
+            Create user accounts for Site Supervisors, Site Engineers &amp; Site Partners with assigned site permissions.
           </p>
         </div>
 
@@ -112,7 +138,7 @@ export function UserManagement({
           className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-5 py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-slate-800 transition shadow-md"
         >
           <Plus size={16} />
-          <span>Add Supervisor / Staff</span>
+          <span>Add User Account</span>
         </button>
       </div>
 
@@ -120,6 +146,8 @@ export function UserManagement({
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
         {users.map(u => {
           const isAdmin = u.role === "admin";
+          const badge = getRoleBadge(u.role);
+
           return (
             <div
               key={u.id}
@@ -145,11 +173,9 @@ export function UserManagement({
                   </div>
 
                   <span
-                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
-                      isAdmin ? "bg-amber-100 text-amber-800 border border-amber-200" : "bg-sky-100 text-sky-800 border border-sky-200"
-                    }`}
+                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider ${badge.bg}`}
                   >
-                    {isAdmin ? t.adminRole : t.supervisorRole}
+                    {badge.label}
                   </span>
                 </div>
 
@@ -178,7 +204,7 @@ export function UserManagement({
               </div>
 
               <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-between">
-                <span className="text-[11px] text-slate-400 font-mono">Site Supervisor</span>
+                <span className="text-[11px] text-slate-500 font-semibold">{badge.label}</span>
                 <div className="flex items-center gap-1.5">
                   <button
                     onClick={() => openEdit(u)}
@@ -208,67 +234,82 @@ export function UserManagement({
         <ModalWrapper
           isOpen={showModal}
           onClose={() => setShowModal(false)}
-          title={editUser ? "Edit User Access" : "Add New User Account"}
-          subtitle="Configure role &amp; site access permissions"
+          title={editUser ? `Edit User: ${editUser.name}` : "Add New User Account"}
+          subtitle="Configure user credentials, role &amp; site access permissions"
         >
           <form onSubmit={handleSave} className="space-y-4">
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Full Name *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Full Name *</label>
                 <input
                   type="text"
                   required
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  placeholder="e.g. Rajubhai (Supervisor)"
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-slate-800"
+                  placeholder="e.g. Rajubhai or Hitesh Patel"
+                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-semibold outline-none focus:border-slate-800"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Role *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Role *</label>
                 <select
                   value={form.role}
                   onChange={e => setForm(f => ({ ...f, role: e.target.value as any }))}
                   className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-semibold outline-none focus:border-slate-800"
                 >
-                  <option value="supervisor">Site Supervisor (Restricted to assigned site)</option>
-                  <option value="admin">Owner / Admin (Full Access to all sites)</option>
+                  <option value="supervisor">Site Supervisor (સાઇટ સુપરવાઇઝર)</option>
+                  <option value="site_engineer">Site Engineer (સાઇટ એન્જિનિયર)</option>
+                  <option value="site_partner">Site Partner (સાઇટ પાર્ટનર)</option>
+                  <option value="admin">Owner / Admin (ઓનર - Full Access to all sites)</option>
                 </select>
               </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-2">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Username *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Username (Login ID) *</label>
                 <input
                   type="text"
                   required
                   value={form.username}
-                  onChange={e => setForm(f => ({ ...f, username: e.target.value }))}
+                  onChange={e => setForm(f => ({ ...f, username: e.target.value.toLowerCase().replace(/\s+/g, '') }))}
                   placeholder="e.g. rajubhai"
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-slate-800"
+                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-mono font-bold outline-none focus:border-slate-800"
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">Password *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">Password *</label>
                 <input
                   type="text"
                   required
                   value={form.password}
                   onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                  placeholder="raju@2026"
-                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-slate-800"
+                  placeholder="e.g. raju@2026"
+                  className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-mono font-bold outline-none focus:border-slate-800"
                 />
               </div>
             </div>
 
-            {form.role === "supervisor" && (
+            {/* Mobile / Phone Number */}
+            <div>
+              <label className="block text-xs font-bold text-slate-700 mb-1">Mobile / Phone Number</label>
+              <input
+                type="tel"
+                value={form.phone}
+                onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
+                placeholder="e.g. 98250 12345"
+                className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-slate-800"
+              />
+            </div>
+
+            {/* Site Isolation Section for Non-Admin roles */}
+            {form.role !== "admin" && (
               <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4 space-y-3">
                 <p className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
                   <MapPin size={14} className="text-amber-600" />
-                  Assign Construction Sites (Strict Isolation)
+                  Assign Construction Sites (સાઇટ ફાળવો)
                 </p>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {projects.map(p => (
@@ -297,16 +338,16 @@ export function UserManagement({
               <button
                 type="button"
                 onClick={() => setShowModal(false)}
-                className="rounded-xl border border-slate-200 px-5 py-2.5 text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-50"
+                className="rounded-xl border border-slate-200 px-5 py-2.5 text-xs sm:text-sm font-semibold text-slate-600 hover:bg-slate-50 transition"
               >
                 {t.cancel}
               </button>
               <button
                 type="submit"
-                className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-slate-800 shadow-md"
+                className="inline-flex items-center gap-2 rounded-xl bg-slate-900 px-6 py-2.5 text-xs sm:text-sm font-bold text-white hover:bg-slate-800 shadow-md transition active:scale-95"
               >
                 <Check size={16} />
-                {t.save}
+                <span>{t.save}</span>
               </button>
             </div>
           </form>

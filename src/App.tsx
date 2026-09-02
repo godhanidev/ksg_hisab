@@ -662,7 +662,7 @@ export function App() {
         onClose={() => setShowProjectModal(false)}
         onSave={handleSaveProject}
         editingProject={editingProject}
-        supervisors={users.filter(u => u.role === "supervisor")}
+        supervisors={users.filter(u => u.role !== "admin")}
         lang={lang}
       />
 

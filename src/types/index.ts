@@ -2,7 +2,7 @@
 
 export type Language = "en" | "gu" | "hi";
 
-export type Role = "admin" | "supervisor" | "user";
+export type Role = "admin" | "supervisor" | "site_engineer" | "site_partner" | "user";
 
 export type UserAccount = {
   id: number;
