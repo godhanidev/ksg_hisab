@@ -276,17 +276,10 @@ export function AccountView({
 
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
           <div className="flex items-start sm:items-center gap-4 sm:gap-5">
-            {/* Avatar / Logo Box */}
+            {/* User Profile Avatar Box */}
             <div className="relative">
-              <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl bg-white p-1.5 shadow-2xl border-2 border-white/20 flex items-center justify-center overflow-hidden shrink-0">
-                <img
-                  src="/logo.png"
-                  alt="KS Logo"
-                  className="h-full w-full object-contain"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).style.display = 'none';
-                  }}
-                />
+              <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-3xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 p-1.5 shadow-2xl border-2 border-amber-300/40 flex items-center justify-center shrink-0">
+                <User size={42} className="text-slate-950" />
               </div>
             </div>
 

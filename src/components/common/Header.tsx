@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  Menu, X, WifiOff, RefreshCw, LogOut, CheckCircle2
+  Menu, X, WifiOff, RefreshCw, LogOut, CheckCircle2, User
 } from "lucide-react";
 import { Language, Project, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
@@ -40,37 +40,41 @@ export function Header({
   isSyncing,
 }: HeaderProps) {
   const t = getTranslation(lang);
-  const isAdmin = currentUser.role === "admin";
 
   return (
-    <header className="sticky top-0 z-30 flex h-16 sm:h-20 items-center justify-between border-b border-slate-200/80 bg-white/95 px-3 sm:px-8 backdrop-blur shadow-xs">
-      {/* Left section: Desktop Sidebar Toggle / Mobile Company Logo & Page Title */}
-      <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+    <header className="sticky top-0 z-30 flex h-16 w-full items-center justify-between border-b border-slate-200/80 bg-white/95 px-4 sm:px-6 backdrop-blur transition-all">
+      {/* Left: Mobile Toggle & Page Title */}
+      <div className="flex items-center gap-3">
         <button
-          onClick={() => setSidebarOpen(o => !o)}
-          className="hidden lg:flex rounded-xl p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition shrink-0 items-center justify-center"
-          aria-label="Toggle Sidebar"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="rounded-xl p-2 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition lg:hidden"
+          aria-label="Toggle Menu"
         >
-          {sidebarOpen ? <X size={19} /> : <Menu size={19} />}
+          {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
 
-        {/* Mobile KS Logo */}
-        <div className="flex lg:hidden h-9 w-9 items-center justify-center rounded-xl bg-white p-1 shadow-sm border border-slate-200 overflow-hidden shrink-0">
-          <img
-            src="/logo.png"
-            alt="KS Logo"
-            className="h-full w-full object-contain"
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
+        {/* Mobile App Brand Title */}
+        <div className="flex items-center gap-2 lg:hidden">
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white p-0.5 shadow-2xs border border-slate-200 overflow-hidden">
+            <img
+              src="/logo.png"
+              alt="KS Logo"
+              className="h-full w-full object-contain"
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+          </div>
+          <div>
+            <h1 className="text-xs font-black text-slate-900 leading-none">KS GODHANI</h1>
+            <p className="text-[9px] text-amber-600 font-bold uppercase tracking-wider mt-0.5">{activePage}</p>
+          </div>
         </div>
 
-        <div>
-          <h2 className="text-base sm:text-xl font-black text-slate-900 leading-tight truncate">{activePage}</h2>
-          <p className="hidden sm:block text-[11px] font-semibold text-slate-500">
-            {isAdmin ? "K.S.Godhani Civil Works & Construction Ledger" : "Site Supervisor / Field Ledger View"}
-          </p>
+        {/* Desktop Page Title Breadcrumb */}
+        <div className="hidden lg:block">
+          <p className="text-xs font-semibold text-slate-400">Civil Works & Construction Accounting</p>
+          <h2 className="text-base font-bold text-slate-900">{activePage}</h2>
         </div>
       </div>
 
@@ -135,18 +139,11 @@ export function Header({
         <button
           type="button"
           onClick={onOpenAccount}
-          className="flex items-center gap-2.5 pl-2 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-1.5 rounded-2xl transition"
+          className="flex items-center gap-2.5 pl-2 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-1.5 rounded-2xl transition group"
           title={lang === "gu" ? "મારું એકાઉન્ટ / પ્રોફાઇલ ખોલો" : "View My Account & Profile"}
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white p-0.5 shadow-xs border border-slate-200 overflow-hidden shrink-0">
-            <img
-              src="/logo.png"
-              alt="KS Logo"
-              className="h-full w-full object-contain"
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-900 text-amber-400 group-hover:bg-amber-500 group-hover:text-slate-950 shadow-xs border border-slate-700/60 transition shrink-0">
+            <User size={18} />
           </div>
           <div className="hidden xl:block text-left">
             <p className="text-xs font-bold text-slate-900 leading-tight truncate max-w-[140px]">{currentUser.name}</p>

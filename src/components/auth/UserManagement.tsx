@@ -161,15 +161,8 @@ export function UserManagement({
               <div>
                 <div className="flex items-start justify-between gap-2 mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-white p-1 shadow-sm border border-slate-200 overflow-hidden">
-                      <img
-                        src="/logo.png"
-                        alt="KS Logo"
-                        className="h-full w-full object-contain"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = 'none';
-                        }}
-                      />
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-900 shadow-2xs border border-amber-200">
+                      <User size={20} className="text-amber-700" />
                     </div>
                     <div className="min-w-0">
                       <p className="font-bold text-sm text-slate-900 truncate">{u.name}</p>
