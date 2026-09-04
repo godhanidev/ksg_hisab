@@ -166,8 +166,8 @@ export function ChangePasswordModal({
           <ShieldCheck size={16} className="text-amber-600 shrink-0 mt-0.5" />
           <span>
             {lang === "gu"
-              ? "પાસવર્ડ બદલાતા જ ક્લાઉડ ડેટાબેઝમાં તરત જ અપડેટ થઈ જશે અને એડમિન યુઝર મેનેજમેન્ટમાં પણ નવો પાસવર્ડ સિંક થઈ જશે."
-              : "New password will be securely updated in Firebase Cloud immediately and synchronized with User Management."}
+              ? "નવો પાસવર્ડ સુરક્ષિત રીતે સેવ થઈ જશે."
+              : "New password will be securely updated and saved."}
           </span>
         </div>
 

@@ -7,14 +7,13 @@ import {
   Eye,
   EyeOff,
   Check,
+  CheckCircle2,
   AlertCircle,
   Phone,
   Building2,
   MapPin,
-  CheckCircle2,
   ShieldCheck,
   Users,
-  Database,
   Plus,
   Pencil,
   Trash2,
@@ -136,7 +135,7 @@ export function AccountView({
           description:
             lang === "gu"
               ? "તમામ સાઇટ્સ, બેંક પેમેન્ટ, યુઝર્સ, ટેક્સ ઇન્વોઇસ અને સિસ્ટમ સેટિંગ્સનું સંપૂર્ણ નિયંત્રણ."
-              : "Full access across all projects, bank transfers, GST tax bills, user accounts & cloud backup.",
+              : "Full access across all projects, bank transfers, GST tax bills, and user accounts.",
         };
       case "site_partner":
         return {
@@ -197,14 +196,6 @@ export function AccountView({
                   }}
                 />
               </div>
-              <div
-                className={`absolute -bottom-1 -right-1 h-5 w-5 rounded-full border-2 border-slate-950 flex items-center justify-center ${
-                  isCloudConnected ? "bg-emerald-500" : "bg-amber-500"
-                }`}
-                title={isCloudConnected ? "Cloud Active" : "Local Mode"}
-              >
-                <div className="h-2 w-2 rounded-full bg-white animate-ping" />
-              </div>
             </div>
 
             {/* Name & Details */}
@@ -233,10 +224,6 @@ export function AccountView({
                 <span className="inline-flex items-center gap-1.5 text-slate-300">
                   <Shield size={13} className="text-amber-400" />
                   <span>ID #{currentUser.id}</span>
-                </span>
-                <span className="inline-flex items-center gap-1.5 text-emerald-400 font-medium">
-                  <CheckCircle2 size={13} />
-                  <span>{isCloudConnected ? "Cloud Synced" : "Local Storage"}</span>
                 </span>
               </div>
             </div>
@@ -639,8 +626,8 @@ export function AccountView({
                 <Lock size={14} className="text-slate-400 shrink-0 mt-0.5" />
                 <span>
                   {lang === "gu"
-                    ? "નવો પાસવર્ડ સેટ થતાં જ ક્લાઉડ ડેટાબેઝમાં સુરક્ષિત રીતે અપડેટ થઈ જશે."
-                    : "Password changes are encrypted and synchronized with Firebase Cloud immediately."}
+                    ? "નવો પાસવર્ડ સુરક્ષિત રીતે સેવ થઈ જશે."
+                    : "Password changes are encrypted and saved securely."}
                 </span>
               </div>
 
@@ -657,27 +644,6 @@ export function AccountView({
                 </span>
               </button>
             </form>
-          </div>
-
-          {/* System Info Box */}
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-sm space-y-2">
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              {lang === "gu" ? "સિસ્ટમ સુરક્ષા" : "Security & System"}
-            </h3>
-            <div className="space-y-1.5 text-xs text-slate-600">
-              <p className="flex items-center justify-between py-1 border-b border-slate-100">
-                <span>App Version</span>
-                <span className="font-mono font-semibold text-slate-900">v2.0 (2026)</span>
-              </p>
-              <p className="flex items-center justify-between py-1 border-b border-slate-100">
-                <span>Database Sync</span>
-                <span className="font-semibold text-emerald-600">Firestore SSL</span>
-              </p>
-              <p className="flex items-center justify-between py-1">
-                <span>Role Isolation (RBAC)</span>
-                <span className="font-semibold text-slate-900">Active</span>
-              </p>
-            </div>
           </div>
         </div>
       </div>
