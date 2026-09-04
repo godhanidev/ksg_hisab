@@ -15,6 +15,10 @@ import {
   ShieldCheck,
   Users,
   Database,
+  Plus,
+  Pencil,
+  Trash2,
+  ExternalLink,
 } from "lucide-react";
 import { Language, Project, Role, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
@@ -29,6 +33,10 @@ type AccountViewProps = {
   isCloudConnected: boolean;
   onNavigateToTab?: (tabName: string) => void;
   onOpenCloudModal?: () => void;
+  onAddNewProject?: () => void;
+  onEditProject?: (project: Project) => void;
+  onDeleteProject?: (id: number) => void;
+  onViewProject360?: (project: Project) => void;
 };
 
 export function AccountView({
@@ -40,6 +48,10 @@ export function AccountView({
   isCloudConnected,
   onNavigateToTab,
   onOpenCloudModal,
+  onAddNewProject,
+  onEditProject,
+  onDeleteProject,
+  onViewProject360,
 }: AccountViewProps) {
   const t = getTranslation(lang);
   const isAdmin = currentUser.role === "admin";
@@ -230,26 +242,38 @@ export function AccountView({
             </div>
           </div>
 
-          {/* Quick Info / Cloud Button */}
+          {/* Quick Info & Action Buttons */}
           <div className="flex flex-wrap md:flex-col items-start md:items-end gap-2 shrink-0">
-            {onOpenCloudModal && (
+            {isAdmin && onAddNewProject && (
               <button
                 type="button"
-                onClick={onOpenCloudModal}
-                className="inline-flex items-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 px-3.5 py-2 text-xs font-bold text-white transition backdrop-blur"
+                onClick={onAddNewProject}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 px-3.5 py-2 text-xs font-black text-slate-950 transition shadow-lg active:scale-95"
               >
-                <Database size={14} className="text-amber-400" />
-                <span>{lang === "gu" ? "ક્લાઉડ ડેટા સ્ટેટસ" : "Cloud Sync Info"}</span>
+                <Plus size={15} />
+                <span>{lang === "gu" ? "+ નવી સાઇટ ઉમેરો" : "+ Add New Site"}</span>
               </button>
             )}
+
             {isAdmin && onNavigateToTab && (
               <button
                 type="button"
                 onClick={() => onNavigateToTab("User Management")}
-                className="inline-flex items-center gap-2 rounded-xl bg-amber-400 hover:bg-amber-300 px-3.5 py-2 text-xs font-black text-slate-950 transition shadow-lg"
+                className="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 px-3.5 py-2 text-xs font-bold text-white transition backdrop-blur"
               >
-                <Users size={14} />
-                <span>{lang === "gu" ? "બધા યુઝર્સ જુઓ" : "Manage All Users"}</span>
+                <Users size={14} className="text-amber-400" />
+                <span>{lang === "gu" ? "યુઝર એકાઉન્ટ્સ મેનેજ કરો" : "Manage User Accounts"}</span>
+              </button>
+            )}
+
+            {isAdmin && onNavigateToTab && (
+              <button
+                type="button"
+                onClick={() => onNavigateToTab("Projects")}
+                className="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 px-3.5 py-2 text-xs font-bold text-white transition backdrop-blur"
+              >
+                <Building2 size={14} className="text-amber-400" />
+                <span>{lang === "gu" ? "પ્રોજેક્ટ્સ પેજ ખોલો" : "View All Projects"}</span>
               </button>
             )}
           </div>
@@ -318,35 +342,108 @@ export function AccountView({
           {/* ── Admin Specific Stats OR Supervisor Assigned Sites ─────────── */}
           {isAdmin ? (
             <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <Building2 size={18} className="text-amber-600" />
-                  <span>{lang === "gu" ? "તમામ સાઇટ્સ વિહંગાવલોકન (All Projects)" : "Head Office Sites Overview"}</span>
-                </h2>
-                <span className="rounded-full bg-slate-100 px-2.5 py-0.5 text-xs font-bold text-slate-700">
-                  {projects.length} {lang === "gu" ? "સાઇટ્સ" : "Sites"}
-                </span>
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                    <Building2 size={18} className="text-amber-600" />
+                    <span>{lang === "gu" ? "તમામ સાઇટ્સ વિહંગાવલોકન (All Projects)" : "Construction Sites & Projects"}</span>
+                  </h2>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {lang === "gu" ? "સાઇટ ઉમેરો, સુધારો કરો અથવા સાઇટ 360° હિસાબ જુઓ." : "Add, edit, or inspect site ledgers."}
+                  </p>
+                </div>
+
+                <div className="flex items-center gap-2 shrink-0">
+                  {onAddNewProject && (
+                    <button
+                      type="button"
+                      onClick={onAddNewProject}
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-slate-800 transition shadow-xs"
+                    >
+                      <Plus size={14} />
+                      <span>{lang === "gu" ? "+ નવી સાઇટ" : "+ Add Site"}</span>
+                    </button>
+                  )}
+                  {onNavigateToTab && (
+                    <button
+                      type="button"
+                      onClick={() => onNavigateToTab("Projects")}
+                      className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition"
+                    >
+                      <span>{lang === "gu" ? "બધા જુઓ" : "View All"}</span>
+                      <ExternalLink size={12} />
+                    </button>
+                  )}
+                </div>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
                 {projects.map(p => (
                   <div
                     key={p.id}
-                    className="rounded-2xl border border-slate-200 p-3.5 hover:border-amber-300 transition bg-slate-50/50"
+                    className="rounded-2xl border border-slate-200 p-4 hover:border-amber-300 transition bg-slate-50/50 flex flex-col justify-between"
                   >
-                    <div className="flex items-start justify-between gap-2">
-                      <p className="text-xs font-bold text-slate-900 line-clamp-1">{p.name}</p>
-                      <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-100 text-amber-800 shrink-0">
-                        {p.status}
-                      </span>
+                    <div>
+                      <div className="flex items-start justify-between gap-2">
+                        <div>
+                          <p className="text-xs font-bold text-slate-900 line-clamp-1">{p.name}</p>
+                          <p className="text-[10px] font-mono text-slate-400 mt-0.5">{p.code}</p>
+                        </div>
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 shrink-0">
+                          {p.status}
+                        </span>
+                      </div>
+
+                      <p className="text-[11px] text-slate-500 mt-2 flex items-center gap-1">
+                        <MapPin size={11} className="text-slate-400 shrink-0" />
+                        <span className="truncate">{p.location}</span>
+                      </p>
+
+                      <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
+                        <span className="text-slate-500">Supervisor: <strong className="text-slate-800">{p.supervisorName || "—"}</strong></span>
+                        <span className="font-bold text-slate-900">{formatINR(p.value)}</span>
+                      </div>
                     </div>
-                    <p className="text-[11px] text-slate-500 mt-1 flex items-center gap-1">
-                      <MapPin size={11} className="text-slate-400" />
-                      <span className="truncate">{p.location}</span>
-                    </p>
-                    <div className="mt-2 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
-                      <span className="text-slate-500">Supervisor: <strong className="text-slate-800">{p.supervisorName || "—"}</strong></span>
-                      <span className="font-bold text-slate-900">{formatINR(p.value)}</span>
+
+                    {/* Action Buttons on each card */}
+                    <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-between gap-2">
+                      {onViewProject360 && (
+                        <button
+                          type="button"
+                          onClick={() => onViewProject360(p)}
+                          className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-slate-800 transition"
+                        >
+                          <Eye size={12} />
+                          <span>Site 360°</span>
+                        </button>
+                      )}
+
+                      <div className="flex items-center gap-1">
+                        {onEditProject && (
+                          <button
+                            type="button"
+                            onClick={() => onEditProject(p)}
+                            className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition"
+                            title={lang === "gu" ? "સાઇટ સુધારો" : "Edit Project"}
+                          >
+                            <Pencil size={13} />
+                          </button>
+                        )}
+                        {onDeleteProject && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              if (window.confirm(`Are you sure you want to delete ${p.name}?`)) {
+                                onDeleteProject(p.id);
+                              }
+                            }}
+                            className="p-1.5 rounded-lg border border-red-200 bg-white text-red-500 hover:text-red-700 hover:bg-red-50 transition"
+                            title={lang === "gu" ? "સાઇટ કાઢી નાખો" : "Delete Project"}
+                          >
+                            <Trash2 size={13} />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -401,6 +498,19 @@ export function AccountView({
                           Client: {p.department}
                         </p>
                       )}
+
+                      {onViewProject360 && (
+                        <div className="mt-3 pt-2 border-t border-slate-200/60 flex justify-end">
+                          <button
+                            type="button"
+                            onClick={() => onViewProject360(p)}
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-slate-800 transition"
+                          >
+                            <Eye size={13} />
+                            <span>Site 360° Ledger (હિસાબ)</span>
+                          </button>
+                        </div>
+                      )}
                     </div>
                   ))}
                 </div>
@@ -429,7 +539,7 @@ export function AccountView({
             <div className="flex items-center gap-2 mb-1">
               <KeyRound size={18} className="text-amber-600" />
               <h2 className="text-base sm:text-lg font-bold text-slate-900">
-                {lang === "gu" ? "પાસવર્ડ બદલો" : lang === "hi" ? "पासवर्ड बदलें" : "Change Password"}
+                {lang === "gu" ? "પાસવર્ડ બદલો" : lang === "hi" ? "પાસવર્ડ બદલો" : "Change Password"}
               </h2>
             </div>
             <p className="text-xs text-slate-500 mb-5">

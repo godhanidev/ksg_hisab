@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   LayoutDashboard, Wallet, Landmark, FileCheck, Building2,
-  Plus, X, Users, LogOut, ArrowDownLeft, ArrowUpRight
+  Plus, X, Users, UserCheck, LogOut, ArrowDownLeft, ArrowUpRight
 } from "lucide-react";
 import { Language, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
@@ -32,7 +32,6 @@ export function MobileNavBar({
   const t = getTranslation(lang);
   const isAdmin = currentUser.role === "admin";
   const [showQuickSheet, setShowQuickSheet] = useState(false);
-  const [showMoreMenu, setShowMoreMenu] = useState(false);
 
   return (
     <>
@@ -114,11 +113,11 @@ export function MobileNavBar({
       {/* ─── Mobile Fast Entry Sheet ────────────────────────────────────── */}
       {showQuickSheet && (
         <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end bg-slate-950/75 backdrop-blur-sm animate-in fade-in duration-150">
-          <div className="bg-slate-900 border-t border-slate-800 rounded-t-3xl p-5 space-y-4 shadow-2xl animate-in slide-in-from-bottom duration-200">
+          <div className="bg-slate-900 border-t border-slate-800 rounded-t-3xl p-5 space-y-4 shadow-2xl animate-in slide-in-from-bottom duration-200 max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div>
                 <h3 className="text-sm font-black text-white">{t.quickAdd}</h3>
-                <p className="text-[11px] text-amber-400">Select what you want to add right now</p>
+                <p className="text-[11px] text-amber-400">Select what you want to add or open</p>
               </div>
               <button
                 onClick={() => setShowQuickSheet(false)}
@@ -196,6 +195,66 @@ export function MobileNavBar({
                 <p className="text-xs font-bold text-white leading-tight">{t.addGstBill}</p>
                 <p className="text-[10px] text-amber-400 mt-0.5">Tax invoice with auto GST</p>
               </button>
+            </div>
+
+            {/* Quick Navigation Links on Mobile */}
+            <div className="pt-3 border-t border-slate-800">
+              <p className="text-[11px] font-bold text-slate-400 mb-2 uppercase tracking-wider">
+                {lang === "gu" ? "ઝડપી નેવિગેશન" : "Navigation"}
+              </p>
+              <div className="grid grid-cols-3 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowQuickSheet(false);
+                    setActivePage("Projects");
+                  }}
+                  className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-center transition ${
+                    activePage === "Projects"
+                      ? "bg-amber-500/20 border-amber-500/40 text-amber-300"
+                      : "bg-slate-800/80 border-slate-700 text-slate-300 hover:text-white"
+                  }`}
+                >
+                  <Building2 size={18} className="mb-1 text-amber-400" />
+                  <span className="text-[10px] font-bold truncate w-full">{t.projects}</span>
+                </button>
+
+                {isAdmin && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowQuickSheet(false);
+                      setActivePage("User Management");
+                    }}
+                    className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-center transition ${
+                      activePage === "User Management"
+                        ? "bg-amber-500/20 border-amber-500/40 text-amber-300"
+                        : "bg-slate-800/80 border-slate-700 text-slate-300 hover:text-white"
+                    }`}
+                  >
+                    <Users size={18} className="mb-1 text-amber-400" />
+                    <span className="text-[10px] font-bold truncate w-full">{t.userManagement}</span>
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowQuickSheet(false);
+                    setActivePage("Account");
+                  }}
+                  className={`flex flex-col items-center justify-center p-2.5 rounded-xl border text-center transition ${
+                    !isAdmin ? "col-span-2" : ""
+                  } ${
+                    activePage === "Account"
+                      ? "bg-amber-500/20 border-amber-500/40 text-amber-300"
+                      : "bg-slate-800/80 border-slate-700 text-slate-300 hover:text-white"
+                  }`}
+                >
+                  <UserCheck size={18} className="mb-1 text-amber-400" />
+                  <span className="text-[10px] font-bold truncate w-full">{t.account}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

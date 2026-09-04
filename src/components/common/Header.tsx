@@ -1,7 +1,6 @@
 import React from "react";
 import {
-  Menu, X, Wifi, WifiOff, RefreshCw, LogOut, Shield, HardHat, CheckCircle2,
-  Cloud, CloudOff, Database, KeyRound
+  Menu, X, WifiOff, RefreshCw, LogOut, CheckCircle2
 } from "lucide-react";
 import { Language, Project, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
@@ -20,8 +19,6 @@ type HeaderProps = {
   pendingSyncCount: number;
   onManualSync: () => void;
   isSyncing: boolean;
-  isCloudConnected?: boolean;
-  onOpenCloudModal?: () => void;
   projects?: Project[];
   userAllowedProjects?: Project[];
   selectedSiteFilter?: string;
@@ -41,8 +38,6 @@ export function Header({
   pendingSyncCount,
   onManualSync,
   isSyncing,
-  isCloudConnected = false,
-  onOpenCloudModal,
 }: HeaderProps) {
   const t = getTranslation(lang);
   const isAdmin = currentUser.role === "admin";
@@ -79,7 +74,7 @@ export function Header({
         </div>
       </div>
 
-      {/* Right Action Tools: Language, Cloud/Sync Status, User Profile, Logout */}
+      {/* Right Action Tools: Language, Sync Status, User Profile, Logout */}
       <div className="flex items-center gap-2 sm:gap-3">
         {/* Language Switcher Pill */}
         <div className="flex items-center rounded-full bg-slate-100 p-0.5 border border-slate-200 shadow-2xs">
@@ -108,27 +103,6 @@ export function Header({
             हिં
           </button>
         </div>
-
-        {/* Cloud Sync Status Indicator */}
-        {onOpenCloudModal && (
-          <button
-            type="button"
-            onClick={onOpenCloudModal}
-            className={`hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold transition border ${
-              isCloudConnected
-                ? "bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100"
-                : "bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200"
-            }`}
-            title="Firebase Cloud Database Sync"
-          >
-            {isCloudConnected ? (
-              <Database size={13} className="text-emerald-600" />
-            ) : (
-              <CloudOff size={13} className="text-slate-500" />
-            )}
-            <span>{isCloudConnected ? "Cloud Synced" : "Local Database"}</span>
-          </button>
-        )}
 
         {/* Sync Status Badge (Online / Offline / Pending Sync) */}
         <div className="hidden md:flex items-center">
@@ -170,8 +144,7 @@ export function Header({
               alt="KS Logo"
               className="h-full w-full object-contain"
               onError={(e) => {
-                const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
+                (e.target as HTMLImageElement).style.display = 'none';
               }}
             />
           </div>

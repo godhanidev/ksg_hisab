@@ -488,8 +488,6 @@ export function App() {
           pendingSyncCount={pendingSyncQueue.length}
           onManualSync={triggerAutoSync}
           isSyncing={isSyncing}
-          isCloudConnected={isCloudConnected}
-          onOpenCloudModal={() => setShowCloudModal(true)}
           projects={projects}
           userAllowedProjects={userAllowedProjects}
           selectedSiteFilter={selectedSiteFilter}
@@ -641,6 +639,16 @@ export function App() {
               isCloudConnected={isCloudConnected}
               onNavigateToTab={tab => setActivePage(tab)}
               onOpenCloudModal={() => setShowCloudModal(true)}
+              onAddNewProject={() => {
+                setEditingProject(null);
+                setShowProjectModal(true);
+              }}
+              onEditProject={p => {
+                setEditingProject(p);
+                setShowProjectModal(true);
+              }}
+              onDeleteProject={handleDeleteProject}
+              onViewProject360={p => setViewingProject360(p)}
             />
           )}
         </main>
