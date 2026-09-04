@@ -118,7 +118,7 @@ export function ProjectModal({
             value={name}
             onChange={e => setName(e.target.value)}
             required
-            placeholder="e.g. Dahod Devgadh Baria Package 2"
+            placeholder="Dahod Devgadh Baria Package 2"
             className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
           />
         </div>
@@ -178,7 +178,7 @@ export function ProjectModal({
               list="supervisor-suggestions"
               value={supervisorName}
               onChange={e => setSupervisorName(e.target.value)}
-              placeholder="e.g. Partner, Engineer or Supervisor Name"
+              placeholder="Partner, Engineer or Supervisor Name"
               className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
             />
             <datalist id="supervisor-suggestions">
@@ -196,7 +196,7 @@ export function ProjectModal({
               type="text"
               value={location}
               onChange={e => setLocation(e.target.value)}
-              placeholder="e.g. Devgadh Baria, Dahod District"
+              placeholder="Devgadh Baria, Dahod District"
               className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
             />
           </div>

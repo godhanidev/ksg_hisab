@@ -125,7 +125,7 @@ export function ChangePasswordModal({
               required
               value={newPassword}
               onChange={e => setNewPassword(e.target.value)}
-              placeholder="e.g. dev@2026"
+              placeholder="••••••••"
               className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-3.5 pr-10 text-sm font-mono font-bold text-slate-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
             />
             <button
@@ -149,7 +149,7 @@ export function ChangePasswordModal({
               required
               value={confirmPassword}
               onChange={e => setConfirmPassword(e.target.value)}
-              placeholder="e.g. dev@2026"
+              placeholder="••••••••"
               className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-3.5 pr-10 text-sm font-mono font-bold text-slate-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
             />
             <button

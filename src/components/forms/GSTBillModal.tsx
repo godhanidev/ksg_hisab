@@ -184,7 +184,7 @@ export function GSTBillModal({
               value={billNo}
               onChange={e => setBillNo(e.target.value)}
               required
-              placeholder="e.g. 413 or 25-26/4128"
+              placeholder="413, 25-26/4128"
               className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm font-mono font-bold text-slate-900 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
             />
           </div>
@@ -217,7 +217,7 @@ export function GSTBillModal({
             value={partyName}
             onChange={e => setPartyName(e.target.value)}
             required
-            placeholder="e.g. Khodiyar Sales and Service, Shree Vrajesh Steel Traders"
+            placeholder="Khodiyar Sales and Service, Shree Vrajesh Steel Traders"
             className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
           />
         </div>
@@ -362,7 +362,7 @@ export function GSTBillModal({
               type="text"
               value={paymentReference}
               onChange={e => setPaymentReference(e.target.value)}
-              placeholder="e.g. INV-413 or Cheque Ref"
+              placeholder="INV-413, Cheque Ref, UTR No."
               className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
             />
           </div>
