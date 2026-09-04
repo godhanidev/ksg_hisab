@@ -36,7 +36,7 @@ export function BillViewerModal({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-3 sm:p-6 backdrop-blur-md animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-2 sm:p-6 pt-[max(env(safe-area-inset-top,44px),16px)] pb-[max(env(safe-area-inset-bottom,20px),16px)] backdrop-blur-md animate-in fade-in duration-200">
       <div className="relative flex flex-col w-full max-w-4xl max-h-[95vh] rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden text-white">
         {/* Header Bar */}
         <div className="flex items-center justify-between border-b border-slate-800 p-3 sm:p-4 sm:px-6 bg-slate-950/80 gap-2">

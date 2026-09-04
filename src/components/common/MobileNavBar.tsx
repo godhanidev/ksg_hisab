@@ -36,7 +36,7 @@ export function MobileNavBar({
   return (
     <>
       {/* ─── Mobile Bottom Navigation Bar ───────────────────────────────── */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/80 px-2 py-1.5 shadow-[0_-8px_20px_rgba(0,0,0,0.5)]">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/80 px-2 py-1.5 safe-nav-bottom shadow-[0_-8px_20px_rgba(0,0,0,0.5)]">
         <div className="flex items-center justify-around">
           {/* Dashboard Tab */}
           <button

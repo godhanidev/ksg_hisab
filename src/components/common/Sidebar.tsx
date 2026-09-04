@@ -71,7 +71,7 @@ export function Sidebar({
 
       {/* ── Sidebar Drawer ───────────────────────────────────────────────── */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex flex-col justify-between bg-slate-950 text-white transition-all duration-300 ease-in-out border-r border-slate-800 shadow-2xl ${
+        className={`fixed inset-y-0 left-0 z-50 flex flex-col justify-between bg-slate-950 text-white transition-all duration-300 ease-in-out border-r border-slate-800 shadow-2xl safe-header-top safe-nav-bottom ${
           sidebarOpen
             ? "translate-x-0 w-72 max-w-[85vw] lg:w-64 xl:w-72"
             : "-translate-x-full lg:translate-x-0 lg:w-20"

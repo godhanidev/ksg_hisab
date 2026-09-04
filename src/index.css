@@ -5,6 +5,42 @@
   box-sizing: border-box;
 }
 
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
+.safe-top {
+  padding-top: max(env(safe-area-inset-top, 0px), 0px);
+}
+
+.safe-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
+}
+
+/* Mobile status bar safe header with guaranteed fallback */
+.safe-header-top {
+  padding-top: max(env(safe-area-inset-top, 0px), 0px);
+}
+
+@media (max-width: 1023px) {
+  .safe-header-top {
+    padding-top: max(env(safe-area-inset-top, 48px), 48px);
+  }
+}
+
+.safe-nav-bottom {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
+}
+
+@media (max-width: 1023px) {
+  .safe-nav-bottom {
+    padding-bottom: max(env(safe-area-inset-bottom, 16px), 16px);
+  }
+}
+
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;

@@ -27,7 +27,7 @@ export function ModalWrapper({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-2 sm:p-4 backdrop-blur-sm animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-2 sm:p-4 pt-[max(env(safe-area-inset-top,44px),16px)] pb-[max(env(safe-area-inset-bottom,20px),16px)] backdrop-blur-sm animate-in fade-in duration-200">
       <div className={`relative w-full ${maxWidth} rounded-2xl sm:rounded-3xl bg-white p-5 sm:p-7 shadow-2xl max-h-[94vh] overflow-y-auto border border-slate-100`}>
         {title ? (
           <div className="flex items-start justify-between border-b border-slate-100 pb-3.5 mb-4">
