@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Shield, HardHat, Lock, User, Eye, EyeOff, RefreshCw, AlertTriangle, Globe } from "lucide-react";
+import { Shield, Lock, User, Eye, EyeOff, RefreshCw, AlertTriangle, Globe } from "lucide-react";
 import { Language, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
 
@@ -27,12 +27,6 @@ export function LoginPage({ users, onLogin, lang, onLanguageChange }: LoginPageP
     } else {
       setError(lang === "gu" ? "ખોટો યુઝરનેમ અથવા પાસવર્ડ." : lang === "hi" ? "गलत यूजरनेम या पासवर्ड।" : "Invalid username or password.");
     }
-  };
-
-  const handleQuickLogin = (u: UserAccount) => {
-    setUsername(u.username);
-    setPassword(u.password);
-    onLogin(u);
   };
 
   return (
@@ -99,7 +93,7 @@ export function LoginPage({ users, onLogin, lang, onLanguageChange }: LoginPageP
                   required
                   value={username}
                   onChange={e => setUsername(e.target.value)}
-                  placeholder="admin / rajubhai"
+                  placeholder={lang === "gu" ? "યુઝરનેમ દાખલ કરો" : lang === "hi" ? "यूजरनेम दर्ज करें" : "Enter username"}
                   className="w-full rounded-xl bg-white/10 border border-white/15 text-white placeholder-slate-500 pl-10 pr-4 py-2.5 text-sm outline-none focus:border-amber-400 focus:bg-white/15 transition"
                 />
               </div>
@@ -152,38 +146,6 @@ export function LoginPage({ users, onLogin, lang, onLanguageChange }: LoginPageP
               )}
             </button>
           </form>
-
-          {/* Quick Demo Accounts (RBAC) */}
-          <div className="mt-6 pt-5 border-t border-white/10">
-            <p className="text-[11px] font-bold uppercase tracking-wider text-slate-400 text-center mb-2.5">
-              1-Click Demo Accounts (RBAC)
-            </p>
-            <div className="space-y-2">
-              {users.slice(0, 3).map(u => (
-                <button
-                  key={u.id}
-                  type="button"
-                  onClick={() => handleQuickLogin(u)}
-                  className="w-full flex items-center justify-between rounded-xl bg-white/5 hover:bg-white/10 p-2.5 text-left border border-white/10 transition"
-                >
-                  <div className="flex items-center gap-2">
-                    <div className="h-7 w-7 rounded-lg bg-white p-0.5 flex items-center justify-center overflow-hidden shrink-0">
-                      <img src="/logo.png" alt="KS" className="h-full w-full object-contain" />
-                    </div>
-                    <div>
-                      <p className="text-xs font-bold text-white">{u.name}</p>
-                      <p className="text-[10px] text-slate-400 truncate max-w-[200px]">
-                        {u.role === "admin" ? "All Sites • Head Office" : u.assignedProjects[0] || "Site"}
-                      </p>
-                    </div>
-                  </div>
-                  <span className="text-[10px] font-mono text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded">
-                    {u.username}
-                  </span>
-                </button>
-              ))}
-            </div>
-          </div>
         </div>
       </div>
     </div>
