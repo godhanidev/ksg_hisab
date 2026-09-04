@@ -29,6 +29,7 @@ type AccountViewProps = {
   users: UserAccount[];
   lang: Language;
   onSaveNewPassword: (newPassword: string) => void;
+  onUpdateProfile?: (updatedData: { name: string; username: string; phone?: string }) => void;
   isCloudConnected: boolean;
   onNavigateToTab?: (tabName: string) => void;
   onOpenCloudModal?: () => void;
@@ -44,6 +45,7 @@ export function AccountView({
   users,
   lang,
   onSaveNewPassword,
+  onUpdateProfile,
   isCloudConnected,
   onNavigateToTab,
   onOpenCloudModal,
@@ -54,6 +56,96 @@ export function AccountView({
 }: AccountViewProps) {
   const t = getTranslation(lang);
   const isAdmin = currentUser.role === "admin";
+
+  // Profile Edit States
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [editName, setEditName] = useState(currentUser.name);
+  const [editUsername, setEditUsername] = useState(currentUser.username);
+  const [editPhone, setEditPhone] = useState(currentUser.phone || "");
+  const [profileError, setProfileError] = useState<string | null>(null);
+  const [profileSuccess, setProfileSuccess] = useState<string | null>(null);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
+  // Sync state if currentUser changes from outside
+  React.useEffect(() => {
+    setEditName(currentUser.name);
+    setEditUsername(currentUser.username);
+    setEditPhone(currentUser.phone || "");
+  }, [currentUser]);
+
+  const handleProfileSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setProfileError(null);
+    setProfileSuccess(null);
+
+    const trimmedName = editName.trim();
+    const trimmedUsername = editUsername.trim().toLowerCase();
+    const trimmedPhone = editPhone.trim();
+
+    if (!trimmedName) {
+      setProfileError(
+        lang === "gu" ? "કૃપા કરીને તમારું પૂરું નામ દાખલ કરો!" : "Full Name is required!"
+      );
+      return;
+    }
+
+    if (!trimmedUsername) {
+      setProfileError(
+        lang === "gu" ? "કૃપા કરીને યુઝરનેમ દાખલ કરો!" : "Username is required!"
+      );
+      return;
+    }
+
+    if (trimmedUsername.length < 3) {
+      setProfileError(
+        lang === "gu"
+          ? "યુઝરનેમ ઓછામાં ઓછું 3 અક્ષરનું હોવું જોઈએ!"
+          : "Username must be at least 3 characters!"
+      );
+      return;
+    }
+
+    // Check if username is already taken by another user
+    const isDuplicate = users.some(
+      u => u.id !== currentUser.id && u.username.toLowerCase() === trimmedUsername
+    );
+    if (isDuplicate) {
+      setProfileError(
+        lang === "gu"
+          ? `આ યુઝરનેમ '@${trimmedUsername}' પહેલેથી ઉપયોગમાં છે! કૃપા કરીને બીજું યુઝરનેમ લખો.`
+          : `Username '@${trimmedUsername}' is already taken! Please choose another.`
+      );
+      return;
+    }
+
+    // Validate phone number if provided (10 digits)
+    if (trimmedPhone && !/^[0-9]{10}$/.test(trimmedPhone)) {
+      setProfileError(
+        lang === "gu"
+          ? "કૃપા કરીને 10 અંકનો માન્ય મોબાઇલ નંબર દાખલ કરો!"
+          : "Please enter a valid 10-digit mobile number!"
+      );
+      return;
+    }
+
+    setIsSavingProfile(true);
+    setTimeout(() => {
+      if (onUpdateProfile) {
+        onUpdateProfile({
+          name: trimmedName,
+          username: trimmedUsername,
+          phone: trimmedPhone,
+        });
+      }
+      setIsSavingProfile(false);
+      setProfileSuccess(
+        lang === "gu"
+          ? "પ્રોફાઇલ માહિતી સફળતાપૂર્વક અપડેટ થઈ ગઈ છે!"
+          : "Profile details updated successfully!"
+      );
+      setIsEditingProfile(false);
+    }, 250);
+  };
 
   // Password Change Form States
   const [currentPassword, setCurrentPassword] = useState("");
@@ -273,42 +365,174 @@ export function AccountView({
         <div className="space-y-6 lg:col-span-7">
           {/* Account Profile Card */}
           <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2 mb-4">
-              <User size={18} className="text-amber-600" />
-              <span>{lang === "gu" ? "પ્રોફાઇલ માહિતી (Account Details)" : "Account Profile Information"}</span>
-            </h2>
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
+                <User size={18} className="text-amber-600" />
+                <span>{lang === "gu" ? "પ્રોફાઇલ માહિતી (Account Details)" : "Account Profile Information"}</span>
+              </h2>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div className="rounded-2xl bg-slate-50 p-3.5 border border-slate-100">
-                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                  {lang === "gu" ? "પૂરું નામ (Full Name)" : "Full Name"}
-                </p>
-                <p className="text-sm font-bold text-slate-900 mt-1">{currentUser.name}</p>
-              </div>
-
-              <div className="rounded-2xl bg-slate-50 p-3.5 border border-slate-100">
-                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                  {lang === "gu" ? "યુઝરનેમ / Login ID" : "Username"}
-                </p>
-                <p className="text-sm font-mono font-bold text-slate-900 mt-1">@{currentUser.username}</p>
-              </div>
-
-              <div className="rounded-2xl bg-slate-50 p-3.5 border border-slate-100">
-                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                  {lang === "gu" ? "સિસ્ટમ હોદ્દો (Role)" : "Account Role"}
-                </p>
-                <p className="text-sm font-bold text-slate-900 mt-1">{roleInfo.title}</p>
-              </div>
-
-              <div className="rounded-2xl bg-slate-50 p-3.5 border border-slate-100">
-                <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
-                  {lang === "gu" ? "મોબાઇલ નંબર (Mobile)" : "Phone Number"}
-                </p>
-                <p className="text-sm font-bold text-slate-900 mt-1">
-                  {currentUser.phone ? `+91 ${currentUser.phone}` : "—"}
-                </p>
-              </div>
+              {!isEditingProfile && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditName(currentUser.name);
+                    setEditUsername(currentUser.username);
+                    setEditPhone(currentUser.phone || "");
+                    setProfileError(null);
+                    setProfileSuccess(null);
+                    setIsEditingProfile(true);
+                  }}
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 hover:border-amber-400 hover:text-slate-900 transition shadow-2xs active:scale-95"
+                >
+                  <Pencil size={13} className="text-amber-600" />
+                  <span>{lang === "gu" ? "વિગત સુધારો" : "Edit Profile"}</span>
+                </button>
+              )}
             </div>
+
+            {/* Profile Success Alert */}
+            {profileSuccess && (
+              <div className="mb-4 flex items-center gap-2 rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs font-bold text-emerald-800 animate-in fade-in">
+                <CheckCircle2 size={16} className="shrink-0 text-emerald-600" />
+                <span>{profileSuccess}</span>
+              </div>
+            )}
+
+            {/* Profile Error Alert */}
+            {profileError && (
+              <div className="mb-4 flex items-center gap-2 rounded-2xl bg-rose-50 border border-rose-200 p-3.5 text-xs font-semibold text-rose-700 animate-shake">
+                <AlertCircle size={16} className="shrink-0 text-rose-600" />
+                <span>{profileError}</span>
+              </div>
+            )}
+
+            {isEditingProfile ? (
+              /* Profile Edit Form */
+              <form onSubmit={handleProfileSubmit} className="space-y-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {/* Full Name */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      {lang === "gu" ? "પૂરું નામ (Full Name) *" : "Full Name *"}
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={editName}
+                      onChange={e => setEditName(e.target.value)}
+                      placeholder="e.g. Ramesh Patel"
+                      className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 px-3.5 text-sm font-bold text-slate-900 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition"
+                    />
+                  </div>
+
+                  {/* Username / Login ID */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      {lang === "gu" ? "યુઝરનેમ / Login ID *" : "Username / Login ID *"}
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-sm font-mono font-bold text-amber-600">@</span>
+                      <input
+                        type="text"
+                        required
+                        value={editUsername}
+                        onChange={e => setEditUsername(e.target.value.toLowerCase().replace(/[^a-z0-9_.-]/g, ''))}
+                        placeholder="username"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-8 pr-3.5 text-sm font-mono font-bold text-slate-900 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition"
+                      />
+                    </div>
+                    <p className="text-[10px] text-slate-400 mt-1">
+                      {lang === "gu" ? "આ ID વડે લોગઇન થશે (Admin panel માં પણ બદલાઈ જશે)." : "Login ID (will also sync with Admin panel)."}
+                    </p>
+                  </div>
+
+                  {/* Phone Number */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      {lang === "gu" ? "મોબાઇલ નંબર (Phone Number)" : "Phone Number"}
+                    </label>
+                    <div className="relative">
+                      <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-500">+91</span>
+                      <input
+                        type="tel"
+                        maxLength={10}
+                        value={editPhone}
+                        onChange={e => setEditPhone(e.target.value.replace(/\D/g, ''))}
+                        placeholder="98250 12345"
+                        className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2.5 pl-12 pr-3.5 text-sm font-bold text-slate-900 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Role (Read-only) */}
+                  <div>
+                    <label className="block text-xs font-bold text-slate-700 mb-1.5">
+                      {lang === "gu" ? "સિસ્ટમ હોદ્દો (Role)" : "Account Role"}
+                    </label>
+                    <div className="rounded-xl bg-slate-100/70 border border-slate-200 py-2.5 px-3.5 flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-800">{roleInfo.title}</span>
+                      <span className="text-[10px] text-slate-400 font-semibold">{lang === "gu" ? "કચેરી દ્વારા નિયંત્રિત" : "Head Office"}</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Form Buttons */}
+                <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setIsEditingProfile(false);
+                      setProfileError(null);
+                    }}
+                    className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-50 transition"
+                  >
+                    {t.cancel}
+                  </button>
+
+                  <button
+                    type="submit"
+                    disabled={isSavingProfile}
+                    className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-5 py-2 text-xs font-bold text-white hover:bg-slate-800 transition shadow-md active:scale-95 disabled:opacity-50"
+                  >
+                    <Check size={14} />
+                    <span>{isSavingProfile ? (lang === "gu" ? "સેવ થઈ રહ્યું છે..." : "Saving...") : (lang === "gu" ? "વિગત સાચવો" : "Save Changes")}</span>
+                  </button>
+                </div>
+              </form>
+            ) : (
+              /* Profile Display View */
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div className="rounded-2xl bg-slate-50 p-3.5 border border-slate-100">
+                  <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    {lang === "gu" ? "પૂરું નામ (Full Name)" : "Full Name"}
+                  </p>
+                  <p className="text-sm font-bold text-slate-900 mt-1">{currentUser.name}</p>
+                </div>
+
+                <div className="rounded-2xl bg-slate-50 p-3.5 border border-slate-100">
+                  <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    {lang === "gu" ? "યુઝરનેમ / Login ID" : "Username"}
+                  </p>
+                  <p className="text-sm font-mono font-bold text-slate-900 mt-1">@{currentUser.username}</p>
+                </div>
+
+                <div className="rounded-2xl bg-slate-50 p-3.5 border border-slate-100">
+                  <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    {lang === "gu" ? "સિસ્ટમ હોદ્દો (Role)" : "Account Role"}
+                  </p>
+                  <p className="text-sm font-bold text-slate-900 mt-1">{roleInfo.title}</p>
+                </div>
+
+                <div className="rounded-2xl bg-slate-50 p-3.5 border border-slate-100">
+                  <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                    {lang === "gu" ? "મોબાઇલ નંબર (Mobile)" : "Phone Number"}
+                  </p>
+                  <p className="text-sm font-bold text-slate-900 mt-1">
+                    {currentUser.phone ? `+91 ${currentUser.phone}` : "—"}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Permissions & Scope description */}
             <div className="mt-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 p-4">

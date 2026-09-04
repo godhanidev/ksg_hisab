@@ -432,6 +432,31 @@ export function App() {
     showToast(lang === "gu" ? "પાસવર્ડ સફળતાપૂર્વક બદલાઈ ગયો!" : "Password updated successfully!");
   };
 
+  const handleUpdateProfile = (updatedData: { name: string; username: string; phone?: string }) => {
+    if (!currentUser) return;
+    const updatedUser: UserAccount = {
+      ...currentUser,
+      name: updatedData.name.trim(),
+      username: updatedData.username.trim(),
+      phone: updatedData.phone ? updatedData.phone.trim() : "",
+    };
+    setCurrentUser(updatedUser);
+    saveStoredSession(updatedUser);
+
+    setUsers(prev =>
+      prev.map(u => (u.id === updatedUser.id ? updatedUser : u))
+    );
+
+    if (isCloudConnected) {
+      saveDocumentToCloud("users", updatedUser);
+    }
+    showToast(
+      lang === "gu"
+        ? "પ્રોફાઇલ માહિતી સફળતાપૂર્વક અપડેટ થઈ ગઈ છે!"
+        : "Profile details updated successfully!"
+    );
+  };
+
   // If user is not logged in, show Login Screen
   if (!currentUser) {
     return (
@@ -636,6 +661,7 @@ export function App() {
               users={users}
               lang={lang}
               onSaveNewPassword={handleSaveNewPassword}
+              onUpdateProfile={handleUpdateProfile}
               isCloudConnected={isCloudConnected}
               onNavigateToTab={tab => setActivePage(tab)}
               onOpenCloudModal={() => setShowCloudModal(true)}
