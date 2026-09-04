@@ -37,6 +37,40 @@ export function LoginPage({ users, onLogin, lang, onLanguageChange }: LoginPageP
         <div className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-blue-500/10 blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
       </div>
 
+      {/* Top-Right Quick Language Switcher */}
+      <div className="absolute top-4 right-4 z-20">
+        <div className="flex items-center gap-1 rounded-full bg-slate-900/90 p-1 border border-slate-700/70 shadow-lg backdrop-blur">
+          <Globe size={13} className="text-amber-400 ml-1.5 mr-0.5" />
+          <button
+            type="button"
+            onClick={() => onLanguageChange("en")}
+            className={`px-2.5 py-1 text-xs font-bold rounded-full transition ${
+              lang === "en" ? "bg-amber-400 text-slate-950 shadow-sm" : "text-slate-300 hover:text-white"
+            }`}
+          >
+            EN
+          </button>
+          <button
+            type="button"
+            onClick={() => onLanguageChange("gu")}
+            className={`px-2.5 py-1 text-xs font-bold rounded-full transition ${
+              lang === "gu" ? "bg-amber-400 text-slate-950 shadow-sm" : "text-slate-300 hover:text-white"
+            }`}
+          >
+            ગુજ
+          </button>
+          <button
+            type="button"
+            onClick={() => onLanguageChange("hi")}
+            className={`px-2.5 py-1 text-xs font-bold rounded-full transition ${
+              lang === "hi" ? "bg-amber-400 text-slate-950 shadow-sm" : "text-slate-300 hover:text-white"
+            }`}
+          >
+            हिं
+          </button>
+        </div>
+      </div>
+
       <div className="relative z-10 w-full max-w-md">
         {/* Top Branding */}
         <div className="text-center mb-6">
@@ -54,27 +88,33 @@ export function LoginPage({ users, onLogin, lang, onLanguageChange }: LoginPageP
           <h1 className="text-2xl sm:text-3xl font-black text-white tracking-wide">{t.appName}</h1>
           <p className="text-slate-400 text-xs sm:text-sm mt-1">{t.appSubtitle}</p>
 
-          {/* Language Switcher on Login */}
-          <div className="inline-flex items-center gap-1 rounded-full bg-white/10 p-1 border border-white/10 mt-3 backdrop-blur">
-            <Globe size={12} className="text-slate-400 ml-2 mr-0.5" />
+          {/* Language Switcher on Login Form */}
+          <div className="inline-flex items-center gap-1 rounded-full bg-white/10 p-1 border border-white/15 mt-3.5 backdrop-blur shadow-md">
+            <Globe size={13} className="text-amber-400 ml-2 mr-0.5" />
             <button
               type="button"
               onClick={() => onLanguageChange("en")}
-              className={`px-2.5 py-0.5 text-[11px] font-bold rounded-full transition ${lang === "en" ? "bg-amber-400 text-slate-950" : "text-slate-300 hover:text-white"}`}
+              className={`px-3 py-1 text-xs font-bold rounded-full transition ${
+                lang === "en" ? "bg-amber-400 text-slate-950 shadow-sm" : "text-slate-300 hover:text-white"
+              }`}
             >
               English
             </button>
             <button
               type="button"
               onClick={() => onLanguageChange("gu")}
-              className={`px-2.5 py-0.5 text-[11px] font-bold rounded-full transition ${lang === "gu" ? "bg-amber-400 text-slate-950" : "text-slate-300 hover:text-white"}`}
+              className={`px-3 py-1 text-xs font-bold rounded-full transition ${
+                lang === "gu" ? "bg-amber-400 text-slate-950 shadow-sm" : "text-slate-300 hover:text-white"
+              }`}
             >
               ગુજરાતી
             </button>
             <button
               type="button"
               onClick={() => onLanguageChange("hi")}
-              className={`px-2.5 py-0.5 text-[11px] font-bold rounded-full transition ${lang === "hi" ? "bg-amber-400 text-slate-950" : "text-slate-300 hover:text-white"}`}
+              className={`px-3 py-1 text-xs font-bold rounded-full transition ${
+                lang === "hi" ? "bg-amber-400 text-slate-950 shadow-sm" : "text-slate-300 hover:text-white"
+              }`}
             >
               हिन्दी
             </button>

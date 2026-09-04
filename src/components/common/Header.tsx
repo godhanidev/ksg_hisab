@@ -14,7 +14,7 @@ type HeaderProps = {
   onLogout: () => void;
   onOpenAccount?: () => void;
   lang: Language;
-  onLanguageChange: (lang: Language) => void;
+  onLanguageChange?: (lang: Language) => void;
   isOnline: boolean;
   pendingSyncCount: number;
   onManualSync: () => void;
@@ -33,7 +33,6 @@ export function Header({
   onLogout,
   onOpenAccount,
   lang,
-  onLanguageChange,
   isOnline,
   pendingSyncCount,
   onManualSync,
@@ -78,42 +77,14 @@ export function Header({
         </div>
       </div>
 
-      {/* Right Action Tools: Language, Sync Status, User Profile, Logout */}
+      {/* Right Action Tools: Sync Status, User Profile, Logout */}
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* Language Switcher Pill */}
-        <div className="flex items-center rounded-full bg-slate-100 p-0.5 border border-slate-200 shadow-2xs">
-          <button
-            onClick={() => onLanguageChange("en")}
-            className={`px-2 py-0.5 sm:px-2.5 sm:py-1 text-[11px] font-bold rounded-full transition ${
-              lang === "en" ? "bg-slate-900 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            EN
-          </button>
-          <button
-            onClick={() => onLanguageChange("gu")}
-            className={`px-2 py-0.5 sm:px-2.5 sm:py-1 text-[11px] font-bold rounded-full transition ${
-              lang === "gu" ? "bg-slate-900 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            ગુજ
-          </button>
-          <button
-            onClick={() => onLanguageChange("hi")}
-            className={`px-2 py-0.5 sm:px-2.5 sm:py-1 text-[11px] font-bold rounded-full transition ${
-              lang === "hi" ? "bg-slate-900 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
-            }`}
-          >
-            हिં
-          </button>
-        </div>
-
         {/* Sync Status Badge (Online / Offline / Pending Sync) */}
-        <div className="hidden md:flex items-center">
+        <div className="flex items-center">
           {isOnline ? (
             <div className="flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-[11px] font-semibold text-emerald-800">
               <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>{t.online}</span>
+              <span className="hidden sm:inline">{t.online}</span>
               {pendingSyncCount > 0 ? (
                 <button
                   onClick={onManualSync}
@@ -121,7 +92,7 @@ export function Header({
                   className="ml-1 inline-flex items-center gap-1 rounded bg-emerald-600 px-1.5 py-0.5 text-[10px] text-white hover:bg-emerald-700"
                 >
                   <RefreshCw size={10} className={isSyncing ? "animate-spin" : ""} />
-                  {pendingSyncCount} {t.pendingSync}
+                  {pendingSyncCount} <span className="hidden md:inline">{t.pendingSync}</span>
                 </button>
               ) : (
                 <CheckCircle2 size={12} className="text-emerald-600 ml-0.5" />

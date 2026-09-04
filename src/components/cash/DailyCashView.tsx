@@ -344,7 +344,6 @@ export function DailyCashView({
             <table className="w-full text-left text-xs sm:text-sm border-collapse">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-600">
-                  <th className="py-3 px-3 sm:px-4">#</th>
                   <th className="py-3 px-3 sm:px-4">{t.date}</th>
                   <th className="py-3 px-3 sm:px-4">{t.project}</th>
                   <th className="py-3 px-3 sm:px-4">{t.type}</th>
@@ -358,16 +357,13 @@ export function DailyCashView({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {transactionsWithRunningBalance.map((tx, idx) => {
+                {transactionsWithRunningBalance.map(tx => {
                   const isCashIn = tx.type === "cash_in";
                   return (
                     <tr
                       key={tx.id}
                       className="hover:bg-slate-50/80 transition-colors"
                     >
-                      <td className="py-3 px-3 sm:px-4 text-slate-400 font-mono text-[11px]">
-                        {tx.id}
-                      </td>
                       <td className="py-3 px-3 sm:px-4 whitespace-nowrap font-medium text-slate-700">
                         {tx.date}
                       </td>
