@@ -268,12 +268,8 @@ export function CashTransactionModal({
             required
             placeholder={
               type === "cash_in"
-                ? lang === "gu"
-                  ? "હેડ ઓફિસ / કાંતિભાઈ તરફથી મળેલ રોકડ"
-                  : "Cash received from Head Office / Kanjibhai"
-                : lang === "gu"
-                  ? "JCB ખર્ચ, મજૂરી ખર્ચી, ડીઝલ, મટીરીયલ વગેરે વિગત..."
-                  : "JCB Bhut Pagla, MP Labour Kharchi, Diesel, Materials..."
+                ? "e.g. Cash received from Head Office / Kanjibhai"
+                : "e.g. JCB Bhut Pagla, MP Labour Kharchi, Diesel"
             }
             className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm font-medium text-slate-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
           />
@@ -356,7 +352,7 @@ export function CashTransactionModal({
               type="text"
               value={voucherNo}
               onChange={e => setVoucherNo(e.target.value)}
-              placeholder="V-102, Slip No., Voucher Ref"
+              placeholder="e.g. V-102 or Slip No."
               className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
             />
           </div>

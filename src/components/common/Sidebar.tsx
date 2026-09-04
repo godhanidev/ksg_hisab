@@ -6,6 +6,7 @@ import {
   FileCheck,
   Building2,
   Users,
+  UserCheck,
   ChevronRight,
 } from "lucide-react";
 import { Language, UserAccount } from "../../types";
@@ -35,6 +36,7 @@ export const MENU_CONFIG: MenuItemConfig[] = [
   { key: "GST Bills", icon: FileCheck, translateKey: "gstBills" },
   { key: "Projects", icon: Building2, translateKey: "projects" },
   { key: "User Management", icon: Users, translateKey: "userManagement", adminOnly: true },
+  { key: "Account", icon: UserCheck, translateKey: "account" },
 ];
 
 export function Sidebar({
@@ -126,10 +128,19 @@ export function Sidebar({
         })}
       </nav>
 
-      {/* User Info Footer */}
+      {/* User Info Footer: Clickable to go to Account Profile */}
       <div className="border-t border-slate-800/80 p-3.5 bg-slate-950/80">
         {sidebarOpen ? (
-          <div className="flex items-center gap-3 rounded-2xl bg-slate-900/90 p-3 border border-slate-800">
+          <button
+            type="button"
+            onClick={() => setActivePage("Account")}
+            className={`w-full flex items-center gap-3 rounded-2xl p-3 border transition text-left ${
+              activePage === "Account"
+                ? "bg-amber-500/20 border-amber-500/40 text-amber-300"
+                : "bg-slate-900/90 border-slate-800 hover:bg-slate-800/80"
+            }`}
+            title="Open Account Profile"
+          >
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white p-0.5 shadow-md border border-slate-700 overflow-hidden">
               <img
                 src="/logo.png"
@@ -146,9 +157,16 @@ export function Sidebar({
                 {isAdmin ? t.adminRole : `${getShortRoleLabel(currentUser.role)} (${currentUser.assignedProjects.length > 0 ? currentUser.assignedProjects[0] : "Site"})`}
               </p>
             </div>
-          </div>
+          </button>
         ) : (
-          <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={() => setActivePage("Account")}
+            className={`w-full flex justify-center p-1.5 rounded-xl transition ${
+              activePage === "Account" ? "bg-amber-500/20" : "hover:bg-slate-900"
+            }`}
+            title="Open Account Profile"
+          >
             <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white p-0.5 shadow-md border border-slate-700 overflow-hidden">
               <img
                 src="/logo.png"
@@ -159,7 +177,7 @@ export function Sidebar({
                 }}
               />
             </div>
-          </div>
+          </button>
         )}
       </div>
     </aside>

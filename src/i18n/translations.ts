@@ -25,6 +25,7 @@ export const translations = {
     gstBills: "GST Bills",
     projects: "Projects / Sites",
     userManagement: "User Accounts",
+    account: "Account & Profile",
     
     allSites: "All Construction Sites",
     filterBySite: "Filter Site",
@@ -137,7 +138,7 @@ export const translations = {
     gstBills: "જીએસટી બીલ (GST Bills)",
     projects: "પ્રોજેક્ટ / સાઇટ્સ",
     userManagement: "યુઝર એકાઉન્ટ્સ",
-
+    account: "મારું એકાઉન્ટ / પ્રોફાઇલ",
     allSites: "તમામ બાંધકામ સાઇટ્સ",
     filterBySite: "સાઇટ ફિલ્ટર કરો",
     online: "ઓનલાઇન",
@@ -249,7 +250,7 @@ export const translations = {
     gstBills: "जीएसटी बिल (GST Bills)",
     projects: "प्रोजेक्ट / साइट्स",
     userManagement: "यूजर अकाउंट्स",
-
+    account: "मेरा अकाउंट / प्रोफ़ाइल",
     allSites: "सभी निर्माण साइट्स",
     filterBySite: "साइट फ़िल्टर करें",
     online: "ऑनलाइन",

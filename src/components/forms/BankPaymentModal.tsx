@@ -200,7 +200,7 @@ export function BankPaymentModal({
             value={partyName}
             onChange={e => setPartyName(e.target.value)}
             required
-            placeholder="Vrajesh Traders, Ashish Buildcon, Shree Vrajesh Steel"
+            placeholder="e.g. Vrajesh Traders, Ashish Buildcon, Shree Vrajesh Steel"
             className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
           />
         </div>
@@ -279,7 +279,7 @@ export function BankPaymentModal({
               type="text"
               value={referenceNo}
               onChange={e => setReferenceNo(e.target.value)}
-              placeholder="UTR-HDFC2026031891, Cheque No, Ref No"
+              placeholder="e.g. UTR-HDFC2026031891 or Cheque 004812"
               className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             />
           </div>

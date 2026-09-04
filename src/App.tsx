@@ -34,9 +34,9 @@ import { ProjectModal } from "./components/projects/ProjectModal";
 import { CashTransactionModal } from "./components/forms/CashTransactionModal";
 import { BankPaymentModal } from "./components/forms/BankPaymentModal";
 import { GSTBillModal } from "./components/forms/GSTBillModal";
-import { ChangePasswordModal } from "./components/auth/ChangePasswordModal";
 import { BillViewerModal } from "./components/documents/BillViewerModal";
 import { CloudSyncModal } from "./components/common/CloudSyncModal";
+import { AccountView } from "./components/account/AccountView";
 
 export function App() {
   // ── Language & Online / Offline Sync State ──────────────────────────────
@@ -53,7 +53,6 @@ export function App() {
     return !!loadStoredFirebaseConfig();
   });
   const [showCloudModal, setShowCloudModal] = useState(false);
-  const [showChangePasswordModal, setShowChangePasswordModal] = useState(false);
 
   // ── User Session & Navigation State ─────────────────────────────────────
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
@@ -482,7 +481,7 @@ export function App() {
           setSidebarOpen={setSidebarOpen}
           currentUser={currentUser}
           onLogout={handleLogout}
-          onOpenChangePassword={() => setShowChangePasswordModal(true)}
+          onOpenAccount={() => setActivePage("Account")}
           lang={lang}
           onLanguageChange={handleLanguageChange}
           isOnline={isOnline}
@@ -631,6 +630,19 @@ export function App() {
               onDeleteUser={handleDeleteUser}
             />
           )}
+
+          {activePage === "Account" && (
+            <AccountView
+              currentUser={currentUser}
+              projects={projects}
+              users={users}
+              lang={lang}
+              onSaveNewPassword={handleSaveNewPassword}
+              isCloudConnected={isCloudConnected}
+              onNavigateToTab={tab => setActivePage(tab)}
+              onOpenCloudModal={() => setShowCloudModal(true)}
+            />
+          )}
         </main>
 
         {/* ── Mobile Bottom Navigation Bar ───────────────────────────────── */}
@@ -746,17 +758,6 @@ export function App() {
         users={users}
         lang={lang}
       />
-
-      {/* 8. Change Password Modal for Active User */}
-      {currentUser && (
-        <ChangePasswordModal
-          isOpen={showChangePasswordModal}
-          onClose={() => setShowChangePasswordModal(false)}
-          currentUser={currentUser}
-          onSaveNewPassword={handleSaveNewPassword}
-          lang={lang}
-        />
-      )}
     </div>
   );
 }

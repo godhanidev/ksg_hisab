@@ -270,7 +270,7 @@ export function UserManagement({
                   required
                   value={form.name}
                   onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
-                  placeholder="Rajubhai / Hitesh Patel"
+                  placeholder="e.g. Rajubhai or Hitesh Patel"
                   className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-semibold outline-none focus:border-slate-800"
                 />
               </div>
@@ -298,7 +298,7 @@ export function UserManagement({
                   required
                   value={form.username}
                   onChange={e => setForm(f => ({ ...f, username: e.target.value.toLowerCase().replace(/\s+/g, '') }))}
-                  placeholder="rajubhai"
+                  placeholder="e.g. rajubhai"
                   className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm font-mono font-bold outline-none focus:border-slate-800"
                 />
               </div>
@@ -311,7 +311,7 @@ export function UserManagement({
                     required
                     value={form.password}
                     onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                    placeholder="••••••••"
+                    placeholder="e.g. raju@2026"
                     className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 pr-10 text-sm font-mono font-bold outline-none focus:border-slate-800"
                   />
                   <button
@@ -332,7 +332,7 @@ export function UserManagement({
                 type="tel"
                 value={form.phone}
                 onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
-                placeholder="98250 12345"
+                placeholder="e.g. 98250 12345"
                 className="w-full rounded-xl border border-slate-200 px-3.5 py-2.5 text-sm outline-none focus:border-slate-800"
               />
             </div>

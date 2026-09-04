@@ -13,7 +13,7 @@ type HeaderProps = {
   setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
   currentUser: UserAccount;
   onLogout: () => void;
-  onOpenChangePassword?: () => void;
+  onOpenAccount?: () => void;
   lang: Language;
   onLanguageChange: (lang: Language) => void;
   isOnline: boolean;
@@ -34,7 +34,7 @@ export function Header({
   setSidebarOpen,
   currentUser,
   onLogout,
-  onOpenChangePassword,
+  onOpenAccount,
   lang,
   onLanguageChange,
   isOnline,
@@ -59,64 +59,82 @@ export function Header({
           {sidebarOpen ? <X size={19} /> : <Menu size={19} />}
         </button>
 
-        {/* Company Logo on Mobile (in place of upper-left menu bar) */}
-        <div className="flex lg:hidden h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white p-1 shadow-xs border border-slate-200">
+        {/* Mobile KS Logo */}
+        <div className="flex lg:hidden h-9 w-9 items-center justify-center rounded-xl bg-white p-1 shadow-sm border border-slate-200 overflow-hidden shrink-0">
           <img
             src="/logo.png"
-            alt="K.S.Godhani Logo"
+            alt="KS Logo"
             className="h-full w-full object-contain"
             onError={(e) => {
-              const target = e.target as HTMLImageElement;
-              target.style.display = 'none';
+              (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
         </div>
 
-        <div className="min-w-0">
-          <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-400 font-medium truncate">
-            <span>K.S.Godhani</span>
-            <span>/</span>
-            <span className="text-slate-500 font-semibold">{getShortRoleLabel(currentUser.role)}</span>
-          </div>
+        <div>
           <h2 className="text-base sm:text-xl font-black text-slate-900 leading-tight truncate">{activePage}</h2>
+          <p className="hidden sm:block text-[11px] font-semibold text-slate-500">
+            {isAdmin ? "K.S.Godhani Civil Works & Construction Ledger" : "Site Supervisor / Field Ledger View"}
+          </p>
         </div>
       </div>
 
-      {/* Right section: Language, Offline status, User Profile, Logout */}
-      <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-        {/* Multi-Language Switcher */}
-        <div className="flex items-center rounded-xl bg-slate-100 p-0.5 sm:p-1 border border-slate-200">
+      {/* Right Action Tools: Language, Cloud/Sync Status, User Profile, Logout */}
+      <div className="flex items-center gap-2 sm:gap-3">
+        {/* Language Switcher Pill */}
+        <div className="flex items-center rounded-full bg-slate-100 p-0.5 border border-slate-200 shadow-2xs">
           <button
-            type="button"
             onClick={() => onLanguageChange("en")}
-            className={`px-1.5 sm:px-2 py-1 text-[11px] sm:text-xs font-bold rounded-lg transition ${lang === "en" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"}`}
-            title="English"
+            className={`px-2 py-0.5 sm:px-2.5 sm:py-1 text-[11px] font-bold rounded-full transition ${
+              lang === "en" ? "bg-slate-900 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
+            }`}
           >
             EN
           </button>
           <button
-            type="button"
             onClick={() => onLanguageChange("gu")}
-            className={`px-1.5 sm:px-2 py-1 text-[11px] sm:text-xs font-bold rounded-lg transition ${lang === "gu" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"}`}
-            title="ગુજરાતી (Gujarati)"
+            className={`px-2 py-0.5 sm:px-2.5 sm:py-1 text-[11px] font-bold rounded-full transition ${
+              lang === "gu" ? "bg-slate-900 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
+            }`}
           >
             ગુજ
           </button>
           <button
-            type="button"
             onClick={() => onLanguageChange("hi")}
-            className={`px-1.5 sm:px-2 py-1 text-[11px] sm:text-xs font-bold rounded-lg transition ${lang === "hi" ? "bg-white text-slate-900 shadow-xs" : "text-slate-600 hover:text-slate-900"}`}
-            title="हिन्दी (Hindi)"
+            className={`px-2 py-0.5 sm:px-2.5 sm:py-1 text-[11px] font-bold rounded-full transition ${
+              lang === "hi" ? "bg-slate-900 text-white shadow-xs" : "text-slate-600 hover:text-slate-900"
+            }`}
           >
             हिં
           </button>
         </div>
 
-        {/* Offline Status Badge & Sync */}
-        <div className="hidden lg:flex items-center gap-2">
+        {/* Cloud Sync Status Indicator */}
+        {onOpenCloudModal && (
+          <button
+            type="button"
+            onClick={onOpenCloudModal}
+            className={`hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-[11px] font-bold transition border ${
+              isCloudConnected
+                ? "bg-emerald-50 text-emerald-800 border-emerald-300 hover:bg-emerald-100"
+                : "bg-slate-100 text-slate-700 border-slate-300 hover:bg-slate-200"
+            }`}
+            title="Firebase Cloud Database Sync"
+          >
+            {isCloudConnected ? (
+              <Database size={13} className="text-emerald-600" />
+            ) : (
+              <CloudOff size={13} className="text-slate-500" />
+            )}
+            <span>{isCloudConnected ? "Cloud Synced" : "Local Database"}</span>
+          </button>
+        )}
+
+        {/* Sync Status Badge (Online / Offline / Pending Sync) */}
+        <div className="hidden md:flex items-center">
           {isOnline ? (
-            <div className="flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-[11px] font-semibold text-emerald-700">
-              <Wifi size={13} className="text-emerald-600" />
+            <div className="flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-2.5 py-1 text-[11px] font-semibold text-emerald-800">
+              <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
               <span>{t.online}</span>
               {pendingSyncCount > 0 ? (
                 <button
@@ -135,24 +153,18 @@ export function Header({
             <div className="flex items-center gap-1.5 rounded-full bg-amber-50 border border-amber-300 px-2.5 py-1 text-[11px] font-semibold text-amber-800 animate-pulse">
               <WifiOff size={13} className="text-amber-600" />
               <span>{t.offline}</span>
-              {pendingSyncCount > 0 && (
-                <span className="rounded bg-amber-200 px-1.5 py-0.5 text-[10px] font-bold text-amber-900">
-                  {pendingSyncCount}
-                </span>
-              )}
             </div>
           )}
         </div>
 
-        {/* User Pill with Role Indicator */}
-        <div
-          onClick={onOpenChangePassword}
-          className={`flex items-center gap-2.5 pl-2 border-l border-slate-200 ${
-            onOpenChangePassword ? "cursor-pointer hover:opacity-80 transition" : ""
-          }`}
-          title="Click to Change Password"
+        {/* User Pill: Click to open My Account & Profile */}
+        <button
+          type="button"
+          onClick={onOpenAccount}
+          className="flex items-center gap-2.5 pl-2 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-1.5 rounded-2xl transition"
+          title={lang === "gu" ? "મારું એકાઉન્ટ / પ્રોફાઇલ ખોલો" : "View My Account & Profile"}
         >
-          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white p-0.5 shadow-xs border border-slate-200 overflow-hidden">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-white p-0.5 shadow-xs border border-slate-200 overflow-hidden shrink-0">
             <img
               src="/logo.png"
               alt="KS Logo"
@@ -167,20 +179,7 @@ export function Header({
             <p className="text-xs font-bold text-slate-900 leading-tight truncate max-w-[140px]">{currentUser.name}</p>
             <p className="text-[10px] font-semibold text-slate-500">{getShortRoleLabel(currentUser.role)}</p>
           </div>
-        </div>
-
-        {/* Change Password Button */}
-        {onOpenChangePassword && (
-          <button
-            type="button"
-            onClick={onOpenChangePassword}
-            title={lang === "gu" ? "પાસવર્ડ બદલો" : "Change Password"}
-            className="flex items-center gap-1.5 rounded-xl border border-slate-200 bg-white p-2 sm:px-3 sm:py-2 text-xs font-semibold text-slate-700 hover:bg-amber-50 hover:border-amber-300 hover:text-amber-800 transition shadow-2xs"
-          >
-            <KeyRound size={15} className="text-amber-600" />
-            <span className="hidden lg:inline">{lang === "gu" ? "પાસવર્ડ બદલો" : "Password"}</span>
-          </button>
-        )}
+        </button>
 
         {/* Logout Button */}
         <button
