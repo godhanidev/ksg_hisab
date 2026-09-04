@@ -115,56 +115,79 @@ export function DashboardView({
     });
   }, [projects, isAdmin, userAllowedSites, selectedSiteFilter]);
 
-  // Recent 6 transactions combined (Cash, Bank, GST)
+  // Recent transactions combined (Cash, Bank, GST) sorted by date descending
   const recentActivities = useMemo(() => {
     const list: Array<{
       id: string;
+      rawId: number;
       date: string;
       title: string;
       subtitle: string;
       amount: number;
       type: "cash_in" | "cash_out" | "bank" | "gst";
       attachment?: Attachment;
+      targetTab: string;
     }> = [];
 
     filteredCash.forEach(c => {
       list.push({
         id: `cash_${c.id}`,
-        date: c.date,
-        title: c.details,
-        subtitle: `${c.project} • ${c.category || "Site"}`,
-        amount: c.amount,
+        rawId: c.id,
+        date: c.date || "",
+        title: c.details || (c.type === "cash_in" ? "Cash Received" : "Site Expense"),
+        subtitle: `${c.project || "General"} • ${c.category || (c.type === "cash_in" ? "Office Cash" : "Site")}`,
+        amount: Number(c.amount) || 0,
         type: c.type,
         attachment: c.attachments?.[0],
+        targetTab: "Site Daily Cash",
       });
     });
 
     filteredBank.forEach(b => {
       list.push({
         id: `bank_${b.id}`,
-        date: b.date,
-        title: b.partyName,
-        subtitle: `${b.project} • ${b.paymentMode}`,
-        amount: b.amount,
+        rawId: b.id,
+        date: b.date || "",
+        title: b.partyName || "Bank Payment",
+        subtitle: `${b.project || "General"} • ${b.paymentMode || "Bank"}`,
+        amount: Number(b.amount) || 0,
         type: "bank",
         attachment: b.attachments?.[0],
+        targetTab: "Bank Payments",
       });
     });
 
     filteredGST.forEach(g => {
       list.push({
         id: `gst_${g.id}`,
-        date: g.date,
-        title: `Bill #${g.billNo} - ${g.partyName}`,
-        subtitle: `${g.project} • ${g.product}`,
-        amount: g.totalAmount,
+        rawId: g.id,
+        date: g.date || "",
+        title: `Bill #${g.billNo || "-"} - ${g.partyName || "Party"}`,
+        subtitle: `${g.project || "General"} • ${g.product || "GST Bill"}`,
+        amount: Number(g.totalAmount) || 0,
         type: "gst",
         attachment: g.attachments?.[0],
+        targetTab: "GST Bills",
       });
     });
 
-    // Sort by id descending
-    return list.slice(0, 6);
+    // Sort descending by date (latest first), then by id descending
+    list.sort((a, b) => {
+      const parseDate = (d: string) => {
+        if (!d) return 0;
+        if (/^\d{2}[/-]\d{2}[/-]\d{4}/.test(d)) {
+          const [day, month, year] = d.split(/[/-]/).map(Number);
+          return new Date(year, month - 1, day).getTime() || 0;
+        }
+        const parsed = new Date(d).getTime();
+        return isNaN(parsed) ? 0 : parsed;
+      };
+      const timeDiff = parseDate(b.date) - parseDate(a.date);
+      if (timeDiff !== 0) return timeDiff;
+      return b.rawId - a.rawId;
+    });
+
+    return list.slice(0, 8);
   }, [filteredCash, filteredBank, filteredGST]);
 
   return (
@@ -480,82 +503,120 @@ export function DashboardView({
       </div>
 
       {/* ── Recent Transactions Activity Feed ────────────────────────────── */}
-      <div className="rounded-3xl border border-slate-200/80 bg-white p-5 sm:p-6 shadow-xs">
-        <div className="flex items-center justify-between mb-4">
+      <div className="rounded-3xl border border-slate-200/80 bg-white p-4 sm:p-6 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
           <div>
             <h3 className="font-bold text-slate-900 text-base">{t.recentTransactions}</h3>
-            <p className="text-xs text-slate-500">Latest entries across Daily Cash, Bank &amp; GST bills</p>
+            <p className="text-xs text-slate-500">{t.recentTransactionsSubtitle}</p>
           </div>
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {recentActivities.map(item => (
-            <div
-              key={item.id}
-              className="rounded-2xl border border-slate-100 bg-slate-50/60 p-3.5 hover:bg-slate-100/80 transition"
-            >
-              <div className="flex items-start justify-between gap-2">
-                <div className="min-w-0">
-                  <span
-                    className={`inline-block rounded-md px-2 py-0.5 text-[10px] font-bold uppercase ${
-                      item.type === "cash_in"
-                        ? "bg-emerald-100 text-emerald-800"
-                        : item.type === "cash_out"
-                        ? "bg-rose-100 text-rose-800"
-                        : item.type === "bank"
-                        ? "bg-blue-100 text-blue-800"
-                        : "bg-purple-100 text-purple-800"
-                    }`}
-                  >
-                    {item.type === "cash_in"
-                      ? "Cash In (જમા)"
-                      : item.type === "cash_out"
-                      ? "Site Expense"
-                      : item.type === "bank"
-                      ? "Bank RTGS"
-                      : "GST Bill"}
-                  </span>
-                  <p className="font-bold text-xs sm:text-sm text-slate-900 mt-1.5 truncate">
-                    {item.title}
-                  </p>
-                  <p className="text-[11px] text-slate-500 truncate">{item.subtitle}</p>
-                </div>
-                <p
-                  className={`font-black text-sm shrink-0 ${
-                    item.type === "cash_in"
-                      ? "text-emerald-700"
-                      : item.type === "cash_out"
-                      ? "text-rose-700"
-                      : item.type === "bank"
-                      ? "text-blue-700"
-                      : "text-purple-700"
-                  }`}
-                >
-                  {formatINR(item.amount)}
-                </p>
-              </div>
-
-              <div className="mt-3 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-400">
-                <span>{item.date}</span>
-                {item.attachment && (
-                  <button
-                    onClick={() =>
-                      onViewAttachment({
-                        attachment: item.attachment!,
-                        title: item.title,
-                        subtitle: item.subtitle,
-                        amount: formatINR(item.amount),
-                      })
-                    }
-                    className="inline-flex items-center gap-1 font-bold text-blue-600 hover:text-blue-800"
-                  >
-                    <Paperclip size={12} /> Photo
-                  </button>
-                )}
-              </div>
+        {recentActivities.length === 0 ? (
+          <div className="flex flex-col items-center justify-center p-8 sm:p-12 text-center rounded-2xl bg-slate-50/70 border border-dashed border-slate-200">
+            <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+              <Activity size={22} />
             </div>
-          ))}
-        </div>
+            <p className="text-sm font-bold text-slate-700">{t.noRecentTransactions}</p>
+            <p className="text-xs text-slate-400 mt-1">
+              {lang === "gu"
+                ? "નવો રોકડ, બેંક અથવા GST બીલ વ્યવહાર ઉમેરો"
+                : lang === "hi"
+                ? "नया रोकड़, बैंक या जीएसटी बिल लेनदेन जोड़ें"
+                : "Add a Site Daily Cash, Bank payment, or GST bill entry"}
+            </p>
+          </div>
+        ) : (
+          <div className="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {recentActivities.map(item => (
+              <div
+                key={item.id}
+                onClick={() => onNavigateToTab(item.targetTab)}
+                className="group cursor-pointer rounded-2xl border border-slate-100 bg-slate-50/70 p-3.5 hover:bg-white hover:border-amber-300 hover:shadow-md transition-all active:scale-[0.99] flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <span
+                        className={`inline-block rounded-md px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider ${
+                          item.type === "cash_in"
+                            ? "bg-emerald-100 text-emerald-800"
+                            : item.type === "cash_out"
+                            ? "bg-rose-100 text-rose-800"
+                            : item.type === "bank"
+                            ? "bg-blue-100 text-blue-800"
+                            : "bg-purple-100 text-purple-800"
+                        }`}
+                      >
+                        {item.type === "cash_in"
+                          ? lang === "gu" ? "રોકડ જમા" : lang === "hi" ? "रोकड़ जमा" : "Cash In"
+                          : item.type === "cash_out"
+                          ? lang === "gu" ? "સાઇટ ખર્ચ (ઉધાર)" : lang === "hi" ? "साइट खर्च" : "Site Expense"
+                          : item.type === "bank"
+                          ? lang === "gu" ? "બેંક RTGS" : lang === "hi" ? "बैंक आरटीजीएस" : "Bank RTGS"
+                          : lang === "gu" ? "GST બીલ" : lang === "hi" ? "जीएसटी बिल" : "GST Bill"}
+                      </span>
+                      <p className="font-bold text-xs sm:text-sm text-slate-900 mt-1.5 break-words line-clamp-1 group-hover:text-amber-700 transition-colors" title={item.title}>
+                        {item.title}
+                      </p>
+                      <p className="text-[11px] text-slate-500 break-words line-clamp-1 mt-0.5" title={item.subtitle}>
+                        {item.subtitle}
+                      </p>
+                    </div>
+
+                    <div className="text-right shrink-0">
+                      <p
+                        className={`font-black text-xs sm:text-sm ${
+                          item.type === "cash_in"
+                            ? "text-emerald-700"
+                            : item.type === "cash_out"
+                            ? "text-rose-700"
+                            : item.type === "bank"
+                            ? "text-blue-700"
+                            : "text-purple-700"
+                        }`}
+                      >
+                        {formatINR(item.amount)}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-3 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px] text-slate-400">
+                  <span className="flex items-center gap-1 font-medium text-slate-500 text-[10px] sm:text-[11px]">
+                    <Calendar size={11} className="text-slate-400 shrink-0" />
+                    {item.date || "-"}
+                  </span>
+
+                  <div className="flex items-center gap-2">
+                    {item.attachment && (
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (item.attachment) {
+                            onViewAttachment({
+                              attachment: item.attachment,
+                              title: item.title,
+                              subtitle: item.subtitle,
+                              amount: formatINR(item.amount),
+                            });
+                          }
+                        }}
+                        className="inline-flex items-center gap-1 font-bold text-blue-600 hover:text-blue-800 bg-blue-50 px-2 py-0.5 rounded-lg text-[10px] transition"
+                      >
+                        <Paperclip size={10} /> {t.photo || "Photo"}
+                      </button>
+                    )}
+
+                    <span className="inline-flex items-center gap-0.5 font-bold text-slate-400 group-hover:text-amber-600 transition text-[10px]">
+                      <ArrowRight size={12} />
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );
