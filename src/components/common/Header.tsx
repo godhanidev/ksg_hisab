@@ -55,11 +55,11 @@ export function Header({
 
           {/* Mobile App Brand Title */}
           <div className="flex items-center gap-2 lg:hidden">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-white p-0.5 shadow-2xs border border-slate-200 overflow-hidden">
+            <div className="flex h-8 w-8 items-center justify-center rounded-full bg-transparent shadow-2xs border border-amber-500/40 ring-1 ring-amber-500/20 overflow-hidden">
               <img
                 src="/logo.png"
                 alt="KS Logo"
-                className="h-full w-full object-contain"
+                className="h-full w-full object-cover rounded-full scale-[1.08]"
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = 'none';
                 }}

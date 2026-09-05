@@ -81,11 +81,11 @@ export function Sidebar({
         <div className="flex flex-col flex-1 overflow-hidden min-h-0">
           <div className="flex h-16 sm:h-20 items-center justify-between px-4 border-b border-slate-800/80 shrink-0">
             <div className="flex items-center gap-3 overflow-hidden min-w-0">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white p-1 shadow-md border border-slate-700 overflow-hidden">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-transparent shadow-md border border-amber-400/40 ring-2 ring-amber-400/10 overflow-hidden">
                 <img
                   src="/logo.png"
                   alt="KS Logo"
-                  className="h-full w-full object-contain"
+                  className="h-full w-full object-cover rounded-full scale-[1.08]"
                   onError={(e) => {
                     (e.target as HTMLImageElement).style.display = 'none';
                   }}
