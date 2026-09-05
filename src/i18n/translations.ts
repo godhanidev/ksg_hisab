@@ -243,7 +243,7 @@ export const translations = {
   },
 
   hi: {
-    appName: "के.એસ.गोधानी",
+    appName: "के.एस.गोधानी",
     appSubtitle: "सिविल वर्क्स और निर्माण लेखा प्रणाली",
     loginTitle: "KSG हिसाब लॉगिन",
     loginSubtitle: "साइट खर्च और रोकड़ हिसाब लेजर सिस्टम",
