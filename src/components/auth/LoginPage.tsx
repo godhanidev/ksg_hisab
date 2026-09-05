@@ -62,11 +62,11 @@ export function LoginPage({
       <div className="relative z-10 w-full max-w-md">
         {/* Top Branding */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-20 h-20 rounded-2xl bg-white shadow-2xl mb-3 p-1.5 overflow-hidden border border-white/20">
+          <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full shadow-2xl mb-3.5 overflow-hidden border-2 border-amber-400/50 bg-transparent ring-4 ring-amber-400/10">
             <img
               src="/logo.png"
               alt="K.S.Godhani Logo"
-              className="w-full h-full object-contain"
+              className="w-full h-full object-cover rounded-full scale-[1.08]"
               onError={e => {
                 const target = e.target as HTMLImageElement;
                 target.style.display = "none";
