@@ -1,4 +1,3 @@
-import React from "react";
 import {
   LayoutDashboard,
   Wallet,
@@ -6,13 +5,11 @@ import {
   FileCheck,
   Building2,
   Users,
-  User,
   ChevronRight,
   X,
 } from "lucide-react";
 import { Language, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
-import { getShortRoleLabel } from "../../utils/formatters";
 
 type SidebarProps = {
   sidebarOpen: boolean;
@@ -139,21 +136,6 @@ export function Sidebar({
               );
             })}
           </nav>
-        </div>
-
-        {/* Bottom Current User Display Card */}
-        <div className="p-3 border-t border-slate-800/80 bg-slate-950 shrink-0">
-          <div className="flex items-center gap-3 rounded-2xl p-2 sm:p-2.5 bg-slate-900/90 border border-slate-800/90 min-w-0">
-            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-slate-950 shadow-md border border-amber-400/40">
-              <User size={20} className="text-slate-950" />
-            </div>
-            <div className={`min-w-0 flex-1 ${sidebarOpen ? "block" : "hidden lg:hidden"}`}>
-              <p className="text-xs font-bold text-white truncate">{currentUser.name}</p>
-              <p className="text-[10px] text-amber-400/80 font-semibold truncate">
-                {isAdmin ? t.adminRole : `${getShortRoleLabel(currentUser.role)} (${currentUser.assignedProjects.length > 0 ? currentUser.assignedProjects[0] : "Site"})`}
-              </p>
-            </div>
-          </div>
         </div>
       </aside>
     </>
