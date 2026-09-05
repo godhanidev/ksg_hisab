@@ -12,6 +12,9 @@ export type UserAccount = {
   role: Role;
   assignedProjects: string[]; // empty = all (admin), specific names for supervisors
   phone?: string;
+  currentSessionId?: string; // Unique session token for enforcing single active device login
+  lastLoginAt?: string;      // ISO timestamp of last login
+  lastDevice?: string;       // Device description e.g. "Mobile Device" or "Desktop / PC"
 };
 
 export type Attachment = {

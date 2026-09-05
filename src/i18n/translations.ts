@@ -118,7 +118,10 @@ export const translations = {
     financialOverview: "Financial Breakdown",
     siteWiseReport: "Site-wise Summary",
     ledgerView: "Ledger View",
-    close: "Close"
+    close: "Close",
+    sessionExpiredNotice: "Your account was logged in on another device/browser. You have been automatically logged out from this device.",
+    singleDevicePolicyNote: "Single-Device Active Session: Allowed on only 1 device at a time for security.",
+    passwordChangedNotice: "Your password was updated. Please log in again."
   },
 
   gu: {
@@ -235,7 +238,10 @@ export const translations = {
     financialOverview: "નાણાકીય વિહંગાવલોકન",
     siteWiseReport: "સાઇટ મુજબ હિસાબ",
     ledgerView: "લેજર જુઓ",
-    close: "બંધ કરો"
+    close: "બંધ કરો",
+    sessionExpiredNotice: "તમારું એકાઉન્ટ બીજા ડિવાઇસ અથવા બ્રાઉઝરમાં લોગઇન થયું હોવાથી, આ ડિવાઇસમાંથી આપમેળે લોગ આઉટ કરવામાં આવ્યું છે.",
+    singleDevicePolicyNote: "સિંગલ ડિવાઇસ સુરક્ષા: એક સમયે માત્ર ૧ જ ડિવાઇસમાં લોગઇન રહી શકાય છે.",
+    passwordChangedNotice: "તમારો પાસવર્ડ બદલાઈ ગયો છે. સુરક્ષા માટે ફરીથી લોગઇન કરો."
   },
 
   hi: {
@@ -352,7 +358,10 @@ export const translations = {
     financialOverview: "वित्तीय अवलोकन",
     siteWiseReport: "साइट अनुसार हिसाब",
     ledgerView: "लेजर देखें",
-    close: "बंद करें"
+    close: "बंद करें",
+    sessionExpiredNotice: "आपका खाता किसी अन्य डिवाइस या ब्राउज़र पर लॉगिन हो गया है, इसलिए इस डिवाइस से अपने आप लॉगआउट कर दिया गया है।",
+    singleDevicePolicyNote: "सिंगल डिवाइस सुरक्षा: एक समय में केवल 1 डिवाइस पर लॉगिन की अनुमति है।",
+    passwordChangedNotice: "आपका पासवर्ड बदल गया है। कृपया दोबारा लॉगिन करें।"
   }
 };
 

@@ -47,6 +47,7 @@ export function App() {
   const [pendingSyncQueue, setPendingSyncQueue] = useState(loadOfflineQueue());
   const [isSyncing, setIsSyncing] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [sessionExpiredNotice, setSessionExpiredNotice] = useState<string | null>(null);
 
   // ── Firebase Cloud Live Sync State ──────────────────────────────────────
   const [isCloudConnected, setIsCloudConnected] = useState<boolean>(() => {
@@ -160,23 +161,55 @@ export function App() {
   useEffect(() => { saveStoredCollection("users", users); }, [users]);
   useEffect(() => { saveStoredSession(currentUser); }, [currentUser]);
 
-  // ── Real-time synchronization of active currentUser when users collection changes ──
+  // ── Real-time synchronization of active currentUser & Single-Device Enforcement ──
   useEffect(() => {
     if (currentUser && users.length > 0) {
       const liveUser = users.find(
         u => u.id === currentUser.id || u.username.toLowerCase() === currentUser.username.toLowerCase()
       );
-      if (
-        liveUser &&
-        (liveUser.role !== currentUser.role ||
+      if (liveUser) {
+        // 1. Single-Device Session Enforcement:
+        // If currentUser has a session ID and liveUser has a DIFFERENT session ID,
+        // it means this account was logged into on another device/browser!
+        if (
+          currentUser.currentSessionId &&
+          liveUser.currentSessionId &&
+          liveUser.currentSessionId !== currentUser.currentSessionId
+        ) {
+          console.warn("Single-device enforcement: Account logged into another device.", {
+            currentDeviceSession: currentUser.currentSessionId,
+            newActiveSession: liveUser.currentSessionId,
+          });
+          setCurrentUser(null);
+          saveStoredSession(null);
+          setSessionExpiredNotice(t.sessionExpiredNotice);
+          return;
+        }
+
+        // 2. Password Check: If password was changed, invalidate session
+        if (liveUser.password !== currentUser.password) {
+          setCurrentUser(null);
+          saveStoredSession(null);
+          setSessionExpiredNotice(t.passwordChangedNotice);
+          return;
+        }
+
+        // 3. Update permissions/name if changed by Admin in background
+        if (
+          liveUser.role !== currentUser.role ||
           liveUser.name !== currentUser.name ||
-          JSON.stringify(liveUser.assignedProjects) !== JSON.stringify(currentUser.assignedProjects))
-      ) {
-        setCurrentUser(liveUser);
-        saveStoredSession(liveUser);
+          JSON.stringify(liveUser.assignedProjects) !== JSON.stringify(currentUser.assignedProjects)
+        ) {
+          const merged: UserAccount = {
+            ...liveUser,
+            currentSessionId: currentUser.currentSessionId || liveUser.currentSessionId,
+          };
+          setCurrentUser(merged);
+          saveStoredSession(merged);
+        }
       }
     }
-  }, [users]);
+  }, [users, currentUser, lang]);
 
   // ── Online / Offline Event Listeners ────────────────────────────────────
   useEffect(() => {
@@ -227,6 +260,41 @@ export function App() {
     if (window.confirm(t.confirmLogout)) {
       setCurrentUser(null);
       saveStoredSession(null);
+      setSessionExpiredNotice(null);
+    }
+  };
+
+  // Helper for generating unique session IDs and client device info
+  const generateSessionId = () => {
+    return "ksg_sess_" + Date.now() + "_" + Math.random().toString(36).substring(2, 9);
+  };
+
+  const getClientDeviceInfo = () => {
+    if (typeof navigator === "undefined") return "Web Device";
+    const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    return isMobile ? "Mobile Device" : "Desktop / Laptop";
+  };
+
+  const handleLogin = (userToLogin: UserAccount) => {
+    const sessionId = generateSessionId();
+    const updatedUser: UserAccount = {
+      ...userToLogin,
+      currentSessionId: sessionId,
+      lastLoginAt: new Date().toISOString(),
+      lastDevice: getClientDeviceInfo(),
+    };
+
+    setSessionExpiredNotice(null);
+    setCurrentUser(updatedUser);
+    saveStoredSession(updatedUser);
+
+    setUsers(prev =>
+      prev.map(u => (u.id === updatedUser.id ? updatedUser : u))
+    );
+
+    // Broadcast session update to Cloud Firestore immediately
+    if (isCloudConnected) {
+      saveDocumentToCloud("users", updatedUser);
     }
   };
 
@@ -394,13 +462,21 @@ export function App() {
 
   // ── CRUD: Users ─────────────────────────────────────────────────────────
   const handleSaveUser = (userData: UserAccount) => {
+    const existing = users.find(u => u.id === userData.id);
+    const mergedUser: UserAccount = {
+      ...userData,
+      currentSessionId: userData.currentSessionId || existing?.currentSessionId,
+      lastLoginAt: userData.lastLoginAt || existing?.lastLoginAt,
+      lastDevice: userData.lastDevice || existing?.lastDevice,
+    };
+
     setUsers(prev =>
-      prev.some(u => u.id === userData.id)
-        ? prev.map(u => (u.id === userData.id ? userData : u))
-        : [...prev, userData]
+      prev.some(u => u.id === mergedUser.id)
+        ? prev.map(u => (u.id === mergedUser.id ? mergedUser : u))
+        : [...prev, mergedUser]
     );
     if (isCloudConnected) {
-      saveDocumentToCloud("users", userData);
+      saveDocumentToCloud("users", mergedUser);
     }
     showToast("User account saved successfully!");
   };
@@ -415,9 +491,12 @@ export function App() {
 
   const handleSaveNewPassword = (newPassword: string) => {
     if (!currentUser) return;
+    const newSessionId = generateSessionId();
     const updatedUser: UserAccount = {
       ...currentUser,
       password: newPassword,
+      currentSessionId: newSessionId,
+      lastLoginAt: new Date().toISOString(),
     };
     setCurrentUser(updatedUser);
     saveStoredSession(updatedUser);
@@ -462,9 +541,11 @@ export function App() {
     return (
       <LoginPage
         users={users}
-        onLogin={user => setCurrentUser(user)}
+        onLogin={handleLogin}
         lang={lang}
         onLanguageChange={handleLanguageChange}
+        sessionExpiredNotice={sessionExpiredNotice}
+        onClearNotice={() => setSessionExpiredNotice(null)}
       />
     );
   }

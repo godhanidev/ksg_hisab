@@ -85,6 +85,9 @@ export function UserManagement({
     const userToSave: UserAccount = {
       id: editUser ? editUser.id : Date.now(),
       ...form,
+      currentSessionId: editUser?.currentSessionId,
+      lastLoginAt: editUser?.lastLoginAt,
+      lastDevice: editUser?.lastDevice,
     };
 
     onSaveUser(userToSave);

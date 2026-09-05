@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Shield, Lock, User, Eye, EyeOff, RefreshCw, AlertTriangle, Globe } from "lucide-react";
+import { Shield, Lock, User, Eye, EyeOff, RefreshCw, AlertTriangle, Globe, Smartphone, X, ShieldAlert } from "lucide-react";
 import { Language, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
 
@@ -8,9 +8,18 @@ type LoginPageProps = {
   onLogin: (user: UserAccount) => void;
   lang: Language;
   onLanguageChange: (lang: Language) => void;
+  sessionExpiredNotice?: string | null;
+  onClearNotice?: () => void;
 };
 
-export function LoginPage({ users, onLogin, lang, onLanguageChange }: LoginPageProps) {
+export function LoginPage({
+  users,
+  onLogin,
+  lang,
+  onLanguageChange,
+  sessionExpiredNotice,
+  onClearNotice,
+}: LoginPageProps) {
   const t = getTranslation(lang);
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -21,11 +30,21 @@ export function LoginPage({ users, onLogin, lang, onLanguageChange }: LoginPageP
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
-    const found = users.find(u => u.username.toLowerCase() === username.trim().toLowerCase() && u.password === password);
+    if (onClearNotice) onClearNotice();
+
+    const found = users.find(
+      u => u.username.toLowerCase() === username.trim().toLowerCase() && u.password === password
+    );
     if (found) {
       onLogin(found);
     } else {
-      setError(lang === "gu" ? "ખોટો યુઝરનેમ અથવા પાસવર્ડ." : lang === "hi" ? "गलत यूजरनेम या पासवर्ड।" : "Invalid username or password.");
+      setError(
+        lang === "gu"
+          ? "ખોટો યુઝરનેમ અથવા પાસવર્ડ."
+          : lang === "hi"
+          ? "गलत यूजरनेम या पासवर्ड।"
+          : "Invalid username or password."
+      );
     }
   };
 
@@ -34,7 +53,10 @@ export function LoginPage({ users, onLogin, lang, onLanguageChange }: LoginPageP
       {/* Background ambient glow effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-amber-500/10 blur-3xl animate-pulse" />
-        <div className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-blue-500/10 blur-3xl animate-pulse" style={{ animationDelay: "1s" }} />
+        <div
+          className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-blue-500/10 blur-3xl animate-pulse"
+          style={{ animationDelay: "1s" }}
+        />
       </div>
 
       <div className="relative z-10 w-full max-w-md">
@@ -45,9 +67,9 @@ export function LoginPage({ users, onLogin, lang, onLanguageChange }: LoginPageP
               src="/logo.png"
               alt="K.S.Godhani Logo"
               className="w-full h-full object-contain"
-              onError={(e) => {
+              onError={e => {
                 const target = e.target as HTMLImageElement;
-                target.style.display = 'none';
+                target.style.display = "none";
               }}
             />
           </div>
@@ -89,6 +111,37 @@ export function LoginPage({ users, onLogin, lang, onLanguageChange }: LoginPageP
 
         {/* Login Box */}
         <div className="rounded-3xl bg-white/5 border border-white/10 p-6 sm:p-8 backdrop-blur-xl shadow-2xl">
+          {/* Multi-Device Logout Notice Alert */}
+          {sessionExpiredNotice && (
+            <div className="mb-5 rounded-2xl bg-amber-500/15 border border-amber-500/30 p-3.5 text-amber-200 text-xs sm:text-sm animate-in fade-in slide-in-from-top-2 duration-300 relative shadow-lg">
+              <div className="flex items-start gap-2.5">
+                <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-300 shrink-0 mt-0.5">
+                  <Smartphone size={18} />
+                </div>
+                <div className="flex-1 pr-6">
+                  <p className="font-bold text-amber-100 mb-0.5">
+                    {lang === "gu"
+                      ? "સુરક્ષા સૂચના (Single Device Active)"
+                      : lang === "hi"
+                      ? "सुरक्षा सूचना (Single Device Active)"
+                      : "Security Notice (Single Device Active)"}
+                  </p>
+                  <p className="text-amber-200/90 text-xs leading-relaxed">{sessionExpiredNotice}</p>
+                </div>
+                {onClearNotice && (
+                  <button
+                    type="button"
+                    onClick={onClearNotice}
+                    className="absolute right-2.5 top-2.5 text-amber-400/70 hover:text-white p-1 rounded-lg hover:bg-white/10 transition"
+                    title="Dismiss"
+                  >
+                    <X size={15} />
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold text-slate-300 mb-1.5">{t.username}</label>
@@ -98,7 +151,10 @@ export function LoginPage({ users, onLogin, lang, onLanguageChange }: LoginPageP
                   type="text"
                   required
                   value={username}
-                  onChange={e => setUsername(e.target.value)}
+                  onChange={e => {
+                    setUsername(e.target.value);
+                    if (sessionExpiredNotice && onClearNotice) onClearNotice();
+                  }}
                   placeholder={lang === "gu" ? "યુઝરનેમ દાખલ કરો" : lang === "hi" ? "यूजरनेम दर्ज करें" : "Enter username"}
                   className="w-full rounded-xl bg-white/10 border border-white/15 text-white placeholder-slate-500 pl-10 pr-4 py-2.5 text-sm outline-none focus:border-amber-400 focus:bg-white/15 transition"
                 />
@@ -113,7 +169,10 @@ export function LoginPage({ users, onLogin, lang, onLanguageChange }: LoginPageP
                   type={showPassword ? "text" : "password"}
                   required
                   value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  onChange={e => {
+                    setPassword(e.target.value);
+                    if (sessionExpiredNotice && onClearNotice) onClearNotice();
+                  }}
                   placeholder="••••••••"
                   className="w-full rounded-xl bg-white/10 border border-white/15 text-white placeholder-slate-500 pl-10 pr-11 py-2.5 text-sm outline-none focus:border-amber-400 focus:bg-white/15 transition"
                 />
@@ -151,6 +210,14 @@ export function LoginPage({ users, onLogin, lang, onLanguageChange }: LoginPageP
                 </>
               )}
             </button>
+
+            {/* Single Device Session Protection Badge */}
+            <div className="pt-2 text-center">
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-400 bg-white/5 px-3 py-1 rounded-full border border-white/5">
+                <ShieldAlert size={12} className="text-amber-400" />
+                <span>{t.singleDevicePolicyNote}</span>
+              </span>
+            </div>
           </form>
         </div>
       </div>
