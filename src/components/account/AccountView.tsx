@@ -13,7 +13,6 @@ import {
   Building2,
   MapPin,
   ShieldCheck,
-  Plus,
   Pencil,
   Trash2,
 } from "lucide-react";
@@ -31,7 +30,6 @@ type AccountViewProps = {
   onUpdateProfile?: (updatedData: { name: string; username: string; phone?: string }) => void;
   isCloudConnected: boolean;
   onOpenCloudModal?: () => void;
-  onAddNewProject?: () => void;
   onEditProject?: (project: Project) => void;
   onDeleteProject?: (id: number) => void;
 };
@@ -45,7 +43,6 @@ export function AccountView({
   onUpdateProfile,
   isCloudConnected,
   onOpenCloudModal,
-  onAddNewProject,
   onEditProject,
   onDeleteProject,
 }: AccountViewProps) {
@@ -320,19 +317,7 @@ export function AccountView({
             </div>
           </div>
 
-          {/* Quick Info & Action Buttons */}
-          {isAdmin && onAddNewProject && (
-            <div className="flex flex-col sm:flex-row md:flex-col items-stretch sm:items-start md:items-end gap-2 w-full md:w-auto shrink-0 min-w-0">
-              <button
-                type="button"
-                onClick={onAddNewProject}
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 px-3.5 py-2 text-xs font-black text-slate-950 transition shadow-lg active:scale-95 w-full sm:w-auto"
-              >
-                <Plus size={15} />
-                <span>{lang === "gu" ? "+ નવી સાઇટ ઉમેરો" : "+ Add New Site"}</span>
-              </button>
-            </div>
-          )}
+
         </div>
       </div>
 
@@ -537,21 +522,8 @@ export function AccountView({
                     <span className="truncate">{lang === "gu" ? "તમામ સાઇટ્સ વિહંગાવલોકન (All Projects)" : "Construction Sites & Projects"}</span>
                   </h2>
                   <p className="text-xs text-slate-500 mt-0.5 truncate">
-                    {lang === "gu" ? "સાઇટ ઉમેરો, સુધારો કરો અથવા સાઇટ 360° હિસાબ જુઓ." : "Add, edit, or inspect site ledgers."}
+                    {lang === "gu" ? "સાઇટ વિગતો અને સુધારો કરો." : "Inspect site information."}
                   </p>
-                </div>
-
-                <div className="flex items-center gap-2 shrink-0">
-                  {onAddNewProject && (
-                    <button
-                      type="button"
-                      onClick={onAddNewProject}
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-slate-800 transition shadow-xs shrink-0"
-                    >
-                      <Plus size={14} />
-                      <span>{lang === "gu" ? "+ નવી સાઇટ" : "+ Add Site"}</span>
-                    </button>
-                  )}
                 </div>
               </div>
 
