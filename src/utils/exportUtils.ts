@@ -1,7 +1,8 @@
 // ─── Automated Reports & Exports (Excel/CSV & Printable Audit Statement) ───────
 
-import { BankPayment, CashTransaction, GSTBill, Project } from "../types";
+import { BankPayment, CashTransaction, GSTBill, Project, UserAccount } from "../types";
 import { formatINR } from "./formatters";
+
 
 /**
  * Downloads data as a UTF-8 CSV/Excel file with BOM so Gujarati/Hindi characters open properly in Excel.
@@ -411,3 +412,71 @@ export function printAuditReport({
   printWindow.document.write(html);
   printWindow.document.close();
 }
+
+/**
+ * Generates an encrypted/JSON full system snapshot backup file containing all 5 collections.
+ */
+export function exportFullSystemBackupJSON(data: {
+  projects: Project[];
+  cashTransactions: CashTransaction[];
+  bankPayments: BankPayment[];
+  gstBills: GSTBill[];
+  users: UserAccount[];
+}) {
+  const payload = {
+    appName: "KSG Hisab Enterprise ERP",
+    version: "5.0",
+    backupTimestamp: new Date().toISOString(),
+    counts: {
+      projects: data.projects.length,
+      cashTransactions: data.cashTransactions.length,
+      bankPayments: data.bankPayments.length,
+      gstBills: data.gstBills.length,
+      users: data.users.length,
+    },
+    data,
+  };
+
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute(
+    "download",
+    `KSG_Hisab_FULL_BACKUP_${new Date().toISOString().slice(0, 10)}.json`
+  );
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+/**
+ * Validates and parses uploaded backup JSON file
+ */
+export function parseSystemBackupJSON(jsonStr: string): {
+  projects?: Project[];
+  cashTransactions?: CashTransaction[];
+  bankPayments?: BankPayment[];
+  gstBills?: GSTBill[];
+  users?: UserAccount[];
+} | null {
+  try {
+    const parsed = JSON.parse(jsonStr);
+    const content = parsed.data || parsed;
+    if (
+      Array.isArray(content.projects) ||
+      Array.isArray(content.cashTransactions) ||
+      Array.isArray(content.bankPayments) ||
+      Array.isArray(content.gstBills) ||
+      Array.isArray(content.users)
+    ) {
+      return content;
+    }
+    return null;
+  } catch (err) {
+    console.error("Failed to parse backup JSON:", err);
+    return null;
+  }
+}
+

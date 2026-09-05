@@ -611,6 +611,51 @@ export function App() {
     );
   }, [currentUser, isCloudConnected, lang, showToast]);
 
+  const handleRestoreBackup = useCallback(async (backupData: {
+    projects?: Project[];
+    cashTransactions?: CashTransaction[];
+    bankPayments?: BankPayment[];
+    gstBills?: GSTBill[];
+    users?: UserAccount[];
+  }) => {
+    if (backupData.projects && backupData.projects.length > 0) {
+      setProjects(backupData.projects);
+      if (isCloudConnected) {
+        for (const p of backupData.projects) await saveDocumentToCloud("projects", p);
+      }
+    }
+    if (backupData.cashTransactions && backupData.cashTransactions.length > 0) {
+      setCashTransactions(backupData.cashTransactions);
+      if (isCloudConnected) {
+        for (const c of backupData.cashTransactions) await saveDocumentToCloud("daily_cash", c);
+      }
+    }
+    if (backupData.bankPayments && backupData.bankPayments.length > 0) {
+      setBankPayments(backupData.bankPayments);
+      if (isCloudConnected) {
+        for (const b of backupData.bankPayments) await saveDocumentToCloud("bank_payments", b);
+      }
+    }
+    if (backupData.gstBills && backupData.gstBills.length > 0) {
+      setGstBills(backupData.gstBills);
+      if (isCloudConnected) {
+        for (const g of backupData.gstBills) await saveDocumentToCloud("gst_bills", g);
+      }
+    }
+    if (backupData.users && backupData.users.length > 0) {
+      setUsers(backupData.users);
+      if (isCloudConnected) {
+        for (const u of backupData.users) await saveDocumentToCloud("users", u);
+      }
+    }
+    showToast(
+      lang === "gu"
+        ? "સંપૂર્ણ બેકઅપ સફળતાપૂર્વક પુનઃસ્થાપિત (Restore) થઈ ગયું!"
+        : "Full backup restored and synced to cloud successfully!"
+    );
+  }, [isCloudConnected, lang, showToast]);
+
+
   // If user is not logged in, show Login Screen
   if (!currentUser) {
     return (
@@ -808,13 +853,18 @@ export function App() {
                 currentUser={currentUser}
                 projects={projects}
                 users={users}
+                cashTransactions={cashTransactions}
+                bankPayments={bankPayments}
+                gstBills={gstBills}
                 lang={lang}
                 onSaveNewPassword={handleSaveNewPassword}
                 onUpdateProfile={handleUpdateProfile}
+                onRestoreBackup={handleRestoreBackup}
                 isCloudConnected={isCloudConnected}
                 onOpenCloudModal={() => setShowCloudModal(true)}
               />
             )}
+
           </Suspense>
         </main>
 
