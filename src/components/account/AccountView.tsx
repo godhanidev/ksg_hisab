@@ -144,6 +144,7 @@ export function AccountView({
           ? "પ્રોફાઇલ માહિતી સફળતાપૂર્વક અપડેટ થઈ ગઈ છે!"
           : "Profile details updated successfully!"
       );
+      setTimeout(() => setProfileSuccess(null), 3500);
       setIsEditingProfile(false);
     }, 250);
   };

@@ -38,6 +38,7 @@ import { BillViewerModal } from "./components/documents/BillViewerModal";
 import { CloudSyncModal } from "./components/common/CloudSyncModal";
 import { AccountView } from "./components/account/AccountView";
 import { LogoutModal } from "./components/auth/LogoutModal";
+import { CheckCircle2, X } from "lucide-react";
 
 export function App() {
   // ── Language & Online / Offline Sync State ──────────────────────────────
@@ -579,10 +580,21 @@ export function App() {
 
   return (
     <div className="min-h-screen bg-slate-100/70 text-slate-900 font-sans antialiased">
-      {/* ── Toast Notification Pill ──────────────────────────────────────── */}
+      {/* ── Floating Global Toast Notification (Safe from mobile notch/status bar) ───── */}
       {toastMessage && (
-        <div className="fixed top-4 right-4 z-50 rounded-2xl bg-slate-950 text-white px-4 py-3 text-xs sm:text-sm font-bold shadow-2xl border border-slate-700 animate-in slide-in-from-top duration-200">
-          {toastMessage}
+        <div className="fixed top-[calc(env(safe-area-inset-top,0px)+3.85rem)] sm:top-5 left-1/2 -translate-x-1/2 sm:left-auto sm:right-6 sm:translate-x-0 z-50 max-w-[92vw] sm:max-w-md w-max pointer-events-auto">
+          <div className="flex items-center gap-2.5 rounded-2xl bg-slate-950/95 backdrop-blur-md text-white px-4 py-2.5 text-xs sm:text-sm font-bold shadow-2xl border border-amber-500/40 ring-1 ring-amber-500/20 text-center animate-in fade-in slide-in-from-top-3 duration-200">
+            <CheckCircle2 size={16} className="text-amber-400 shrink-0" />
+            <span className="truncate max-w-[280px] sm:max-w-sm">{toastMessage}</span>
+            <button
+              type="button"
+              onClick={() => setToastMessage(null)}
+              className="ml-1 text-slate-400 hover:text-white transition p-0.5 shrink-0"
+              aria-label="Close Notification"
+            >
+              <X size={14} />
+            </button>
+          </div>
         </div>
       )}
 
