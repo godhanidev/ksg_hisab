@@ -264,6 +264,17 @@ export function AccountView({
 
   const roleInfo = getRoleInfo(currentUser.role);
 
+  // Dynamic Head Office / Admin Contact Info from users list
+  const adminAccount =
+    users.find(u => u.role === "admin" || u.id === 1) ||
+    (currentUser.role === "admin" ? currentUser : null);
+  const adminName = adminAccount?.name || "Kanjibhai S. Godhani (Head Office)";
+  const rawAdminPhone = adminAccount?.phone || "9825012345";
+  const formattedAdminPhone = rawAdminPhone.startsWith("+91")
+    ? rawAdminPhone
+    : `+91 ${rawAdminPhone}`;
+  const cleanAdminPhone = rawAdminPhone.replace(/\D/g, "");
+
   // Projects assigned to this user
   const assignedProjectsList = isAdmin
     ? projects
@@ -730,10 +741,12 @@ export function AccountView({
               <div className="rounded-2xl bg-slate-900 text-white p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div className="space-y-0.5 min-w-0 flex-1">
                   <p className="text-xs font-bold text-amber-400">Head Office Support (મુખ્ય કચેરી સંપર્ક)</p>
-                  <p className="text-xs text-slate-300">Kanjibhai S. Godhani: +91 98250 12345</p>
+                  <p className="text-xs text-slate-300">
+                    {adminName}: {formattedAdminPhone}
+                  </p>
                 </div>
                 <a
-                  href="tel:9825012345"
+                  href={`tel:${cleanAdminPhone}`}
                   className="rounded-xl bg-amber-400 hover:bg-amber-300 px-3.5 py-1.5 text-xs font-black text-slate-950 transition text-center shrink-0 self-start sm:self-auto"
                 >
                   Call Now

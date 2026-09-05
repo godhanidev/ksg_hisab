@@ -60,7 +60,7 @@ export function App() {
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
     const saved = loadStoredSession();
     if (saved && saved.username === "admin") {
-      return { ...saved, name: "Kanjibhai S. Godhani (Head Office)" };
+      return { ...saved, name: saved.name || "Kanjibhai S. Godhani (Head Office)" };
     }
     return saved;
   });
@@ -209,10 +209,11 @@ export function App() {
           return;
         }
 
-        // 3. Update permissions/name if changed by Admin in background
+        // 3. Update permissions/name/phone if changed by Admin in background
         if (
           liveUser.role !== currentUser.role ||
           liveUser.name !== currentUser.name ||
+          liveUser.phone !== currentUser.phone ||
           JSON.stringify(liveUser.assignedProjects) !== JSON.stringify(currentUser.assignedProjects)
         ) {
           const merged: UserAccount = {
