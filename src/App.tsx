@@ -170,7 +170,19 @@ export function App() {
       const liveUser = users.find(
         u => u.id === currentUser.id || u.username.toLowerCase() === currentUser.username.toLowerCase()
       );
-      if (liveUser) {
+
+      // 0. Account Deleted Check:
+      // If user account is not the master admin (id !== 1) and no longer exists in users list,
+      // it means the Admin deleted this account -> Terminate session immediately on this device!
+      if (!liveUser) {
+        if (currentUser.id !== 1) {
+          console.warn("Real-time enforcement: User account deleted by Admin. Logging out immediately.");
+          setCurrentUser(null);
+          saveStoredSession(null);
+          setSessionExpiredNotice(t.accountDeletedNotice);
+          return;
+        }
+      } else {
         // 1. Single-Device Session Enforcement:
         // If currentUser has a session ID and liveUser has a DIFFERENT session ID,
         // it means this account was logged into on another device/browser!
@@ -490,7 +502,12 @@ export function App() {
     if (isCloudConnected) {
       deleteDocumentFromCloud("users", id);
     }
-    showToast("User deleted successfully");
+    if (currentUser && currentUser.id === id) {
+      setCurrentUser(null);
+      saveStoredSession(null);
+      setSessionExpiredNotice(t.accountDeletedNotice);
+    }
+    showToast(lang === "gu" ? "યુઝર એકાઉન્ટ ડિલીટ કરવામાં આવ્યું" : "User deleted successfully");
   };
 
   const handleSaveNewPassword = (newPassword: string) => {
