@@ -35,6 +35,16 @@ html, body {
   -webkit-tap-highlight-color: transparent;
   overflow-x: hidden;
   width: 100%;
+  max-width: 100vw;
+  position: relative;
+}
+
+#root {
+  overflow-x: hidden;
+  width: 100%;
+  max-width: 100vw;
+  min-height: 100vh;
+  position: relative;
 }
 
 /* Ensure smooth scrolling across all devices */

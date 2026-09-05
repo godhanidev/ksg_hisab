@@ -598,7 +598,7 @@ export function App() {
 
       {/* ── Main Layout Wrapper ──────────────────────────────────────────── */}
       <div
-        className={`flex flex-col min-h-screen transition-all duration-300 ${
+        className={`flex flex-col min-h-screen transition-all duration-300 w-full min-w-0 max-w-full overflow-x-hidden ${
           sidebarOpen ? "lg:pl-72" : "lg:pl-20"
         }`}
       >
@@ -623,7 +623,7 @@ export function App() {
         />
 
         {/* Dynamic Main Body Content */}
-        <main className="flex-1 p-3.5 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto pb-32 sm:pb-24 lg:pb-12">
+        <main className="flex-1 p-3 sm:p-6 lg:p-8 max-w-7xl w-full min-w-0 mx-auto pb-32 sm:pb-24 lg:pb-12 overflow-x-hidden">
           {activePage === "Dashboard" && (
             <DashboardView
               projects={projects}

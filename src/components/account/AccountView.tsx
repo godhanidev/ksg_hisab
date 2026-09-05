@@ -281,44 +281,44 @@ export function AccountView({
     : projects.filter(p => currentUser.assignedProjects.includes(p.name));
 
   return (
-    <div className="space-y-6 pb-20 max-w-6xl mx-auto">
+    <div className="space-y-4 sm:space-y-6 pb-20 max-w-6xl w-full min-w-0 mx-auto overflow-hidden">
       {/* ── 1. Top Profile Hero Banner ──────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border border-slate-800 p-5 sm:p-8 text-white shadow-xl">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border border-slate-800 p-4 sm:p-6 lg:p-8 text-white shadow-xl w-full min-w-0">
         <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6">
-          <div className="flex items-center gap-3.5 sm:gap-5 min-w-0 flex-1">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4 sm:gap-6 min-w-0 w-full">
+          <div className="flex items-center gap-3 sm:gap-5 min-w-0 flex-1">
             {/* User Profile Avatar Box */}
-            <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 p-1.5 shadow-2xl border-2 border-amber-300/40 flex items-center justify-center shrink-0">
-              <User size={34} className="text-slate-950" />
+            <div className="h-14 w-14 sm:h-20 sm:w-20 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 p-1.5 shadow-2xl border-2 border-amber-300/40 flex items-center justify-center shrink-0">
+              <User size={28} className="sm:w-8 sm:h-8 text-slate-950" />
             </div>
 
             {/* Name & Details */}
-            <div className="space-y-1 min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-lg sm:text-2xl lg:text-3xl font-black tracking-tight text-white truncate max-w-full">
+            <div className="space-y-1 min-w-0 flex-1 overflow-hidden">
+              <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 min-w-0">
+                <h1 className="text-base sm:text-2xl lg:text-3xl font-black tracking-tight text-white truncate max-w-full">
                   {currentUser.name}
                 </h1>
-                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold shrink-0 ${roleInfo.badge}`}>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] sm:text-xs font-bold shrink-0 ${roleInfo.badge}`}>
                   {roleInfo.title}
                 </span>
               </div>
-              <p className="text-xs sm:text-sm font-mono text-amber-400 font-bold truncate">
+              <p className="text-xs sm:text-sm font-mono text-amber-400 font-bold truncate max-w-full">
                 @{currentUser.username}
               </p>
-              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400 pt-0.5">
+              <div className="flex flex-wrap items-center gap-2 sm:gap-3 text-[11px] sm:text-xs text-slate-400 pt-0.5 min-w-0">
                 {currentUser.phone && (
                   <a
                     href={`tel:${currentUser.phone}`}
-                    className="inline-flex items-center gap-1 text-slate-300 hover:text-amber-400 transition truncate"
+                    className="inline-flex items-center gap-1 text-slate-300 hover:text-amber-400 transition truncate max-w-full"
                   >
-                    <Phone size={12} className="text-amber-400 shrink-0" />
-                    <span>+91 {currentUser.phone}</span>
+                    <Phone size={11} className="text-amber-400 shrink-0" />
+                    <span className="truncate">+91 {currentUser.phone}</span>
                   </a>
                 )}
                 <span className="inline-flex items-center gap-1 text-slate-300 shrink-0">
-                  <Shield size={12} className="text-amber-400 shrink-0" />
+                  <Shield size={11} className="text-amber-400 shrink-0" />
                   <span>ID #{currentUser.id}</span>
                 </span>
               </div>
@@ -326,7 +326,7 @@ export function AccountView({
           </div>
 
           {/* Quick Info & Action Buttons */}
-          <div className="flex flex-col sm:flex-row md:flex-col items-stretch sm:items-start md:items-end gap-2 w-full md:w-auto shrink-0">
+          <div className="flex flex-col sm:flex-row md:flex-col items-stretch sm:items-start md:items-end gap-2 w-full md:w-auto shrink-0 min-w-0">
             {isAdmin && onAddNewProject && (
               <button
                 type="button"
@@ -364,15 +364,15 @@ export function AccountView({
       </div>
 
       {/* ── 2. Grid Layout: Details Column + Password Column ─────────────── */}
-      <div className="grid gap-6 lg:grid-cols-12">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-12 w-full min-w-0">
         {/* Left Column: Profile & Site Details (7 Cols) */}
-        <div className="space-y-6 lg:col-span-7">
+        <div className="space-y-4 sm:space-y-6 lg:col-span-7 w-full min-w-0">
           {/* Account Profile Card */}
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="flex items-center justify-between gap-3 mb-4">
-              <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
-                <User size={18} className="text-amber-600" />
-                <span>{lang === "gu" ? "પ્રોફાઇલ માહિતી (Account Details)" : "Account Profile Information"}</span>
+          <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm w-full min-w-0 overflow-hidden">
+            <div className="flex flex-wrap items-center justify-between gap-2 sm:gap-3 mb-4 min-w-0">
+              <h2 className="text-sm sm:text-base lg:text-lg font-bold text-slate-900 flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+                <User size={18} className="text-amber-600 shrink-0" />
+                <span className="truncate">{lang === "gu" ? "પ્રોફાઇલ માહિતી (Account Details)" : "Account Profile Information"}</span>
               </h2>
 
               {!isEditingProfile && (
@@ -386,9 +386,9 @@ export function AccountView({
                     setProfileSuccess(null);
                     setIsEditingProfile(true);
                   }}
-                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 hover:border-amber-400 hover:text-slate-900 transition shadow-2xs active:scale-95"
+                  className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-2.5 sm:px-3 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 hover:border-amber-400 hover:text-slate-900 transition shadow-2xs active:scale-95 shrink-0 ml-auto"
                 >
-                  <Pencil size={13} className="text-amber-600" />
+                  <Pencil size={13} className="text-amber-600 shrink-0" />
                   <span>{lang === "gu" ? "વિગત સુધારો" : "Edit Profile"}</span>
                 </button>
               )}
@@ -396,17 +396,17 @@ export function AccountView({
 
             {/* Profile Success Alert */}
             {profileSuccess && (
-              <div className="mb-4 flex items-center gap-2 rounded-2xl bg-emerald-50 border border-emerald-200 p-3.5 text-xs font-bold text-emerald-800 animate-in fade-in">
+              <div className="mb-4 flex items-center gap-2 rounded-2xl bg-emerald-50 border border-emerald-200 p-3 sm:p-3.5 text-xs font-bold text-emerald-800 animate-in fade-in">
                 <CheckCircle2 size={16} className="shrink-0 text-emerald-600" />
-                <span>{profileSuccess}</span>
+                <span className="truncate">{profileSuccess}</span>
               </div>
             )}
 
             {/* Profile Error Alert */}
             {profileError && (
-              <div className="mb-4 flex items-center gap-2 rounded-2xl bg-rose-50 border border-rose-200 p-3.5 text-xs font-semibold text-rose-700 animate-shake">
+              <div className="mb-4 flex items-center gap-2 rounded-2xl bg-rose-50 border border-rose-200 p-3 sm:p-3.5 text-xs font-semibold text-rose-700 animate-shake">
                 <AlertCircle size={16} className="shrink-0 text-rose-600" />
-                <span>{profileError}</span>
+                <span className="break-words">{profileError}</span>
               </div>
             )}
 
@@ -505,33 +505,33 @@ export function AccountView({
               </form>
             ) : (
               /* Profile Display View */
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="rounded-2xl bg-slate-50 p-3.5 border border-slate-100">
-                  <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+              <div className="grid gap-2.5 sm:gap-4 sm:grid-cols-2 w-full min-w-0">
+                <div className="rounded-2xl bg-slate-50 p-3 sm:p-3.5 border border-slate-100 min-w-0 overflow-hidden">
+                  <p className="text-[10px] sm:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">
                     {lang === "gu" ? "પૂરું નામ (Full Name)" : "Full Name"}
                   </p>
-                  <p className="text-sm font-bold text-slate-900 mt-1">{currentUser.name}</p>
+                  <p className="text-xs sm:text-sm font-bold text-slate-900 mt-0.5 sm:mt-1 truncate break-all">{currentUser.name}</p>
                 </div>
 
-                <div className="rounded-2xl bg-slate-50 p-3.5 border border-slate-100">
-                  <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                <div className="rounded-2xl bg-slate-50 p-3 sm:p-3.5 border border-slate-100 min-w-0 overflow-hidden">
+                  <p className="text-[10px] sm:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">
                     {lang === "gu" ? "યુઝરનેમ / Login ID" : "Username"}
                   </p>
-                  <p className="text-sm font-mono font-bold text-slate-900 mt-1">@{currentUser.username}</p>
+                  <p className="text-xs sm:text-sm font-mono font-bold text-slate-900 mt-0.5 sm:mt-1 truncate break-all">@{currentUser.username}</p>
                 </div>
 
-                <div className="rounded-2xl bg-slate-50 p-3.5 border border-slate-100">
-                  <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                <div className="rounded-2xl bg-slate-50 p-3 sm:p-3.5 border border-slate-100 min-w-0 overflow-hidden">
+                  <p className="text-[10px] sm:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">
                     {lang === "gu" ? "સિસ્ટમ હોદ્દો (Role)" : "Account Role"}
                   </p>
-                  <p className="text-sm font-bold text-slate-900 mt-1">{roleInfo.title}</p>
+                  <p className="text-xs sm:text-sm font-bold text-slate-900 mt-0.5 sm:mt-1 truncate break-all">{roleInfo.title}</p>
                 </div>
 
-                <div className="rounded-2xl bg-slate-50 p-3.5 border border-slate-100">
-                  <p className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">
+                <div className="rounded-2xl bg-slate-50 p-3 sm:p-3.5 border border-slate-100 min-w-0 overflow-hidden">
+                  <p className="text-[10px] sm:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">
                     {lang === "gu" ? "મોબાઇલ નંબર (Mobile)" : "Phone Number"}
                   </p>
-                  <p className="text-sm font-bold text-slate-900 mt-1">
+                  <p className="text-xs sm:text-sm font-bold text-slate-900 mt-0.5 sm:mt-1 truncate break-all">
                     {currentUser.phone ? `+91 ${currentUser.phone}` : "—"}
                   </p>
                 </div>
@@ -539,14 +539,14 @@ export function AccountView({
             )}
 
             {/* Permissions & Scope description */}
-            <div className="mt-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 p-4">
-              <div className="flex items-start gap-3">
+            <div className="mt-4 rounded-2xl bg-amber-50/70 border border-amber-200/80 p-3 sm:p-4 min-w-0 overflow-hidden">
+              <div className="flex items-start gap-2.5 sm:gap-3 min-w-0">
                 <ShieldCheck size={18} className="text-amber-700 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-xs font-bold text-amber-950">
+                <div className="min-w-0 flex-1">
+                  <p className="text-xs font-bold text-amber-950 truncate">
                     {lang === "gu" ? "તમારા અધિકાર અને પરવાનગી (Access Scope)" : "Permissions & Security Level"}
                   </p>
-                  <p className="text-xs text-amber-900 mt-0.5 leading-relaxed">
+                  <p className="text-xs text-amber-900 mt-0.5 leading-relaxed break-words">
                     {roleInfo.description}
                   </p>
                 </div>
@@ -556,14 +556,14 @@ export function AccountView({
 
           {/* ── Admin Specific Stats OR Supervisor Assigned Sites ─────────── */}
           {isAdmin ? (
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                <div>
-                  <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <Building2 size={18} className="text-amber-600" />
-                    <span>{lang === "gu" ? "તમામ સાઇટ્સ વિહંગાવલોકન (All Projects)" : "Construction Sites & Projects"}</span>
+            <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm space-y-4 w-full min-w-0 overflow-hidden">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0">
+                <div className="min-w-0 flex-1">
+                  <h2 className="text-sm sm:text-base lg:text-lg font-bold text-slate-900 flex items-center gap-1.5 sm:gap-2 min-w-0">
+                    <Building2 size={18} className="text-amber-600 shrink-0" />
+                    <span className="truncate">{lang === "gu" ? "તમામ સાઇટ્સ વિહંગાવલોકન (All Projects)" : "Construction Sites & Projects"}</span>
                   </h2>
-                  <p className="text-xs text-slate-500 mt-0.5">
+                  <p className="text-xs text-slate-500 mt-0.5 truncate">
                     {lang === "gu" ? "સાઇટ ઉમેરો, સુધારો કરો અથવા સાઇટ 360° હિસાબ જુઓ." : "Add, edit, or inspect site ledgers."}
                   </p>
                 </div>
@@ -573,7 +573,7 @@ export function AccountView({
                     <button
                       type="button"
                       onClick={onAddNewProject}
-                      className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-slate-800 transition shadow-xs"
+                      className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-slate-800 transition shadow-xs shrink-0"
                     >
                       <Plus size={14} />
                       <span>{lang === "gu" ? "+ નવી સાઇટ" : "+ Add Site"}</span>
@@ -583,7 +583,7 @@ export function AccountView({
                     <button
                       type="button"
                       onClick={() => onNavigateToTab("Projects")}
-                      className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition"
+                      className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition shrink-0"
                     >
                       <span>{lang === "gu" ? "બધા જુઓ" : "View All"}</span>
                       <ExternalLink size={12} />
@@ -592,11 +592,11 @@ export function AccountView({
                 </div>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-2 w-full min-w-0">
                 {projects.map(p => (
                   <div
                     key={p.id}
-                    className="rounded-2xl border border-slate-200 p-4 hover:border-amber-300 transition bg-slate-50/50 flex flex-col justify-between overflow-hidden"
+                    className="rounded-2xl border border-slate-200 p-3.5 sm:p-4 hover:border-amber-300 transition bg-slate-50/50 flex flex-col justify-between overflow-hidden min-w-0"
                   >
                     <div>
                       <div className="flex items-start justify-between gap-2">
@@ -614,14 +614,14 @@ export function AccountView({
                         <span className="truncate">{p.location}</span>
                       </p>
 
-                      <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex flex-wrap items-center justify-between gap-1 text-[11px]">
-                        <span className="text-slate-500 truncate max-w-[60%]">Supervisor: <strong className="text-slate-800">{p.supervisorName || "—"}</strong></span>
+                      <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex flex-wrap items-center justify-between gap-1 text-[11px] min-w-0">
+                        <span className="text-slate-500 truncate min-w-0 flex-1">Supervisor: <strong className="text-slate-800">{p.supervisorName || "—"}</strong></span>
                         <span className="font-bold text-slate-900 shrink-0">{formatINR(p.value)}</span>
                       </div>
                     </div>
 
                     {/* Action Buttons on each card */}
-                    <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-between gap-2">
+                    <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-between gap-2 min-w-0">
                       {onViewProject360 && (
                         <button
                           type="button"
@@ -633,12 +633,12 @@ export function AccountView({
                         </button>
                       )}
 
-                      <div className="flex items-center gap-1 shrink-0">
+                      <div className="flex items-center gap-1 shrink-0 ml-auto">
                         {onEditProject && (
                           <button
                             type="button"
                             onClick={() => onEditProject(p)}
-                            className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition"
+                            className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition shrink-0"
                             title={lang === "gu" ? "સાઇટ સુધારો" : "Edit Project"}
                           >
                             <Pencil size={13} />
@@ -658,7 +658,7 @@ export function AccountView({
                                 onConfirm: () => onDeleteProject(p.id),
                               });
                             }}
-                            className="p-1.5 rounded-lg border border-red-200 bg-white text-red-500 hover:text-red-700 hover:bg-red-50 transition"
+                            className="p-1.5 rounded-lg border border-red-200 bg-white text-red-500 hover:text-red-700 hover:bg-red-50 transition shrink-0"
                             title={lang === "gu" ? "સાઇટ કાઢી નાખો" : "Delete Project"}
                           >
                             <Trash2 size={13} />
@@ -671,9 +671,9 @@ export function AccountView({
               </div>
             </div>
           ) : (
-            <div className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm space-y-4">
-              <div className="flex items-center justify-between gap-2">
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2 min-w-0 flex-1">
+            <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm space-y-4 w-full min-w-0 overflow-hidden">
+              <div className="flex items-center justify-between gap-2 min-w-0">
+                <h2 className="text-sm sm:text-base lg:text-lg font-bold text-slate-900 flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
                   <Building2 size={18} className="text-amber-600 shrink-0" />
                   <span className="truncate">{lang === "gu" ? "તમને સોંપાયેલ સાઇટ્સ (Assigned Sites)" : "Your Assigned Sites"}</span>
                 </h2>
@@ -683,22 +683,22 @@ export function AccountView({
               </div>
 
               {assignedProjectsList.length === 0 ? (
-                <div className="rounded-2xl bg-slate-50 border border-slate-200 p-6 text-center text-xs text-slate-500">
+                <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4 sm:p-6 text-center text-xs text-slate-500">
                   {lang === "gu"
                     ? "હાલમાં તમને કોઈ સાઇટ ફાળવેલ નથી. કૃપા કરીને મુખ્ય કચેરીનો સંપર્ક કરો."
                     : "No specific site assigned to this account yet. Please contact Head Office."}
                 </div>
               ) : (
-                <div className="space-y-3">
+                <div className="space-y-3 w-full min-w-0">
                   {assignedProjectsList.map(p => (
                     <div
                       key={p.id}
-                      className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 hover:border-amber-300 transition overflow-hidden"
+                      className="rounded-2xl border border-slate-200 bg-slate-50/60 p-3.5 sm:p-4 hover:border-amber-300 transition overflow-hidden min-w-0"
                     >
-                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 min-w-0">
                         <div className="min-w-0 flex-1">
                           <div className="flex items-center gap-2 min-w-0">
-                            <h3 className="text-sm font-bold text-slate-900 truncate">{p.name}</h3>
+                            <h3 className="text-xs sm:text-sm font-bold text-slate-900 truncate">{p.name}</h3>
                             <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-200 text-slate-700 shrink-0">
                               {p.code}
                             </span>
@@ -709,8 +709,8 @@ export function AccountView({
                           </p>
                         </div>
                         <div className="text-left sm:text-right shrink-0">
-                          <p className="text-[11px] text-slate-500">Tender Value</p>
-                          <p className="text-sm font-black text-slate-900">{formatINR(p.value)}</p>
+                          <p className="text-[10px] sm:text-[11px] text-slate-500">Tender Value</p>
+                          <p className="text-xs sm:text-sm font-black text-slate-900">{formatINR(p.value)}</p>
                         </div>
                       </div>
 
@@ -738,10 +738,10 @@ export function AccountView({
               )}
 
               {/* Head Office Support Info */}
-              <div className="rounded-2xl bg-slate-900 text-white p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="rounded-2xl bg-slate-900 text-white p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0 overflow-hidden">
                 <div className="space-y-0.5 min-w-0 flex-1">
-                  <p className="text-xs font-bold text-amber-400">Head Office Support (મુખ્ય કચેરી સંપર્ક)</p>
-                  <p className="text-xs text-slate-300">
+                  <p className="text-xs font-bold text-amber-400 truncate">Head Office Support (મુખ્ય કચેરી સંપર્ક)</p>
+                  <p className="text-xs text-slate-300 truncate">
                     {adminName}: {formattedAdminPhone}
                   </p>
                 </div>
@@ -757,15 +757,15 @@ export function AccountView({
         </div>
 
         {/* Right Column: Password Change Form & Security (5 Cols) */}
-        <div className="space-y-6 lg:col-span-5">
-          <div className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
-            <div className="flex items-center gap-2 mb-1">
+        <div className="space-y-4 sm:space-y-6 lg:col-span-5 w-full min-w-0">
+          <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm w-full min-w-0 overflow-hidden">
+            <div className="flex items-center gap-2 mb-1 min-w-0">
               <KeyRound size={18} className="text-amber-600 shrink-0" />
-              <h2 className="text-base sm:text-lg font-bold text-slate-900">
+              <h2 className="text-sm sm:text-base lg:text-lg font-bold text-slate-900 truncate">
                 {lang === "gu" ? "પાસવર્ડ બદલો" : lang === "hi" ? "पासवर्ड बदलें" : "Change Password"}
               </h2>
             </div>
-            <p className="text-xs text-slate-500 mb-5">
+            <p className="text-xs text-slate-500 mb-4 sm:mb-5 break-words">
               {lang === "gu"
                 ? "તમારા એકાઉન્ટનો નવો સુરક્ષિત પાસવર્ડ સેટ કરો."
                 : "Update your login password to keep your account secure."}
@@ -775,14 +775,14 @@ export function AccountView({
               {errorMsg && (
                 <div className="flex items-center gap-2 rounded-xl bg-rose-50 border border-rose-200 p-3 text-xs font-semibold text-rose-700 animate-shake">
                   <AlertCircle size={16} className="shrink-0" />
-                  <span>{errorMsg}</span>
+                  <span className="break-words">{errorMsg}</span>
                 </div>
               )}
 
               {successMsg && (
                 <div className="flex items-center gap-2 rounded-xl bg-emerald-50 border border-emerald-200 p-3 text-xs font-bold text-emerald-800">
                   <CheckCircle2 size={16} className="shrink-0" />
-                  <span>{successMsg}</span>
+                  <span className="truncate">{successMsg}</span>
                 </div>
               )}
 
