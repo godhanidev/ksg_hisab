@@ -20,10 +20,6 @@ type DashboardViewProps = {
   selectedSiteFilter: string;
   setSelectedSiteFilter: (site: string) => void;
   lang: Language;
-  onAddCashIn: () => void;
-  onAddCashOut: () => void;
-  onAddBankPayment: () => void;
-  onAddGstBill: () => void;
   onNavigateToTab: (tab: string) => void;
   onViewAttachment: (data: { attachment: Attachment; title: string; subtitle?: string; amount?: string }) => void;
   onViewProject360: (project: Project) => void;
@@ -38,10 +34,6 @@ export function DashboardView({
   selectedSiteFilter,
   setSelectedSiteFilter,
   lang,
-  onAddCashIn,
-  onAddCashOut,
-  onAddBankPayment,
-  onAddGstBill,
   onNavigateToTab,
   onViewAttachment,
   onViewProject360,
@@ -342,51 +334,6 @@ export function DashboardView({
             {formatINR(totalProjectCost)}
           </p>
           <p className="mt-1 text-[10px] text-slate-300 font-medium">Cash Out + Bank RTGS</p>
-        </div>
-      </div>
-
-      {/* ── Quick Action Fast Entry Bar ──────────────────────────────────── */}
-      <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-slate-200/80 bg-white p-4 shadow-xs">
-        <div>
-          <h3 className="text-sm font-black text-slate-900 leading-tight">{t.quickAdd}</h3>
-          <p className="text-xs text-slate-500">Fast transaction and bill logging</p>
-        </div>
-        <div className="flex flex-wrap items-center gap-2">
-          {isAdmin && (
-            <button
-              onClick={onAddCashIn}
-              className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-emerald-700 transition active:scale-95"
-            >
-              <ArrowDownLeft size={15} />
-              <span>{t.addCashIn}</span>
-            </button>
-          )}
-
-          <button
-            onClick={onAddCashOut}
-            className="flex items-center gap-1.5 rounded-xl bg-rose-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-rose-700 transition active:scale-95"
-          >
-            <ArrowUpRight size={15} />
-            <span>{t.addCashOut}</span>
-          </button>
-
-          {isAdmin && (
-            <button
-              onClick={onAddBankPayment}
-              className="flex items-center gap-1.5 rounded-xl bg-blue-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-blue-700 transition active:scale-95"
-            >
-              <Landmark size={15} />
-              <span>{t.addBankPayment}</span>
-            </button>
-          )}
-
-          <button
-            onClick={onAddGstBill}
-            className="flex items-center gap-1.5 rounded-xl bg-purple-600 px-3.5 py-2 text-xs font-bold text-white shadow-sm hover:bg-purple-700 transition active:scale-95"
-          >
-            <FileCheck size={15} />
-            <span>{t.addGstBill}</span>
-          </button>
         </div>
       </div>
 

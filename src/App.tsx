@@ -646,24 +646,6 @@ export function App() {
               selectedSiteFilter={selectedSiteFilter}
               setSelectedSiteFilter={setSelectedSiteFilter}
               lang={lang}
-              onAddCashIn={() => {
-                setEditingCashTx(null);
-                setCashModalType("cash_in");
-                setShowCashModal(true);
-              }}
-              onAddCashOut={() => {
-                setEditingCashTx(null);
-                setCashModalType("cash_out");
-                setShowCashModal(true);
-              }}
-              onAddBankPayment={() => {
-                setEditingBankPayment(null);
-                setShowBankModal(true);
-              }}
-              onAddGstBill={() => {
-                setEditingGstBill(null);
-                setShowGstModal(true);
-              }}
               onNavigateToTab={tab => setActivePage(tab)}
               onViewAttachment={data => setViewingAttachment(data)}
               onViewProject360={p => setViewingProject360(p)}
