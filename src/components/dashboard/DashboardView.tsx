@@ -353,13 +353,6 @@ export function DashboardView({
             <h2 className="text-base font-bold text-slate-900">{t.activeProjects}</h2>
             <p className="text-xs text-slate-500">{t.siteWiseReport}</p>
           </div>
-          <button
-            onClick={() => onNavigateToTab("Projects")}
-            className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 px-3.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-50 transition"
-          >
-            <span>View Sites</span>
-            <ArrowRight size={14} />
-          </button>
         </div>
 
         <div className="overflow-x-auto">

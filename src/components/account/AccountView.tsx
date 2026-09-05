@@ -349,17 +349,6 @@ export function AccountView({
                 <span>{lang === "gu" ? "યુઝર એકાઉન્ટ્સ મેનેજ કરો" : "Manage User Accounts"}</span>
               </button>
             )}
-
-            {isAdmin && onNavigateToTab && (
-              <button
-                type="button"
-                onClick={() => onNavigateToTab("Projects")}
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 px-3.5 py-2 text-xs font-bold text-white transition backdrop-blur w-full sm:w-auto"
-              >
-                <Building2 size={14} className="text-amber-400" />
-                <span>{lang === "gu" ? "પ્રોજેક્ટ્સ પેજ ખોલો" : "View All Projects"}</span>
-              </button>
-            )}
           </div>
         </div>
       </div>
@@ -578,16 +567,6 @@ export function AccountView({
                     >
                       <Plus size={14} />
                       <span>{lang === "gu" ? "+ નવી સાઇટ" : "+ Add Site"}</span>
-                    </button>
-                  )}
-                  {onNavigateToTab && (
-                    <button
-                      type="button"
-                      onClick={() => onNavigateToTab("Projects")}
-                      className="inline-flex items-center gap-1 rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-1.5 text-xs font-bold text-slate-700 hover:bg-slate-100 transition shrink-0"
-                    >
-                      <span>{lang === "gu" ? "બધા જુઓ" : "View All"}</span>
-                      <ExternalLink size={12} />
                     </button>
                   )}
                 </div>
