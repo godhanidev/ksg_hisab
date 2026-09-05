@@ -457,13 +457,11 @@ export function App() {
   };
 
   const handleDeleteProject = (id: number) => {
-    if (window.confirm("Are you sure you want to delete this construction site?")) {
-      setProjects(prev => prev.filter(item => item.id !== id));
-      if (isCloudConnected) {
-        deleteDocumentFromCloud("projects", id);
-      }
-      showToast("Project deleted successfully");
+    setProjects(prev => prev.filter(item => item.id !== id));
+    if (isCloudConnected) {
+      deleteDocumentFromCloud("projects", id);
     }
+    showToast("Project deleted successfully");
   };
 
   // ── CRUD: Users ─────────────────────────────────────────────────────────

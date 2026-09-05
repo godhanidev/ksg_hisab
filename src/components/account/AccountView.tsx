@@ -22,6 +22,7 @@ import {
 import { Language, Project, Role, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
 import { formatINR, getShortRoleLabel } from "../../utils/formatters";
+import { DeleteConfirmModal, DeleteTargetInfo } from "../common/DeleteConfirmModal";
 
 type AccountViewProps = {
   currentUser: UserAccount;
@@ -159,6 +160,7 @@ export function AccountView({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTargetInfo | null>(null);
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -635,9 +637,15 @@ export function AccountView({
                           <button
                             type="button"
                             onClick={() => {
-                              if (window.confirm(`Are you sure you want to delete ${p.name}?`)) {
-                                onDeleteProject(p.id);
-                              }
+                              setDeleteTarget({
+                                id: p.id,
+                                title: lang === "gu" ? "સાઇટ / પ્રોજેક્ટ ડિલીટ" : lang === "hi" ? "साइट / प्रोजेक्ट हटाएं" : "Delete Construction Site",
+                                itemName: p.name,
+                                itemDetails: `${p.code} • ${p.department} ${p.location ? `• ${p.location}` : ""}`,
+                                itemAmount: formatINR(p.value),
+                                itemTypeBadge: "Site / Project",
+                                onConfirm: () => onDeleteProject(p.id),
+                              });
                             }}
                             className="p-1.5 rounded-lg border border-red-200 bg-white text-red-500 hover:text-red-700 hover:bg-red-50 transition"
                             title={lang === "gu" ? "સાઇટ કાઢી નાખો" : "Delete Project"}
@@ -862,6 +870,14 @@ export function AccountView({
           </div>
         </div>
       </div>
+
+      {/* Animated Deletion Modal */}
+      <DeleteConfirmModal
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        target={deleteTarget}
+        lang={lang}
+      />
     </div>
   );
 }

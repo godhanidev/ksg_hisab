@@ -7,6 +7,7 @@ import { Attachment, GSTBill, Language, Project, UserAccount } from "../../types
 import { getTranslation } from "../../i18n/translations";
 import { formatINR } from "../../utils/formatters";
 import { exportGSTBillsExcel } from "../../utils/exportUtils";
+import { DeleteConfirmModal, DeleteTargetInfo } from "../common/DeleteConfirmModal";
 
 type GSTBillsViewProps = {
   bills: GSTBill[];
@@ -39,6 +40,7 @@ export function GSTBillsView({
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [productFilter, setProductFilter] = useState("all");
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTargetInfo | null>(null);
 
   // Allowed site list based on user role
   const userAllowedSites = useMemo(() => {
@@ -376,9 +378,15 @@ export function GSTBillsView({
                         {isAdmin && (
                           <button
                             onClick={() => {
-                              if (window.confirm(t.confirmDelete)) {
-                                onDeleteBill(b.id);
-                              }
+                              setDeleteTarget({
+                                id: b.id,
+                                title: lang === "gu" ? "GST બિલ ડિલીટ" : lang === "hi" ? "जीएसटी बिल हटाएं" : "Delete GST Bill",
+                                itemName: b.partyName,
+                                itemDetails: `${b.project} • Bill #${b.billNo} • ${b.date} • ${b.product}`,
+                                itemAmount: formatINR(b.totalAmount),
+                                itemTypeBadge: "GST Bill",
+                                onConfirm: () => onDeleteBill(b.id),
+                              });
                             }}
                             title={t.delete}
                             className="rounded-lg p-1.5 text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition"
@@ -395,6 +403,14 @@ export function GSTBillsView({
           </div>
         )}
       </div>
+
+      {/* Animated Deletion Modal */}
+      <DeleteConfirmModal
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        target={deleteTarget}
+        lang={lang}
+      />
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { Shield, HardHat, Plus, Edit, Trash2, Check, Lock, User, Phone, MapPin, 
 import { Language, Project, Role, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
 import { ModalWrapper } from "../common/ModalWrapper";
+import { DeleteConfirmModal, DeleteTargetInfo } from "../common/DeleteConfirmModal";
 
 type UserManagementProps = {
   users: UserAccount[];
@@ -24,6 +25,7 @@ export function UserManagement({
   const [editUser, setEditUser] = useState<UserAccount | null>(null);
   const [showPasswords, setShowPasswords] = useState<Record<number, boolean>>({});
   const [showFormPassword, setShowFormPassword] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTargetInfo | null>(null);
 
   const [form, setForm] = useState<{
     username: string;
@@ -94,14 +96,22 @@ export function UserManagement({
     setShowModal(false);
   };
 
-  const handleDelete = (id: number) => {
-    if (id === 1) {
-      alert("Main Owner/Admin account cannot be deleted.");
+  const handleDelete = (userToDelete: UserAccount) => {
+    if (userToDelete.id === 1) {
+      alert(lang === "gu" ? "મુખ્ય Owner/Admin એકાઉન્ટ ડિલીટ કરી શકાતું નથી." : "Main Owner/Admin account cannot be deleted.");
       return;
     }
-    if (window.confirm("Are you sure you want to delete this user?")) {
-      onDeleteUser(id);
-    }
+
+    const badge = getRoleBadge(userToDelete.role);
+
+    setDeleteTarget({
+      id: userToDelete.id,
+      title: lang === "gu" ? "યુઝર એકાઉન્ટ ડિલીટ" : lang === "hi" ? "यूजर अकाउंट हटाएं" : "Delete User Account",
+      itemName: userToDelete.name,
+      itemDetails: `@${userToDelete.username} • ${badge.label} ${userToDelete.phone ? `• 📞 ${userToDelete.phone}` : ""}`,
+      itemTypeBadge: badge.label,
+      onConfirm: () => onDeleteUser(userToDelete.id),
+    });
   };
 
   const getRoleBadge = (role: Role) => {
@@ -237,7 +247,7 @@ export function UserManagement({
                   </button>
                   {u.id !== 1 && (
                     <button
-                      onClick={() => handleDelete(u.id)}
+                      onClick={() => handleDelete(u)}
                       className="rounded-xl border border-red-200 p-2 text-xs text-red-600 hover:bg-red-50 transition"
                       title="Delete User"
                     >
@@ -384,6 +394,14 @@ export function UserManagement({
           </form>
         </ModalWrapper>
       )}
+
+      {/* Animated Delete Confirmation Modal */}
+      <DeleteConfirmModal
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        target={deleteTarget}
+        lang={lang}
+      />
     </div>
   );
 }

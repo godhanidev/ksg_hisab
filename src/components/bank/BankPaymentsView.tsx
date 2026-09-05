@@ -7,6 +7,7 @@ import { Attachment, BankPayment, Language, Project, UserAccount } from "../../t
 import { getTranslation } from "../../i18n/translations";
 import { formatINR } from "../../utils/formatters";
 import { exportBankPaymentsExcel } from "../../utils/exportUtils";
+import { DeleteConfirmModal, DeleteTargetInfo } from "../common/DeleteConfirmModal";
 
 type BankPaymentsViewProps = {
   payments: BankPayment[];
@@ -39,6 +40,7 @@ export function BankPaymentsView({
   const [searchQuery, setSearchQuery] = useState("");
   const [modeFilter, setModeFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTargetInfo | null>(null);
 
   // Allowed site list based on user role
   const userAllowedSites = useMemo(() => {
@@ -367,9 +369,15 @@ export function BankPaymentsView({
                             </button>
                             <button
                               onClick={() => {
-                                if (window.confirm(t.confirmDelete)) {
-                                  onDeletePayment(p.id);
-                                }
+                                setDeleteTarget({
+                                  id: p.id,
+                                  title: lang === "gu" ? "બેંક પેમેન્ટ ડિલીટ" : lang === "hi" ? "बैंक भुगतान हटाएं" : "Delete Bank Payment",
+                                  itemName: p.partyName,
+                                  itemDetails: `${p.project} • ${p.date} • ${p.category || "General"} ${p.referenceNo ? `• Ref/UTR: ${p.referenceNo}` : ""}`,
+                                  itemAmount: formatINR(p.amount),
+                                  itemTypeBadge: p.paymentMode,
+                                  onConfirm: () => onDeletePayment(p.id),
+                                });
                               }}
                               title={t.delete}
                               className="rounded-lg p-1.5 text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition"
@@ -387,6 +395,14 @@ export function BankPaymentsView({
           </div>
         )}
       </div>
+
+      {/* Animated Deletion Modal */}
+      <DeleteConfirmModal
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        target={deleteTarget}
+        lang={lang}
+      />
     </div>
   );
 }

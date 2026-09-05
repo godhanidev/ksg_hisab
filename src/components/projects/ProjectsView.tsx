@@ -4,6 +4,7 @@ import { Language, Project, UserAccount } from "../../types";
 import { formatINR } from "../../utils/formatters";
 import { getTranslation } from "../../i18n/translations";
 import { exportConsolidatedSiteExcel } from "../../utils/exportUtils";
+import { DeleteConfirmModal, DeleteTargetInfo } from "../common/DeleteConfirmModal";
 
 type ProjectsViewProps = {
   projects: Project[];
@@ -29,6 +30,7 @@ export function ProjectsView({
   const t = getTranslation(lang);
   const isAdmin = currentUser.role === "admin";
   const [search, setSearch] = useState("");
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTargetInfo | null>(null);
 
   const filtered = projects.filter(p => {
     return (
@@ -192,7 +194,17 @@ export function ProjectsView({
                     </button>
                     <button
                       type="button"
-                      onClick={() => onDelete(p.id)}
+                      onClick={() => {
+                        setDeleteTarget({
+                          id: p.id,
+                          title: lang === "gu" ? "સાઇટ / પ્રોજેક્ટ ડિલીટ" : lang === "hi" ? "साइट / प्रोजेक्ट हटाएं" : "Delete Construction Site",
+                          itemName: p.name,
+                          itemDetails: `${p.code} • ${p.department} ${p.location ? `• ${p.location}` : ""}`,
+                          itemAmount: formatINR(p.value),
+                          itemTypeBadge: "Site / Project",
+                          onConfirm: () => onDelete(p.id),
+                        });
+                      }}
                       className="p-1.5 rounded-xl border border-red-200 bg-red-50 text-red-600 hover:bg-red-100 transition"
                       title={t.delete}
                     >
@@ -262,7 +274,17 @@ export function ProjectsView({
 
                         {isAdmin && (
                           <button
-                            onClick={() => onDelete(p.id)}
+                            onClick={() => {
+                              setDeleteTarget({
+                                id: p.id,
+                                title: lang === "gu" ? "સાઇટ / પ્રોજેક્ટ ડિલીટ" : lang === "hi" ? "साइट / प्रोजेक्ट हटाएं" : "Delete Construction Site",
+                                itemName: p.name,
+                                itemDetails: `${p.code} • ${p.department} ${p.location ? `• ${p.location}` : ""}`,
+                                itemAmount: formatINR(p.value),
+                                itemTypeBadge: "Site / Project",
+                                onConfirm: () => onDelete(p.id),
+                              });
+                            }}
                             className="rounded-lg p-1.5 text-red-500 hover:bg-red-50 hover:text-red-700 transition"
                             title={t.delete}
                           >
@@ -278,6 +300,14 @@ export function ProjectsView({
           </div>
         </div>
       )}
+
+      {/* Animated Deletion Modal */}
+      <DeleteConfirmModal
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        target={deleteTarget}
+        lang={lang}
+      />
     </div>
   );
 }

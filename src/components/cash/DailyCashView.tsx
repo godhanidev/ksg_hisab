@@ -8,6 +8,7 @@ import { getTranslation } from "../../i18n/translations";
 import { formatINR } from "../../utils/formatters";
 import { exportCashTransactionsExcel } from "../../utils/exportUtils";
 import { StatCard } from "../common/StatCard";
+import { DeleteConfirmModal, DeleteTargetInfo } from "../common/DeleteConfirmModal";
 
 type DailyCashViewProps = {
   transactions: CashTransaction[];
@@ -42,6 +43,7 @@ export function DailyCashView({
   const [searchQuery, setSearchQuery] = useState("");
   const [typeFilter, setTypeFilter] = useState<"all" | "cash_in" | "cash_out">("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [deleteTarget, setDeleteTarget] = useState<DeleteTargetInfo | null>(null);
 
   // Allowed site list based on user role
   const userAllowedSites = useMemo(() => {
@@ -464,9 +466,20 @@ export function DailyCashView({
                           {isAdmin && (
                             <button
                               onClick={() => {
-                                if (window.confirm(t.confirmDelete)) {
-                                  onDeleteTransaction(tx.id);
-                                }
+                                const isCashIn = tx.type === "cash_in";
+                                const typeLabel = isCashIn
+                                  ? (lang === "gu" ? "કેશ ઇન (જમા)" : lang === "hi" ? "कैश इन (जमा)" : "Cash In")
+                                  : (lang === "gu" ? "કેશ આઉટ (ખર્ચ/ઉધાર)" : lang === "hi" ? "कैश आउट (खર્ચ)" : "Cash Out");
+
+                                setDeleteTarget({
+                                  id: tx.id,
+                                  title: lang === "gu" ? "કેશ એન્ટ્રી ડિલીટ" : lang === "hi" ? "कैश प्रविष्टि हटाएं" : "Delete Cash Entry",
+                                  itemName: tx.details,
+                                  itemDetails: `${tx.project} • ${tx.date} • ${tx.category || "General"} ${tx.supervisorName || tx.enteredBy ? `• By: ${tx.supervisorName || tx.enteredBy}` : ""}`,
+                                  itemAmount: formatINR(tx.amount),
+                                  itemTypeBadge: typeLabel,
+                                  onConfirm: () => onDeleteTransaction(tx.id),
+                                });
                               }}
                               title={t.delete}
                               className="rounded-lg p-1.5 text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition"
@@ -484,6 +497,14 @@ export function DailyCashView({
           </div>
         )}
       </div>
+
+      {/* Animated Deletion Modal */}
+      <DeleteConfirmModal
+        isOpen={Boolean(deleteTarget)}
+        onClose={() => setDeleteTarget(null)}
+        target={deleteTarget}
+        lang={lang}
+      />
     </div>
   );
 }
