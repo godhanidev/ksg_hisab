@@ -591,6 +591,7 @@ export function App() {
           setSidebarOpen={setSidebarOpen}
           currentUser={currentUser}
           onLogout={handleOpenLogoutModal}
+          onOpenAccount={() => setActivePage("Account")}
           lang={lang}
           onLanguageChange={handleLanguageChange}
           isOnline={isOnline}

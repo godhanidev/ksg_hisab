@@ -7,7 +7,6 @@ import {
   Building2,
   Users,
   User,
-  UserCheck,
   ChevronRight,
   X,
 } from "lucide-react";
@@ -50,7 +49,6 @@ export function Sidebar({
     { key: "GST Bills", icon: FileCheck, translateKey: "gstBills" },
     { key: "Projects", icon: Building2, translateKey: "projects" },
     { key: "User Management", icon: Users, translateKey: "userManagement", adminOnly: true },
-    { key: "Account", icon: UserCheck, translateKey: "account" },
   ];
 
   // Filter menu items by role

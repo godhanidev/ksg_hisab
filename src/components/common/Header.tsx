@@ -12,6 +12,7 @@ type HeaderProps = {
   setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
   currentUser: UserAccount;
   onLogout: () => void;
+  onOpenAccount?: () => void;
   lang: Language;
   onLanguageChange?: (lang: Language) => void;
   isOnline: boolean;
@@ -30,6 +31,7 @@ export function Header({
   setSidebarOpen,
   currentUser,
   onLogout,
+  onOpenAccount,
   lang,
   isOnline,
   pendingSyncCount,
@@ -105,18 +107,25 @@ export function Header({
             )}
           </div>
 
-          {/* User Info Display Badge */}
-          <div
-            className="flex items-center gap-2 pl-1.5 sm:pl-2 border-l border-slate-200 p-1 sm:p-1.5 rounded-2xl shrink-0"
+          {/* Admin / User Profile Button: Click to open Account & Profile */}
+          <button
+            type="button"
+            onClick={onOpenAccount}
+            className={`flex items-center gap-2 pl-1.5 sm:pl-2 border-l border-slate-200 p-1 sm:p-1.5 rounded-2xl transition group shrink-0 ${
+              activePage === "Account"
+                ? "bg-amber-500/15 ring-2 ring-amber-500/40 text-amber-900"
+                : "hover:bg-slate-50 cursor-pointer text-slate-900"
+            }`}
+            title={lang === "gu" ? "એકાઉન્ટ અને પ્રોફાઇલ ખોલો" : "Open Account & Profile"}
           >
-            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-slate-900 text-amber-400 shadow-xs border border-slate-700/60 shrink-0">
+            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-slate-900 text-amber-400 group-hover:bg-amber-500 group-hover:text-slate-950 shadow-xs border border-slate-700/60 transition shrink-0">
               <User size={16} className="sm:w-[18px] sm:h-[18px]" />
             </div>
             <div className="hidden xl:block text-left min-w-0">
-              <p className="text-xs font-bold text-slate-900 leading-tight truncate max-w-[140px]">{currentUser.name}</p>
+              <p className="text-xs font-bold leading-tight truncate max-w-[140px]">{currentUser.name}</p>
               <p className="text-[10px] font-semibold text-slate-500 truncate">{getShortRoleLabel(currentUser.role)}</p>
             </div>
-          </div>
+          </button>
 
           {/* Primary Dedicated Logout Button */}
           <button
