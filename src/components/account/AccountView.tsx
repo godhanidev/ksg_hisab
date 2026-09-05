@@ -14,12 +14,10 @@ import {
   MapPin,
   ShieldCheck,
   Pencil,
-  Trash2,
 } from "lucide-react";
 import { Language, Project, Role, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
 import { formatINR, getShortRoleLabel } from "../../utils/formatters";
-import { DeleteConfirmModal, DeleteTargetInfo } from "../common/DeleteConfirmModal";
 
 type AccountViewProps = {
   currentUser: UserAccount;
@@ -30,8 +28,6 @@ type AccountViewProps = {
   onUpdateProfile?: (updatedData: { name: string; username: string; phone?: string }) => void;
   isCloudConnected: boolean;
   onOpenCloudModal?: () => void;
-  onEditProject?: (project: Project) => void;
-  onDeleteProject?: (id: number) => void;
 };
 
 export function AccountView({
@@ -43,8 +39,6 @@ export function AccountView({
   onUpdateProfile,
   isCloudConnected,
   onOpenCloudModal,
-  onEditProject,
-  onDeleteProject,
 }: AccountViewProps) {
   const t = getTranslation(lang);
   const isAdmin = currentUser.role === "admin";
@@ -152,7 +146,6 @@ export function AccountView({
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [deleteTarget, setDeleteTarget] = useState<DeleteTargetInfo | null>(null);
 
   const handlePasswordSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -512,89 +505,8 @@ export function AccountView({
             </div>
           </div>
 
-          {/* ── Admin Specific Stats OR Supervisor Assigned Sites ─────────── */}
-          {isAdmin ? (
-            <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm space-y-4 w-full min-w-0 overflow-hidden">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 min-w-0">
-                <div className="min-w-0 flex-1">
-                  <h2 className="text-sm sm:text-base lg:text-lg font-bold text-slate-900 flex items-center gap-1.5 sm:gap-2 min-w-0">
-                    <Building2 size={18} className="text-amber-600 shrink-0" />
-                    <span className="truncate">{lang === "gu" ? "તમામ સાઇટ્સ વિહંગાવલોકન (All Projects)" : "Construction Sites & Projects"}</span>
-                  </h2>
-                  <p className="text-xs text-slate-500 mt-0.5 truncate">
-                    {lang === "gu" ? "સાઇટ વિગતો અને સુધારો કરો." : "Inspect site information."}
-                  </p>
-                </div>
-              </div>
-
-              <div className="grid gap-3 sm:grid-cols-2 w-full min-w-0">
-                {projects.map(p => (
-                  <div
-                    key={p.id}
-                    className="rounded-2xl border border-slate-200 p-3.5 sm:p-4 hover:border-amber-300 transition bg-slate-50/50 flex flex-col justify-between overflow-hidden min-w-0"
-                  >
-                    <div>
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs font-bold text-slate-900 truncate">{p.name}</p>
-                          <p className="text-[10px] font-mono text-slate-400 mt-0.5 truncate">{p.code}</p>
-                        </div>
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 shrink-0">
-                          {p.status}
-                        </span>
-                      </div>
-
-                      <p className="text-[11px] text-slate-500 mt-2 flex items-center gap-1 truncate">
-                        <MapPin size={11} className="text-slate-400 shrink-0" />
-                        <span className="truncate">{p.location}</span>
-                      </p>
-
-                      <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex flex-wrap items-center justify-between gap-1 text-[11px] min-w-0">
-                        <span className="text-slate-500 truncate min-w-0 flex-1">Supervisor: <strong className="text-slate-800">{p.supervisorName || "—"}</strong></span>
-                        <span className="font-bold text-slate-900 shrink-0">{formatINR(p.value)}</span>
-                      </div>
-                    </div>
-
-                    {/* Action Buttons on each card */}
-                    {(onEditProject || onDeleteProject) && (
-                      <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-end gap-1 min-w-0">
-                        {onEditProject && (
-                          <button
-                            type="button"
-                            onClick={() => onEditProject(p)}
-                            className="p-1.5 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition shrink-0"
-                            title={lang === "gu" ? "સાઇટ સુધારો" : "Edit Project"}
-                          >
-                            <Pencil size={13} />
-                          </button>
-                        )}
-                        {onDeleteProject && (
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setDeleteTarget({
-                                id: p.id,
-                                title: lang === "gu" ? "સાઇટ / પ્રોજેક્ટ ડિલીટ" : lang === "hi" ? "साइट / प्रोजेक्ट हटाएं" : "Delete Construction Site",
-                                itemName: p.name,
-                                itemDetails: `${p.code} • ${p.department} ${p.location ? `• ${p.location}` : ""}`,
-                                itemAmount: formatINR(p.value),
-                                itemTypeBadge: "Site / Project",
-                                onConfirm: () => onDeleteProject(p.id),
-                              });
-                            }}
-                            className="p-1.5 rounded-lg border border-red-200 bg-white text-red-500 hover:text-red-700 hover:bg-red-50 transition shrink-0"
-                            title={lang === "gu" ? "સાઇટ કાઢી નાખો" : "Delete Project"}
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        )}
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ) : (
+          {/* ── Supervisor / Non-Admin Assigned Sites ──────────────────────── */}
+          {!isAdmin && (
             <div className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-6 shadow-sm space-y-4 w-full min-w-0 overflow-hidden">
               <div className="flex items-center justify-between gap-2 min-w-0">
                 <h2 className="text-sm sm:text-base lg:text-lg font-bold text-slate-900 flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
@@ -795,13 +707,6 @@ export function AccountView({
         </div>
       </div>
 
-      {/* Animated Deletion Modal */}
-      <DeleteConfirmModal
-        isOpen={Boolean(deleteTarget)}
-        onClose={() => setDeleteTarget(null)}
-        target={deleteTarget}
-        lang={lang}
-      />
     </div>
   );
 }

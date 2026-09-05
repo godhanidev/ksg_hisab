@@ -760,11 +760,6 @@ export function App() {
               onUpdateProfile={handleUpdateProfile}
               isCloudConnected={isCloudConnected}
               onOpenCloudModal={() => setShowCloudModal(true)}
-              onEditProject={p => {
-                setEditingProject(p);
-                setShowProjectModal(true);
-              }}
-              onDeleteProject={handleDeleteProject}
             />
           )}
         </main>
