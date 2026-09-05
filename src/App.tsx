@@ -576,7 +576,6 @@ export function App() {
         setActivePage={setActivePage}
         currentUser={currentUser}
         lang={lang}
-        onLogout={handleOpenLogoutModal}
       />
 
       {/* ── Main Layout Wrapper ──────────────────────────────────────────── */}
@@ -592,7 +591,6 @@ export function App() {
           setSidebarOpen={setSidebarOpen}
           currentUser={currentUser}
           onLogout={handleOpenLogoutModal}
-          onOpenAccount={() => setActivePage("Account")}
           lang={lang}
           onLanguageChange={handleLanguageChange}
           isOnline={isOnline}
@@ -789,7 +787,6 @@ export function App() {
             setEditingGstBill(null);
             setShowGstModal(true);
           }}
-          onLogout={handleOpenLogoutModal}
         />
       </div>
 

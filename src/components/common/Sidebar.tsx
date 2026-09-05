@@ -10,7 +10,6 @@ import {
   UserCheck,
   ChevronRight,
   X,
-  LogOut,
 } from "lucide-react";
 import { Language, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
@@ -23,7 +22,6 @@ type SidebarProps = {
   setActivePage: (page: string) => void;
   currentUser: UserAccount;
   lang: Language;
-  onLogout?: () => void;
 };
 
 type MenuItemConfig = {
@@ -40,7 +38,6 @@ export function Sidebar({
   setActivePage,
   currentUser,
   lang,
-  onLogout,
 }: SidebarProps) {
   const t = getTranslation(lang);
   const isAdmin = currentUser.role === "admin";
@@ -146,23 +143,9 @@ export function Sidebar({
           </nav>
         </div>
 
-        {/* Bottom Current User Card (Click to open Account) */}
-        <div className="p-3 border-t border-slate-800/80 bg-slate-950 shrink-0 flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              setActivePage("Account");
-              if (window.innerWidth < 1024) {
-                setSidebarOpen(false);
-              }
-            }}
-            className={`flex-1 flex items-center gap-3 rounded-2xl p-2 sm:p-2.5 border transition text-left group min-w-0 ${
-              activePage === "Account"
-                ? "bg-amber-500/20 border-amber-500/40 text-amber-300"
-                : "bg-slate-900/90 border-slate-800 hover:bg-slate-800/80"
-            }`}
-            title="Open Account Profile"
-          >
+        {/* Bottom Current User Display Card */}
+        <div className="p-3 border-t border-slate-800/80 bg-slate-950 shrink-0">
+          <div className="flex items-center gap-3 rounded-2xl p-2 sm:p-2.5 bg-slate-900/90 border border-slate-800/90 min-w-0">
             <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500 text-slate-950 shadow-md border border-amber-400/40">
               <User size={20} className="text-slate-950" />
             </div>
@@ -172,21 +155,7 @@ export function Sidebar({
                 {isAdmin ? t.adminRole : `${getShortRoleLabel(currentUser.role)} (${currentUser.assignedProjects.length > 0 ? currentUser.assignedProjects[0] : "Site"})`}
               </p>
             </div>
-          </button>
-
-          {/* Quick Logout Button on Sidebar */}
-          {onLogout && (
-            <button
-              type="button"
-              onClick={onLogout}
-              className={`p-2.5 rounded-2xl border border-slate-800 bg-slate-900/80 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/30 transition shrink-0 ${
-                sidebarOpen ? "block" : "hidden lg:hidden"
-              }`}
-              title={t.logout}
-            >
-              <LogOut size={18} />
-            </button>
-          )}
+          </div>
         </div>
       </aside>
     </>

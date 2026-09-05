@@ -12,7 +12,6 @@ type HeaderProps = {
   setSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
   currentUser: UserAccount;
   onLogout: () => void;
-  onOpenAccount?: () => void;
   lang: Language;
   onLanguageChange?: (lang: Language) => void;
   isOnline: boolean;
@@ -31,7 +30,6 @@ export function Header({
   setSidebarOpen,
   currentUser,
   onLogout,
-  onOpenAccount,
   lang,
   isOnline,
   pendingSyncCount,
@@ -107,23 +105,20 @@ export function Header({
             )}
           </div>
 
-          {/* User Pill: Click to open My Account & Profile */}
-          <button
-            type="button"
-            onClick={onOpenAccount}
-            className="flex items-center gap-2 pl-1.5 sm:pl-2 border-l border-slate-200 cursor-pointer hover:bg-slate-50 p-1 sm:p-1.5 rounded-2xl transition group shrink-0"
-            title={lang === "gu" ? "મારું એકાઉન્ટ / પ્રોફાઇલ ખોલો" : "View My Account & Profile"}
+          {/* User Info Display Badge */}
+          <div
+            className="flex items-center gap-2 pl-1.5 sm:pl-2 border-l border-slate-200 p-1 sm:p-1.5 rounded-2xl shrink-0"
           >
-            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-slate-900 text-amber-400 group-hover:bg-amber-500 group-hover:text-slate-950 shadow-xs border border-slate-700/60 transition shrink-0">
+            <div className="flex h-8 w-8 sm:h-9 sm:w-9 items-center justify-center rounded-xl bg-slate-900 text-amber-400 shadow-xs border border-slate-700/60 shrink-0">
               <User size={16} className="sm:w-[18px] sm:h-[18px]" />
             </div>
             <div className="hidden xl:block text-left min-w-0">
               <p className="text-xs font-bold text-slate-900 leading-tight truncate max-w-[140px]">{currentUser.name}</p>
               <p className="text-[10px] font-semibold text-slate-500 truncate">{getShortRoleLabel(currentUser.role)}</p>
             </div>
-          </button>
+          </div>
 
-          {/* Logout Button */}
+          {/* Primary Dedicated Logout Button */}
           <button
             onClick={onLogout}
             title={t.logout}

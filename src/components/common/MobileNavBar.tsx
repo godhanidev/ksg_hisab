@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   LayoutDashboard, Wallet, Landmark, FileCheck, Building2,
-  Plus, X, Users, UserCheck, LogOut, ArrowDownLeft, ArrowUpRight
+  Plus, X, Users, UserCheck, ArrowDownLeft, ArrowUpRight
 } from "lucide-react";
 import { Language, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
@@ -15,7 +15,6 @@ type MobileNavBarProps = {
   onOpenCashOutModal: () => void;
   onOpenBankPaymentModal: () => void;
   onOpenGstBillModal: () => void;
-  onLogout: () => void;
 };
 
 export function MobileNavBar({
@@ -27,7 +26,6 @@ export function MobileNavBar({
   onOpenCashOutModal,
   onOpenBankPaymentModal,
   onOpenGstBillModal,
-  onLogout,
 }: MobileNavBarProps) {
   const t = getTranslation(lang);
   const isAdmin = currentUser.role === "admin";
