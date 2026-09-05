@@ -34,7 +34,6 @@ type AccountViewProps = {
   onAddNewProject?: () => void;
   onEditProject?: (project: Project) => void;
   onDeleteProject?: (id: number) => void;
-  onViewProject360?: (project: Project) => void;
 };
 
 export function AccountView({
@@ -49,7 +48,6 @@ export function AccountView({
   onAddNewProject,
   onEditProject,
   onDeleteProject,
-  onViewProject360,
 }: AccountViewProps) {
   const t = getTranslation(lang);
   const isAdmin = currentUser.role === "admin";
@@ -586,19 +584,8 @@ export function AccountView({
                     </div>
 
                     {/* Action Buttons on each card */}
-                    <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-between gap-2 min-w-0">
-                      {onViewProject360 && (
-                        <button
-                          type="button"
-                          onClick={() => onViewProject360(p)}
-                          className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-slate-800 transition shrink-0"
-                        >
-                          <Eye size={12} />
-                          <span>Site 360°</span>
-                        </button>
-                      )}
-
-                      <div className="flex items-center gap-1 shrink-0 ml-auto">
+                    {(onEditProject || onDeleteProject) && (
+                      <div className="mt-3 pt-2.5 border-t border-slate-200 flex items-center justify-end gap-1 min-w-0">
                         {onEditProject && (
                           <button
                             type="button"
@@ -630,7 +617,7 @@ export function AccountView({
                           </button>
                         )}
                       </div>
-                    </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -683,19 +670,6 @@ export function AccountView({
                         <p className="text-[11px] text-slate-600 mt-2 bg-white px-2.5 py-1 rounded-lg border border-slate-200/60 truncate">
                           Client: {p.department}
                         </p>
-                      )}
-
-                      {onViewProject360 && (
-                        <div className="mt-3 pt-2 border-t border-slate-200/60 flex justify-end">
-                          <button
-                            type="button"
-                            onClick={() => onViewProject360(p)}
-                            className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-slate-800 transition shrink-0"
-                          >
-                            <Eye size={13} />
-                            <span>Site 360° Ledger (હિસાબ)</span>
-                          </button>
-                        </div>
                       )}
                     </div>
                   ))}

@@ -648,7 +648,6 @@ export function App() {
               lang={lang}
               onNavigateToTab={tab => setActivePage(tab)}
               onViewAttachment={data => setViewingAttachment(data)}
-              onViewProject360={p => setViewingProject360(p)}
             />
           )}
 
@@ -770,7 +769,6 @@ export function App() {
                 setShowProjectModal(true);
               }}
               onDeleteProject={handleDeleteProject}
-              onViewProject360={p => setViewingProject360(p)}
             />
           )}
         </main>

@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import {
   Wallet, Landmark, FileCheck, Building2, TrendingUp,
-  ArrowDownLeft, ArrowUpRight, Plus, Eye, Paperclip, CheckCircle2,
+  ArrowDownLeft, ArrowUpRight, Paperclip, CheckCircle2,
   Calendar, ArrowRight, Activity, DollarSign
 } from "lucide-react";
 import {
@@ -22,7 +22,6 @@ type DashboardViewProps = {
   lang: Language;
   onNavigateToTab: (tab: string) => void;
   onViewAttachment: (data: { attachment: Attachment; title: string; subtitle?: string; amount?: string }) => void;
-  onViewProject360: (project: Project) => void;
 };
 
 export function DashboardView({
@@ -36,7 +35,6 @@ export function DashboardView({
   lang,
   onNavigateToTab,
   onViewAttachment,
-  onViewProject360,
 }: DashboardViewProps) {
   const t = getTranslation(lang);
   const isAdmin = currentUser.role === "admin";
@@ -366,7 +364,6 @@ export function DashboardView({
                 <th className="py-3 px-4 text-right">Cash Spent (ઉધાર)</th>
                 <th className="py-3 px-4 text-right">Cash in Hand</th>
                 <th className="py-3 px-4 text-right">Bank RTGS</th>
-                <th className="py-3 px-4 text-center">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -409,14 +406,6 @@ export function DashboardView({
                     </td>
                     <td className="py-3.5 px-4 text-right font-bold text-slate-900">
                       {formatINR(siteBank)}
-                    </td>
-                    <td className="py-3.5 px-4 text-center">
-                      <button
-                        onClick={() => onViewProject360(p)}
-                        className="rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-slate-800 transition"
-                      >
-                        Site 360°
-                      </button>
                     </td>
                   </tr>
                 );
