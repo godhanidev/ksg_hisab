@@ -49,7 +49,7 @@ export function LoginPage({
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4 pt-[max(env(safe-area-inset-top,54px),54px)] pb-[max(env(safe-area-inset-bottom,32px),32px)] relative overflow-hidden">
+    <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4 py-8 safe-header-top safe-nav-bottom relative overflow-y-auto">
       {/* Background ambient glow effects */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-amber-500/10 blur-3xl animate-pulse" />

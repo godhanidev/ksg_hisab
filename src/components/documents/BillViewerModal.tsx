@@ -36,17 +36,17 @@ export function BillViewerModal({
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-2 sm:p-6 pt-[max(env(safe-area-inset-top,44px),16px)] pb-[max(env(safe-area-inset-bottom,20px),16px)] backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative flex flex-col w-full max-w-4xl max-h-[95vh] rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden text-white">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 p-2.5 sm:p-6 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative flex flex-col w-full max-w-4xl max-h-[90dvh] rounded-2xl sm:rounded-3xl bg-slate-900 border border-slate-800 shadow-2xl overflow-hidden text-white my-auto">
         {/* Header Bar */}
-        <div className="flex items-center justify-between border-b border-slate-800 p-3 sm:p-4 sm:px-6 bg-slate-950/80 gap-2">
+        <div className="flex items-center justify-between border-b border-slate-800 p-3 sm:p-4 sm:px-6 bg-slate-950/80 gap-2 shrink-0">
           <div className="flex items-center gap-2.5 sm:gap-3 min-w-0 flex-1">
             <div className="flex h-9 w-9 sm:h-10 sm:w-10 shrink-0 items-center justify-center rounded-xl bg-amber-500/20 text-amber-400 border border-amber-500/30">
               <FileText size={18} />
             </div>
             <div className="min-w-0 flex-1">
               <div className="flex items-center gap-2 flex-wrap">
-                <h3 className="font-bold text-xs sm:text-base text-white truncate max-w-[200px] sm:max-w-md">{title || "Transaction Document"}</h3>
+                <h3 className="font-bold text-xs sm:text-base text-white truncate max-w-[160px] sm:max-w-md">{title || "Transaction Document"}</h3>
                 <span className="hidden xs:inline-flex items-center gap-1 rounded-full bg-emerald-500/20 px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-emerald-400 border border-emerald-500/30">
                   <ShieldCheck size={11} /> {t.verifiedBill || "Verified"}
                 </span>

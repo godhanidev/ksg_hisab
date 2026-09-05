@@ -56,46 +56,46 @@ export function Project360Modal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 p-2 sm:p-6 pt-[max(env(safe-area-inset-top,44px),16px)] pb-[max(env(safe-area-inset-bottom,20px),16px)] backdrop-blur-md animate-in fade-in duration-200">
-      <div className="relative flex flex-col w-full max-w-5xl max-h-[94vh] rounded-3xl bg-white shadow-2xl overflow-hidden border border-slate-100">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-2.5 sm:p-4 md:p-6 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
+      <div className="relative flex flex-col w-full max-w-5xl max-h-[90dvh] rounded-2xl sm:rounded-3xl bg-white shadow-2xl overflow-hidden border border-slate-100 my-auto">
         {/* Modal Top Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 bg-slate-950 p-5 sm:px-7 text-white gap-3">
-          <div className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-amber-500 text-slate-950 font-black text-lg shadow-md shrink-0">
-              <Building2 size={24} />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 bg-slate-950 p-4 sm:p-5 sm:px-7 text-white gap-3 shrink-0">
+          <div className="flex items-center gap-3 min-w-0 flex-1">
+            <div className="flex h-11 w-11 sm:h-12 sm:w-12 items-center justify-center rounded-2xl bg-amber-500 text-slate-950 font-black text-lg shadow-md shrink-0">
+              <Building2 size={22} />
             </div>
-            <div>
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-lg sm:text-xl font-extrabold text-white">{project.name}</h2>
-              </div>
-              <p className="text-xs text-slate-300 mt-0.5 flex items-center gap-1">
-                <MapPin size={12} className="text-amber-400" /> {project.location || project.department} &bull; Code: {project.code}
+            <div className="min-w-0 flex-1">
+              <h2 className="text-base sm:text-xl font-extrabold text-white truncate">{project.name}</h2>
+              <p className="text-[11px] sm:text-xs text-slate-300 mt-0.5 flex items-center gap-1 truncate">
+                <MapPin size={12} className="text-amber-400 shrink-0" />
+                <span className="truncate">{project.location || project.department}</span>
+                <span className="text-slate-400 shrink-0">&bull; Code: {project.code}</span>
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
             <button
               onClick={handlePrintAudit}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-3.5 py-2 text-xs font-bold text-slate-950 hover:bg-amber-400 transition shadow-sm"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-amber-500 px-3 py-1.5 sm:px-3.5 sm:py-2 text-xs font-bold text-slate-950 hover:bg-amber-400 transition shadow-sm shrink-0"
               title="Print Official Site Audit Statement"
             >
-              <Printer size={15} />
+              <Printer size={14} />
               <span>{t.exportPdf}</span>
             </button>
 
             <button
               onClick={() => exportCashTransactionsExcel(siteCash, project.name)}
-              className="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 px-3.5 py-2 text-xs font-bold text-white transition border border-white/10"
+              className="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 px-3 py-1.5 sm:px-3.5 sm:py-2 text-xs font-bold text-white transition border border-white/10 shrink-0"
               title="Export Site Cash Ledger to Excel"
             >
-              <Download size={15} />
+              <Download size={14} />
               <span className="hidden sm:inline">Excel</span>
             </button>
 
             <button
               onClick={onClose}
-              className="rounded-xl p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition"
+              className="rounded-xl p-1.5 sm:p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white transition shrink-0"
               aria-label="Close"
             >
               <X size={18} />

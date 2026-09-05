@@ -608,7 +608,7 @@ export function App() {
         />
 
         {/* Dynamic Main Body Content */}
-        <main className="flex-1 p-3.5 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto">
+        <main className="flex-1 p-3.5 sm:p-6 lg:p-8 max-w-7xl w-full mx-auto pb-32 sm:pb-24 lg:pb-12">
           {activePage === "Dashboard" && (
             <DashboardView
               projects={projects}

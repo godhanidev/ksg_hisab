@@ -20,30 +20,26 @@
   padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
 }
 
-/* Mobile status bar safe header with guaranteed fallback */
+/* Mobile status bar safe header */
 .safe-header-top {
-  padding-top: max(env(safe-area-inset-top, 0px), 0px);
-}
-
-@media (max-width: 1023px) {
-  .safe-header-top {
-    padding-top: max(env(safe-area-inset-top, 48px), 48px);
-  }
+  padding-top: env(safe-area-inset-top, 0px);
 }
 
 .safe-nav-bottom {
-  padding-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-@media (max-width: 1023px) {
-  .safe-nav-bottom {
-    padding-bottom: max(env(safe-area-inset-bottom, 16px), 16px);
-  }
-}
-
-body {
+html, body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  overflow-x: hidden;
+  width: 100%;
+}
+
+/* Ensure smooth scrolling across all devices */
+* {
+  -webkit-overflow-scrolling: touch;
 }
 
 @keyframes bounce-subtle {
