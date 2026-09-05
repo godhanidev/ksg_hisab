@@ -1,9 +1,14 @@
-import React, { useState } from "react";
-import { Shield, HardHat, Plus, Edit, Trash2, Check, Lock, User, Phone, MapPin, Briefcase, Eye, EyeOff } from "lucide-react";
+import React, { useState, useMemo, useEffect } from "react";
+import {
+  Shield, HardHat, Plus, Edit, Trash2, Check, Lock, User, Phone,
+  MapPin, Briefcase, Eye, EyeOff, Search, Filter, Users, CheckCircle2
+} from "lucide-react";
 import { Language, Project, Role, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
 import { ModalWrapper } from "../common/ModalWrapper";
 import { DeleteConfirmModal, DeleteTargetInfo } from "../common/DeleteConfirmModal";
+import { Pagination } from "../common/Pagination";
+import { generateUniqueNumericId } from "../../utils/idGenerator";
 
 type UserManagementProps = {
   users: UserAccount[];
@@ -27,6 +32,12 @@ export const UserManagement = React.memo(function UserManagement({
   const [showFormPassword, setShowFormPassword] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<DeleteTargetInfo | null>(null);
 
+  // Search, Filter & Pagination states for scaling to 150+ users
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(18);
+
   const [form, setForm] = useState<{
     username: string;
     password: string;
@@ -42,6 +53,11 @@ export const UserManagement = React.memo(function UserManagement({
     phone: "",
     assignedProjects: [],
   });
+
+  // Reset page to 1 when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, roleFilter]);
 
   const openAdd = () => {
     setEditUser(null);
@@ -85,7 +101,7 @@ export const UserManagement = React.memo(function UserManagement({
     if (!form.username.trim() || !form.password.trim() || !form.name.trim()) return;
 
     const userToSave: UserAccount = {
-      id: editUser ? editUser.id : Date.now(),
+      id: editUser ? editUser.id : generateUniqueNumericId(),
       ...form,
       currentSessionId: editUser?.currentSessionId,
       lastLoginAt: editUser?.lastLoginAt,
@@ -140,11 +156,45 @@ export const UserManagement = React.memo(function UserManagement({
     }
   };
 
+  // Filtered users based on search query and role filter
+  const filteredUsers = useMemo(() => {
+    return users.filter(u => {
+      // Role filter
+      if (roleFilter !== "all" && u.role !== roleFilter) return false;
+
+      // Search query filter (matches name, username, phone, or assigned sites)
+      if (searchQuery.trim()) {
+        const q = searchQuery.toLowerCase().trim();
+        const matchName = (u.name || "").toLowerCase().includes(q);
+        const matchUser = (u.username || "").toLowerCase().includes(q);
+        const matchPhone = (u.phone || "").toLowerCase().includes(q);
+        const matchProjects = (u.assignedProjects || []).some(p => p.toLowerCase().includes(q));
+        if (!matchName && !matchUser && !matchPhone && !matchProjects) {
+          return false;
+        }
+      }
+
+      return true;
+    });
+  }, [users, roleFilter, searchQuery]);
+
+  // Paginated users
+  const paginatedUsers = useMemo(() => {
+    const startIndex = (currentPage - 1) * pageSize;
+    return filteredUsers.slice(startIndex, startIndex + pageSize);
+  }, [filteredUsers, currentPage, pageSize]);
+
   return (
     <div className="space-y-6 pb-20">
+      {/* Top Header & Metrics Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="min-w-0 flex-1">
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 truncate">{t.userManagement}</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-bold text-slate-900 truncate">{t.userManagement}</h1>
+            <span className="rounded-full bg-slate-900 px-2.5 py-0.5 text-xs font-bold text-white shadow-2xs">
+              {users.length} {lang === "gu" ? "યુઝર્સ" : "Users"}
+            </span>
+          </div>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
             {lang === "gu"
               ? "સાઇટ સુપરવાઇઝર, સાઇટ એન્જિનિયર અને પાર્ટનર્સ માટે એકાઉન્ટ બનાવો અને સાઇટ પરવાનગી ફાળવો."
@@ -161,105 +211,183 @@ export const UserManagement = React.memo(function UserManagement({
         </button>
       </div>
 
-      {/* Users List Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {users.map(u => {
-          const isAdmin = u.role === "admin";
-          const badge = getRoleBadge(u.role);
-          const isPassRevealed = Boolean(showPasswords[u.id]);
-
-          return (
-            <div
-              key={u.id}
-              className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between overflow-hidden"
+      {/* Search & Role Filter Toolbar */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 rounded-2xl bg-white p-3 border border-slate-200 shadow-xs">
+        <div className="relative flex-1">
+          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            placeholder={
+              lang === "gu"
+                ? "નામ, યુઝરનેમ, ફોન કે સાઇટ દ્વારા શોધો..."
+                : lang === "hi"
+                ? "नाम, यूजरनेम, फोन या साइट से खोजें..."
+                : "Search by name, username, phone or site..."
+            }
+            className="w-full rounded-xl border border-slate-200 bg-slate-50/50 pl-10 pr-4 py-2 text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:bg-white focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20 transition"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400 hover:text-slate-600 p-1"
             >
-              <div>
-                <div className="flex items-start justify-between gap-2 mb-4">
-                  <div className="flex items-center gap-3 min-w-0 flex-1">
-                    <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-900 shadow-2xs border border-amber-200">
-                      <User size={18} className="text-amber-700 sm:w-5 sm:h-5" />
-                    </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-bold text-sm text-slate-900 truncate">{u.name}</p>
-                      <p className="text-xs text-slate-400 font-mono truncate">@{u.username}</p>
-                    </div>
-                  </div>
+              ✕
+            </button>
+          )}
+        </div>
 
-                  <span
-                    className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider shrink-0 ${badge.bg}`}
-                  >
-                    {badge.label}
-                  </span>
-                </div>
+        <div className="flex items-center gap-2 shrink-0">
+          <Filter size={15} className="text-slate-400 shrink-0 hidden sm:block" />
+          <select
+            value={roleFilter}
+            onChange={e => setRoleFilter(e.target.value)}
+            className="w-full sm:w-auto rounded-xl border border-slate-200 bg-white py-2 px-3 text-xs sm:text-sm font-semibold text-slate-700 shadow-2xs focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+          >
+            <option value="all">{lang === "gu" ? "તમામ રોલ (All Roles)" : "All Roles"}</option>
+            <option value="supervisor">Site Supervisor (સુપરવાઇઝર)</option>
+            <option value="site_engineer">Site Engineer (એન્જિનિયર)</option>
+            <option value="site_partner">Site Partner (પાર્ટનર)</option>
+            <option value="admin">Owner / Admin (ઓનર)</option>
+          </select>
+        </div>
+      </div>
 
-                {/* Password / Login Credentials for Admin */}
-                <div className="rounded-xl bg-slate-50 border border-slate-100 p-2.5 flex items-center justify-between text-xs gap-2">
-                  <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
-                    <Lock size={13} className="text-slate-400 shrink-0" />
-                    <span className="text-slate-500 font-medium text-[11px] shrink-0">Password:</span>
-                    <span className="font-mono font-bold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200 truncate">
-                      {isPassRevealed ? u.password : "••••••••"}
+      {/* Users List Grid */}
+      {paginatedUsers.length === 0 ? (
+        <div className="flex flex-col items-center justify-center rounded-3xl border border-dashed border-slate-200 bg-white p-12 text-center shadow-xs">
+          <Users size={36} className="text-slate-300 mb-2" />
+          <p className="text-sm font-bold text-slate-700">
+            {lang === "gu" ? "કોઈ યુઝર મળ્યા નથી" : "No users match the search criteria"}
+          </p>
+          <p className="text-xs text-slate-400 mt-1">
+            {lang === "gu" ? "કૃપા કરીને સર્ચ ફિલ્ટર બદલો અથવા નવો યુઝર ઉમેરો." : "Try adjusting your search query or role filter."}
+          </p>
+        </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          {paginatedUsers.map(u => {
+            const isAdmin = u.role === "admin";
+            const badge = getRoleBadge(u.role);
+            const isPassRevealed = Boolean(showPasswords[u.id]);
+
+            return (
+              <div
+                key={u.id}
+                className="rounded-3xl border border-slate-200 bg-white p-4 sm:p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between overflow-hidden"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-2 mb-4">
+                    <div className="flex items-center gap-3 min-w-0 flex-1">
+                      <div className="flex h-10 w-10 sm:h-11 sm:w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-50 text-amber-900 shadow-2xs border border-amber-200">
+                        <User size={18} className="text-amber-700 sm:w-5 sm:h-5" />
+                      </div>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-bold text-sm text-slate-900 truncate">{u.name}</p>
+                        <p className="text-xs text-slate-400 font-mono truncate">@{u.username}</p>
+                      </div>
+                    </div>
+
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-[10px] font-bold uppercase tracking-wider shrink-0 ${badge.bg}`}
+                    >
+                      {badge.label}
                     </span>
                   </div>
-                  <button
-                    type="button"
-                    onClick={() => setShowPasswords(prev => ({ ...prev, [u.id]: !prev[u.id] }))}
-                    className="text-slate-400 hover:text-slate-700 p-1 shrink-0 transition"
-                    title={isPassRevealed ? "Hide Password" : "Show Password"}
-                  >
-                    {isPassRevealed ? <EyeOff size={14} /> : <Eye size={14} />}
-                  </button>
+
+                  {/* Password / Login Credentials for Admin */}
+                  <div className="rounded-xl bg-slate-50 border border-slate-100 p-2.5 flex items-center justify-between text-xs gap-2">
+                    <div className="flex items-center gap-1.5 sm:gap-2 min-w-0 flex-1">
+                      <Lock size={13} className="text-slate-400 shrink-0" />
+                      <span className="text-slate-500 font-medium text-[11px] shrink-0">Password:</span>
+                      <span className="font-mono font-bold text-slate-800 bg-white px-2 py-0.5 rounded border border-slate-200 truncate">
+                        {isPassRevealed ? u.password : "••••••••"}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowPasswords(prev => ({ ...prev, [u.id]: !prev[u.id] }))}
+                      className="text-slate-400 hover:text-slate-700 p-1 shrink-0 transition"
+                      title={isPassRevealed ? "Hide Password" : "Show Password"}
+                    >
+                      {isPassRevealed ? <EyeOff size={14} /> : <Eye size={14} />}
+                    </button>
+                  </div>
+
+                  {/* Contact Phone if present */}
+                  {u.phone && (
+                    <div className="mt-2 text-[11px] text-slate-500 flex items-center gap-1.5">
+                      <Phone size={12} className="text-slate-400 shrink-0" />
+                      <span className="font-semibold text-slate-700">{u.phone}</span>
+                    </div>
+                  )}
+
+                  {/* Assigned Sites section */}
+                  <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
+                    <p className="text-[11px] font-bold text-slate-600 flex items-center gap-1">
+                      <MapPin size={12} className="text-amber-600 shrink-0" />
+                      <span>Assigned Sites ({isAdmin ? "All Sites" : u.assignedProjects.length})</span>
+                    </p>
+                    <div className="flex flex-wrap gap-1">
+                      {isAdmin ? (
+                        <span className="rounded-lg bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-200">
+                          ⭐ Full Access Across All Projects
+                        </span>
+                      ) : u.assignedProjects.length === 0 ? (
+                        <span className="text-[11px] text-slate-400 italic">No site assigned yet</span>
+                      ) : (
+                        u.assignedProjects.map(p => (
+                          <span key={p} className="rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700 max-w-full truncate">
+                            📍 {p}
+                          </span>
+                        ))
+                      )}
+                    </div>
+                  </div>
                 </div>
 
-                {/* Assigned Sites section */}
-                <div className="mt-3 pt-3 border-t border-slate-100 space-y-2">
-                  <p className="text-[11px] font-bold text-slate-600 flex items-center gap-1">
-                    <MapPin size={12} className="text-amber-600 shrink-0" />
-                    <span>Assigned Sites ({isAdmin ? "All Sites" : u.assignedProjects.length})</span>
-                  </p>
-                  <div className="flex flex-wrap gap-1">
-                    {isAdmin ? (
-                      <span className="rounded-lg bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-800 border border-emerald-200">
-                        ⭐ Full Access Across All Projects
-                      </span>
-                    ) : u.assignedProjects.length === 0 ? (
-                      <span className="text-[11px] text-slate-400 italic">No site assigned yet</span>
-                    ) : (
-                      u.assignedProjects.map(p => (
-                        <span key={p} className="rounded-lg bg-slate-100 px-2 py-0.5 text-[10px] font-semibold text-slate-700 max-w-full truncate">
-                          📍 {p}
-                        </span>
-                      ))
+                <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
+                  <span className="text-[11px] text-slate-500 font-semibold truncate">{badge.label}</span>
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      onClick={() => openEdit(u)}
+                      className="rounded-xl border border-slate-200 p-2 text-xs font-semibold hover:bg-slate-50 transition"
+                      title="Edit User Access"
+                    >
+                      <Edit size={14} />
+                    </button>
+                    {u.id !== 1 && (
+                      <button
+                        onClick={() => handleDelete(u)}
+                        className="rounded-xl border border-red-200 p-2 text-xs text-red-600 hover:bg-red-50 transition"
+                        title="Delete User"
+                      >
+                        <Trash2 size={14} />
+                      </button>
                     )}
                   </div>
                 </div>
               </div>
+            );
+          })}
+        </div>
+      )}
 
-              <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
-                <span className="text-[11px] text-slate-500 font-semibold truncate">{badge.label}</span>
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <button
-                    onClick={() => openEdit(u)}
-                    className="rounded-xl border border-slate-200 p-2 text-xs font-semibold hover:bg-slate-50 transition"
-                    title="Edit User Access"
-                  >
-                    <Edit size={14} />
-                  </button>
-                  {u.id !== 1 && (
-                    <button
-                      onClick={() => handleDelete(u)}
-                      className="rounded-xl border border-red-200 p-2 text-xs text-red-600 hover:bg-red-50 transition"
-                      title="Delete User"
-                    >
-                      <Trash2 size={14} />
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {/* Pagination Footer */}
+      {filteredUsers.length > 0 && (
+        <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden shadow-xs">
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredUsers.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+            pageSizeOptions={[18, 36, 72, 150]}
+            lang={lang}
+          />
+        </div>
+      )}
 
       {/* User Form Modal */}
       {showModal && (

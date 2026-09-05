@@ -9,6 +9,7 @@ import {
   loadStoredCollection, saveStoredCollection, loadStoredSession, saveStoredSession,
   loadOfflineQueue, addToOfflineQueue, clearOfflineQueue, getStoredLanguage, setStoredLanguage
 } from "./utils/storageUtils";
+import { generateUniqueNumericId, generateUniqueIdString } from "./utils/idGenerator";
 import {
   initialUsers, initialProjects, initialCashTransactions,
   initialBankPayments, initialGSTBills
@@ -18,6 +19,7 @@ import {
   initFirestore, getActiveFirestore, subscribeToCollection,
   saveDocumentToCloud, deleteDocumentFromCloud, ensureInitialCloudSeed
 } from "./services/firestoreSync";
+
 
 import { Header } from "./components/common/Header";
 import { Sidebar } from "./components/common/Sidebar";
@@ -264,22 +266,58 @@ export function App() {
     setTimeout(() => setToastMessage(null), 3500);
   }, []);
 
-  const triggerAutoSync = useCallback(() => {
+  const triggerAutoSync = useCallback(async () => {
     const queue = loadOfflineQueue();
     if (queue.length === 0) return;
 
     setIsSyncing(true);
-    setTimeout(() => {
+    try {
+      if (isCloudConnected) {
+        for (const item of queue) {
+          try {
+            if (item.module === "daily_cash") {
+              if (item.action === "delete") {
+                await deleteDocumentFromCloud("daily_cash", item.data.id);
+              } else {
+                await saveDocumentToCloud("daily_cash", item.data);
+              }
+            } else if (item.module === "bank_payment") {
+              if (item.action === "delete") {
+                await deleteDocumentFromCloud("bank_payments", item.data.id);
+              } else {
+                await saveDocumentToCloud("bank_payments", item.data);
+              }
+            } else if (item.module === "gst_bill") {
+              if (item.action === "delete") {
+                await deleteDocumentFromCloud("gst_bills", item.data.id);
+              } else {
+                await saveDocumentToCloud("gst_bills", item.data);
+              }
+            } else if (item.module === "project") {
+              if (item.action === "delete") {
+                await deleteDocumentFromCloud("projects", item.data.id);
+              } else {
+                await saveDocumentToCloud("projects", item.data);
+              }
+            }
+          } catch (itemErr) {
+            console.error("Failed to sync offline queue item:", item, itemErr);
+          }
+        }
+      }
       clearOfflineQueue();
       setPendingSyncQueue([]);
-      setIsSyncing(false);
       showToast(
         lang === "gu"
-          ? `${queue.length} ઓફલાઇન એન્ટ્રીઓ સમન્વયિત થઇ!`
-          : `Synced ${queue.length} offline entries successfully!`
+          ? `${queue.length} ઓફલાઇન એન્ટ્રીઓ સફળતાપૂર્વક ક્લાઉડમાં સેવ થઇ!`
+          : `Synced ${queue.length} offline entries successfully to Cloud!`
       );
-    }, 800);
-  }, [lang, showToast]);
+    } catch (err) {
+      console.error("Auto-sync error:", err);
+    } finally {
+      setIsSyncing(false);
+    }
+  }, [isCloudConnected, lang, showToast]);
 
   const handleLanguageChange = useCallback((newLang: Language) => {
     setLang(newLang);
@@ -299,7 +337,7 @@ export function App() {
 
   // Helper for generating unique session IDs and client device info
   const generateSessionId = () => {
-    return "ksg_sess_" + Date.now() + "_" + Math.random().toString(36).substring(2, 9);
+    return generateUniqueIdString("ksg_sess");
   };
 
   const getClientDeviceInfo = () => {
@@ -346,7 +384,7 @@ export function App() {
     } else {
       savedTx = {
         ...txData,
-        id: Date.now(),
+        id: generateUniqueNumericId(),
       };
       setCashTransactions(prev => [savedTx, ...prev]);
       if (!isOnline) {
@@ -390,7 +428,7 @@ export function App() {
     } else {
       savedPayment = {
         ...paymentData,
-        id: Date.now(),
+        id: generateUniqueNumericId(),
       };
       setBankPayments(prev => [savedPayment, ...prev]);
       if (!isOnline) {
@@ -433,7 +471,7 @@ export function App() {
     } else {
       savedBill = {
         ...billData,
-        id: Date.now(),
+        id: generateUniqueNumericId(),
       };
       setGstBills(prev => [savedBill, ...prev]);
       if (!isOnline) {
@@ -472,7 +510,7 @@ export function App() {
     } else {
       savedProject = {
         ...projectData,
-        id: Date.now(),
+        id: generateUniqueNumericId(),
       };
       setProjects(prev => [...prev, savedProject]);
     }
@@ -482,6 +520,7 @@ export function App() {
     }
     showToast("Project site saved successfully!");
   }, [isCloudConnected, showToast]);
+
 
   const handleDeleteProject = useCallback((id: number) => {
     setProjects(prev => prev.filter(item => item.id !== id));

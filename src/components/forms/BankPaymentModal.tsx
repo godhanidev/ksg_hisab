@@ -6,6 +6,8 @@ import { Attachment, BankPayment, Language, Project, UserAccount } from "../../t
 import { getTranslation } from "../../i18n/translations";
 import { formatINR, todayStr, toInputDateFormat, fromInputDateFormat } from "../../utils/formatters";
 import { ModalWrapper } from "../common/ModalWrapper";
+import { compressImageFile } from "../../utils/imageCompressor";
+import { generateUniqueIdString } from "../../utils/idGenerator";
 
 type BankPaymentModalProps = {
   isOpen: boolean;
@@ -47,6 +49,7 @@ export function BankPaymentModal({
   const [referenceNo, setReferenceNo] = useState<string>("");
   const [category, setCategory] = useState<string>("Material & Spares");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [isCompressing, setIsCompressing] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   useEffect(() => {
@@ -73,30 +76,37 @@ export function BankPaymentModal({
       setCategory("Material & Spares");
       setAttachments([]);
     }
+    setIsCompressing(false);
     setErrorMsg(null);
   }, [editingPayment, isOpen, currentUser, projects]);
 
   if (!isOpen) return null;
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     const file = files[0];
-    const reader = new FileReader();
-    reader.onload = () => {
+    try {
+      setIsCompressing(true);
+      const compressed = await compressImageFile(file, 1280, 0.75);
       const newAtt: Attachment = {
-        id: "att_bank_" + Date.now(),
+        id: generateUniqueIdString("att_bank"),
         name: file.name,
-        dataUrl: reader.result as string,
-        type: file.type,
-        sizeBytes: file.size,
+        dataUrl: compressed.dataUrl,
+        type: file.type || "image/jpeg",
+        sizeBytes: compressed.sizeBytes,
         uploadedAt: todayStr(),
       };
       setAttachments([newAtt]);
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.error("Image processing error:", err);
+      setErrorMsg("Failed to process attachment photo.");
+    } finally {
+      setIsCompressing(false);
+    }
   };
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -290,7 +300,12 @@ export function BankPaymentModal({
           <label className="block text-xs font-bold text-slate-700 mb-1">
             Bank Receipt / Slip Proof
           </label>
-          {attachments.length > 0 ? (
+          {isCompressing ? (
+            <div className="flex items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50/70 p-3 text-xs font-bold text-blue-800 animate-pulse">
+              <div className="w-4 h-4 rounded-full border-2 border-blue-600/30 border-t-blue-600 animate-spin" />
+              <span>{lang === "gu" ? "ફોટો ઓપ્ટિમાઇઝ થઈ રહ્યો છે..." : "Optimizing photo for fast sync..."}</span>
+            </div>
+          ) : attachments.length > 0 ? (
             <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-2.5">
               <div className="flex items-center gap-2 min-w-0">
                 <img
@@ -303,7 +318,7 @@ export function BankPaymentModal({
                     {attachments[0].name}
                   </p>
                   <p className="text-[10px] text-blue-600 font-medium">
-                    Proof attached [OK]
+                    Proof attached [OK] {attachments[0].sizeBytes ? `(${(attachments[0].sizeBytes / 1024).toFixed(0)} KB)` : ""}
                   </p>
                 </div>
               </div>
@@ -316,18 +331,33 @@ export function BankPaymentModal({
               </button>
             </div>
           ) : (
-            <label className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-3 text-xs font-semibold text-slate-600 hover:border-blue-400 hover:bg-blue-50/30 cursor-pointer transition">
-              <Upload size={16} className="text-slate-400" />
-              <span>Attach Bank Receipt / UTR Slip</span>
-              <input
-                type="file"
-                accept="image/*,.pdf"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-            </label>
+            <div className="flex items-center gap-2">
+              <label className="flex-1 flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-3 text-xs font-semibold text-slate-600 hover:border-blue-400 hover:bg-blue-50/30 cursor-pointer transition">
+                <Upload size={16} className="text-slate-400" />
+                <span>Attach Bank Receipt / UTR Slip</span>
+                <input
+                  type="file"
+                  accept="image/*,.pdf"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </label>
+
+              <label className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white p-3 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer transition">
+                <Camera size={16} className="text-blue-600" />
+                <span>Camera</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
           )}
         </div>
+
 
         {/* Submit Buttons */}
         <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">

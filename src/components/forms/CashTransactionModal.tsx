@@ -7,6 +7,8 @@ import { Attachment, CashTransaction, CashTransactionType, Language, Project, Us
 import { getTranslation } from "../../i18n/translations";
 import { formatINR, todayStr, toInputDateFormat, fromInputDateFormat } from "../../utils/formatters";
 import { ModalWrapper } from "../common/ModalWrapper";
+import { compressImageFile } from "../../utils/imageCompressor";
+import { generateUniqueIdString } from "../../utils/idGenerator";
 
 type CashTransactionModalProps = {
   isOpen: boolean;
@@ -54,6 +56,7 @@ export function CashTransactionModal({
   const [paymentMode, setPaymentMode] = useState<"Cash" | "UPI" | "Cheque">("Cash");
   const [voucherNo, setVoucherNo] = useState<string>("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [isCompressing, setIsCompressing] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Initialize or reset form when modal opens or editing changes
@@ -84,35 +87,42 @@ export function CashTransactionModal({
       setVoucherNo("");
       setAttachments([]);
     }
+    setIsCompressing(false);
     setErrorMsg(null);
   }, [editingTransaction, defaultType, isOpen, currentUser, projects]);
 
   if (!isOpen) return null;
 
-  // Handle Photo / File Attachment
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle Photo / File Attachment with High-Speed Compression
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     const file = files[0];
-    const reader = new FileReader();
-    reader.onload = () => {
+    try {
+      setIsCompressing(true);
+      const compressed = await compressImageFile(file, 1280, 0.75);
       const newAtt: Attachment = {
-        id: "att_" + Date.now(),
+        id: generateUniqueIdString("att_cash"),
         name: file.name,
-        dataUrl: reader.result as string,
-        type: file.type,
-        sizeBytes: file.size,
+        dataUrl: compressed.dataUrl,
+        type: file.type || "image/jpeg",
+        sizeBytes: compressed.sizeBytes,
         uploadedAt: todayStr(),
       };
-      setAttachments([newAtt]); // replace or keep single primary receipt
-    };
-    reader.readAsDataURL(file);
+      setAttachments([newAtt]); // replace with compressed single primary receipt
+    } catch (err) {
+      console.error("Image processing error:", err);
+      setErrorMsg("Failed to process attachment photo.");
+    } finally {
+      setIsCompressing(false);
+    }
   };
 
   const handleRemoveAttachment = () => {
     setAttachments([]);
   };
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -363,7 +373,12 @@ export function CashTransactionModal({
           <label className="block text-xs font-bold text-slate-700 mb-1">
             {t.uploadBillPhoto}
           </label>
-          {attachments.length > 0 ? (
+          {isCompressing ? (
+            <div className="flex items-center justify-center gap-2 rounded-xl border border-amber-200 bg-amber-50/70 p-3 text-xs font-bold text-amber-800 animate-pulse">
+              <div className="w-4 h-4 rounded-full border-2 border-amber-600/30 border-t-amber-600 animate-spin" />
+              <span>{lang === "gu" ? "ફોટો ઓપ્ટિમાઇઝ થઈ રહ્યો છે..." : "Optimizing photo for fast sync..."}</span>
+            </div>
+          ) : attachments.length > 0 ? (
             <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-2.5">
               <div className="flex items-center gap-2 min-w-0">
                 <img
@@ -376,7 +391,7 @@ export function CashTransactionModal({
                     {attachments[0].name}
                   </p>
                   <p className="text-[10px] text-emerald-600 font-medium">
-                    Photo attached [OK]
+                    Photo attached [OK] {attachments[0].sizeBytes ? `(${(attachments[0].sizeBytes / 1024).toFixed(0)} KB)` : ""}
                   </p>
                 </div>
               </div>
@@ -415,6 +430,7 @@ export function CashTransactionModal({
             </div>
           )}
         </div>
+
 
         {/* Submit & Cancel Buttons */}
         <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">

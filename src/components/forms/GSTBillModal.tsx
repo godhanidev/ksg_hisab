@@ -6,6 +6,8 @@ import { Attachment, GSTBill, Language, Project, UserAccount } from "../../types
 import { getTranslation } from "../../i18n/translations";
 import { formatINR, todayStr, toInputDateFormat, fromInputDateFormat } from "../../utils/formatters";
 import { ModalWrapper } from "../common/ModalWrapper";
+import { compressImageFile } from "../../utils/imageCompressor";
+import { generateUniqueIdString } from "../../utils/idGenerator";
 
 type GSTBillModalProps = {
   isOpen: boolean;
@@ -52,6 +54,7 @@ export function GSTBillModal({
   const [status, setStatus] = useState<"Paid" | "Pending" | "Partial">("Paid");
   const [paymentReference, setPaymentReference] = useState<string>("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
+  const [isCompressing, setIsCompressing] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
   // Auto-calculated fields
@@ -87,30 +90,37 @@ export function GSTBillModal({
       setPaymentReference("");
       setAttachments([]);
     }
+    setIsCompressing(false);
     setErrorMsg(null);
   }, [editingBill, isOpen, currentUser, projects]);
 
   if (!isOpen) return null;
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
     const file = files[0];
-    const reader = new FileReader();
-    reader.onload = () => {
+    try {
+      setIsCompressing(true);
+      const compressed = await compressImageFile(file, 1280, 0.75);
       const newAtt: Attachment = {
-        id: "att_gst_" + Date.now(),
+        id: generateUniqueIdString("att_gst"),
         name: file.name,
-        dataUrl: reader.result as string,
-        type: file.type,
-        sizeBytes: file.size,
+        dataUrl: compressed.dataUrl,
+        type: file.type || "image/jpeg",
+        sizeBytes: compressed.sizeBytes,
         uploadedAt: todayStr(),
       };
       setAttachments([newAtt]);
-    };
-    reader.readAsDataURL(file);
+    } catch (err) {
+      console.error("Image processing error:", err);
+      setErrorMsg("Failed to process attachment photo.");
+    } finally {
+      setIsCompressing(false);
+    }
   };
+
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -373,7 +383,12 @@ export function GSTBillModal({
           <label className="block text-xs font-bold text-slate-700 mb-1">
             {t.uploadBillPhoto}
           </label>
-          {attachments.length > 0 ? (
+          {isCompressing ? (
+            <div className="flex items-center justify-center gap-2 rounded-xl border border-purple-200 bg-purple-50/70 p-3 text-xs font-bold text-purple-800 animate-pulse">
+              <div className="w-4 h-4 rounded-full border-2 border-purple-600/30 border-t-purple-600 animate-spin" />
+              <span>{lang === "gu" ? "ફોટો ઓપ્ટિમાઇઝ થઈ રહ્યો છે..." : "Optimizing invoice for fast sync..."}</span>
+            </div>
+          ) : attachments.length > 0 ? (
             <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-2.5">
               <div className="flex items-center gap-2 min-w-0">
                 <img
@@ -386,7 +401,7 @@ export function GSTBillModal({
                     {attachments[0].name}
                   </p>
                   <p className="text-[10px] text-purple-600 font-medium">
-                    Invoice photo attached [OK]
+                    Invoice photo attached [OK] {attachments[0].sizeBytes ? `(${(attachments[0].sizeBytes / 1024).toFixed(0)} KB)` : ""}
                   </p>
                 </div>
               </div>
@@ -399,18 +414,33 @@ export function GSTBillModal({
               </button>
             </div>
           ) : (
-            <label className="flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-3 text-xs font-semibold text-slate-600 hover:border-purple-400 hover:bg-purple-50/30 cursor-pointer transition">
-              <Upload size={16} className="text-slate-400" />
-              <span>Attach GST Invoice Photo / PDF</span>
-              <input
-                type="file"
-                accept="image/*,.pdf"
-                onChange={handleFileUpload}
-                className="hidden"
-              />
-            </label>
+            <div className="flex items-center gap-2">
+              <label className="flex-1 flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-slate-200 bg-slate-50/50 p-3 text-xs font-semibold text-slate-600 hover:border-purple-400 hover:bg-purple-50/30 cursor-pointer transition">
+                <Upload size={16} className="text-slate-400" />
+                <span>Attach GST Invoice Photo / PDF</span>
+                <input
+                  type="file"
+                  accept="image/*,.pdf"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </label>
+
+              <label className="flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-white p-3 text-xs font-bold text-slate-700 hover:bg-slate-50 cursor-pointer transition">
+                <Camera size={16} className="text-purple-600" />
+                <span>Camera</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  capture="environment"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
           )}
         </div>
+
 
         {/* Submit Buttons */}
         <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">

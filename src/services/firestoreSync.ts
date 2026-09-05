@@ -2,8 +2,8 @@
 
 import { initializeApp, getApps, FirebaseApp } from "firebase/app";
 import {
-  getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot,
-  Firestore, Unsubscribe, getDocs
+  initializeFirestore, getFirestore, collection, doc, setDoc, deleteDoc, onSnapshot,
+  Firestore, Unsubscribe, getDocs, persistentLocalCache, persistentMultipleTabManager
 } from "firebase/firestore";
 import { FirebaseConfig, loadStoredFirebaseConfig, DEFAULT_FIREBASE_CONFIG } from "./firebaseConfig";
 import { BankPayment, CashTransaction, GSTBill, Project, UserAccount } from "../types";
@@ -30,7 +30,19 @@ export function initFirestore(customConfig?: FirebaseConfig | null): Firestore |
         firebaseAppInstance = initializeApp(config);
       }
     }
-    firestoreInstance = getFirestore(firebaseAppInstance);
+
+    // Try initializing Firestore with persistent multi-tab local cache
+    try {
+      firestoreInstance = initializeFirestore(firebaseAppInstance, {
+        localCache: persistentLocalCache({
+          tabManager: persistentMultipleTabManager(),
+        }),
+      });
+    } catch {
+      // Fallback if already initialized
+      firestoreInstance = getFirestore(firebaseAppInstance);
+    }
+
     return firestoreInstance;
   } catch (err) {
     console.error("Error initializing Firestore:", err);
@@ -44,6 +56,7 @@ export function getActiveFirestore(): Firestore | null {
   }
   return firestoreInstance;
 }
+
 
 // ── Sanitize Data for Firestore (Remove undefined values that cause setDoc to fail) ──
 function cleanForFirestore<T>(data: T): Record<string, any> {
