@@ -104,16 +104,16 @@ export function GSTBillsView({
     <div className="space-y-6 pb-20">
       {/* ── Header Title & Actions ────────────────────────────────────────── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600 border border-purple-500/20">
-              <FileCheck size={24} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-2 rounded-xl bg-purple-500/10 text-purple-600 border border-purple-500/20 shrink-0">
+              <FileCheck size={22} />
             </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight truncate">
                 {t.gstBills}
               </h1>
-              <p className="text-xs sm:text-sm text-slate-500">
+              <p className="text-xs sm:text-sm text-slate-500 truncate">
                 {lang === "gu"
                   ? "જીએસટી ટેક્સ ઇન્વોઇસ બીલ, મૂળ રકમ અને જીએસટી ગણતરી લેજર"
                   : lang === "hi"
@@ -125,7 +125,7 @@ export function GSTBillsView({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           <button
             onClick={onAddBill}
             className="flex items-center gap-1.5 rounded-xl bg-purple-600 px-3.5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-purple-600/20 hover:bg-purple-700 transition active:scale-95"

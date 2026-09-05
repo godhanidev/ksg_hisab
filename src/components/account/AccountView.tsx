@@ -270,44 +270,42 @@ export function AccountView({
   return (
     <div className="space-y-6 pb-20 max-w-6xl mx-auto">
       {/* ── 1. Top Profile Hero Banner ──────────────────────────────────── */}
-      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border border-slate-800 p-6 sm:p-8 text-white shadow-xl">
+      <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 border border-slate-800 p-5 sm:p-8 text-white shadow-xl">
         <div className="absolute -top-24 -right-24 w-80 h-80 rounded-full bg-amber-500/10 blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-blue-500/10 blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-start sm:items-center gap-4 sm:gap-5">
+        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-5 sm:gap-6">
+          <div className="flex items-center gap-3.5 sm:gap-5 min-w-0 flex-1">
             {/* User Profile Avatar Box */}
-            <div className="relative">
-              <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-3xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 p-1.5 shadow-2xl border-2 border-amber-300/40 flex items-center justify-center shrink-0">
-                <User size={42} className="text-slate-950" />
-              </div>
+            <div className="h-16 w-16 sm:h-20 sm:w-20 rounded-2xl sm:rounded-3xl bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 p-1.5 shadow-2xl border-2 border-amber-300/40 flex items-center justify-center shrink-0">
+              <User size={34} className="text-slate-950" />
             </div>
 
             {/* Name & Details */}
-            <div className="space-y-1">
+            <div className="space-y-1 min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-2">
-                <h1 className="text-xl sm:text-2xl lg:text-3xl font-black tracking-tight text-white">
+                <h1 className="text-lg sm:text-2xl lg:text-3xl font-black tracking-tight text-white truncate max-w-full">
                   {currentUser.name}
                 </h1>
-                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${roleInfo.badge}`}>
+                <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold shrink-0 ${roleInfo.badge}`}>
                   {roleInfo.title}
                 </span>
               </div>
-              <p className="text-sm font-mono text-amber-400 font-bold">
+              <p className="text-xs sm:text-sm font-mono text-amber-400 font-bold truncate">
                 @{currentUser.username}
               </p>
-              <div className="flex flex-wrap items-center gap-4 text-xs text-slate-400 pt-1">
+              <div className="flex flex-wrap items-center gap-3 text-xs text-slate-400 pt-0.5">
                 {currentUser.phone && (
                   <a
                     href={`tel:${currentUser.phone}`}
-                    className="inline-flex items-center gap-1.5 text-slate-300 hover:text-amber-400 transition"
+                    className="inline-flex items-center gap-1 text-slate-300 hover:text-amber-400 transition truncate"
                   >
-                    <Phone size={13} className="text-amber-400" />
+                    <Phone size={12} className="text-amber-400 shrink-0" />
                     <span>+91 {currentUser.phone}</span>
                   </a>
                 )}
-                <span className="inline-flex items-center gap-1.5 text-slate-300">
-                  <Shield size={13} className="text-amber-400" />
+                <span className="inline-flex items-center gap-1 text-slate-300 shrink-0">
+                  <Shield size={12} className="text-amber-400 shrink-0" />
                   <span>ID #{currentUser.id}</span>
                 </span>
               </div>
@@ -315,12 +313,12 @@ export function AccountView({
           </div>
 
           {/* Quick Info & Action Buttons */}
-          <div className="flex flex-wrap md:flex-col items-start md:items-end gap-2 shrink-0">
+          <div className="flex flex-col sm:flex-row md:flex-col items-stretch sm:items-start md:items-end gap-2 w-full md:w-auto shrink-0">
             {isAdmin && onAddNewProject && (
               <button
                 type="button"
                 onClick={onAddNewProject}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 px-3.5 py-2 text-xs font-black text-slate-950 transition shadow-lg active:scale-95"
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 px-3.5 py-2 text-xs font-black text-slate-950 transition shadow-lg active:scale-95 w-full sm:w-auto"
               >
                 <Plus size={15} />
                 <span>{lang === "gu" ? "+ નવી સાઇટ ઉમેરો" : "+ Add New Site"}</span>
@@ -331,7 +329,7 @@ export function AccountView({
               <button
                 type="button"
                 onClick={() => onNavigateToTab("User Management")}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 px-3.5 py-2 text-xs font-bold text-white transition backdrop-blur"
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 px-3.5 py-2 text-xs font-bold text-white transition backdrop-blur w-full sm:w-auto"
               >
                 <Users size={14} className="text-amber-400" />
                 <span>{lang === "gu" ? "યુઝર એકાઉન્ટ્સ મેનેજ કરો" : "Manage User Accounts"}</span>
@@ -342,7 +340,7 @@ export function AccountView({
               <button
                 type="button"
                 onClick={() => onNavigateToTab("Projects")}
-                className="inline-flex items-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 px-3.5 py-2 text-xs font-bold text-white transition backdrop-blur"
+                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 px-3.5 py-2 text-xs font-bold text-white transition backdrop-blur w-full sm:w-auto"
               >
                 <Building2 size={14} className="text-amber-400" />
                 <span>{lang === "gu" ? "પ્રોજેક્ટ્સ પેજ ખોલો" : "View All Projects"}</span>
@@ -585,27 +583,27 @@ export function AccountView({
                 {projects.map(p => (
                   <div
                     key={p.id}
-                    className="rounded-2xl border border-slate-200 p-4 hover:border-amber-300 transition bg-slate-50/50 flex flex-col justify-between"
+                    className="rounded-2xl border border-slate-200 p-4 hover:border-amber-300 transition bg-slate-50/50 flex flex-col justify-between overflow-hidden"
                   >
                     <div>
                       <div className="flex items-start justify-between gap-2">
-                        <div>
-                          <p className="text-xs font-bold text-slate-900 line-clamp-1">{p.name}</p>
-                          <p className="text-[10px] font-mono text-slate-400 mt-0.5">{p.code}</p>
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs font-bold text-slate-900 truncate">{p.name}</p>
+                          <p className="text-[10px] font-mono text-slate-400 mt-0.5 truncate">{p.code}</p>
                         </div>
                         <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 shrink-0">
                           {p.status}
                         </span>
                       </div>
 
-                      <p className="text-[11px] text-slate-500 mt-2 flex items-center gap-1">
+                      <p className="text-[11px] text-slate-500 mt-2 flex items-center gap-1 truncate">
                         <MapPin size={11} className="text-slate-400 shrink-0" />
                         <span className="truncate">{p.location}</span>
                       </p>
 
-                      <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex items-center justify-between text-[11px]">
-                        <span className="text-slate-500">Supervisor: <strong className="text-slate-800">{p.supervisorName || "—"}</strong></span>
-                        <span className="font-bold text-slate-900">{formatINR(p.value)}</span>
+                      <div className="mt-2.5 pt-2 border-t border-slate-200/60 flex flex-wrap items-center justify-between gap-1 text-[11px]">
+                        <span className="text-slate-500 truncate max-w-[60%]">Supervisor: <strong className="text-slate-800">{p.supervisorName || "—"}</strong></span>
+                        <span className="font-bold text-slate-900 shrink-0">{formatINR(p.value)}</span>
                       </div>
                     </div>
 
@@ -615,14 +613,14 @@ export function AccountView({
                         <button
                           type="button"
                           onClick={() => onViewProject360(p)}
-                          className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-slate-800 transition"
+                          className="inline-flex items-center gap-1 rounded-lg bg-slate-900 px-2.5 py-1 text-[11px] font-bold text-white hover:bg-slate-800 transition shrink-0"
                         >
                           <Eye size={12} />
                           <span>Site 360°</span>
                         </button>
                       )}
 
-                      <div className="flex items-center gap-1">
+                      <div className="flex items-center gap-1 shrink-0">
                         {onEditProject && (
                           <button
                             type="button"
@@ -654,13 +652,13 @@ export function AccountView({
               </div>
             </div>
           ) : (
-            <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2">
-                  <Building2 size={18} className="text-amber-600" />
-                  <span>{lang === "gu" ? "તમને સોંપાયેલ સાઇટ્સ (Assigned Sites)" : "Your Assigned Sites"}</span>
+            <div className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm space-y-4">
+              <div className="flex items-center justify-between gap-2">
+                <h2 className="text-base sm:text-lg font-bold text-slate-900 flex items-center gap-2 min-w-0 flex-1">
+                  <Building2 size={18} className="text-amber-600 shrink-0" />
+                  <span className="truncate">{lang === "gu" ? "તમને સોંપાયેલ સાઇટ્સ (Assigned Sites)" : "Your Assigned Sites"}</span>
                 </h2>
-                <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-800">
+                <span className="rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-bold text-amber-800 shrink-0">
                   {assignedProjectsList.length} {lang === "gu" ? "સાઇટ" : "Sites"}
                 </span>
               </div>
@@ -676,22 +674,22 @@ export function AccountView({
                   {assignedProjectsList.map(p => (
                     <div
                       key={p.id}
-                      className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 hover:border-amber-300 transition"
+                      className="rounded-2xl border border-slate-200 bg-slate-50/60 p-4 hover:border-amber-300 transition overflow-hidden"
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                        <div>
-                          <div className="flex items-center gap-2">
-                            <h3 className="text-sm font-bold text-slate-900">{p.name}</h3>
-                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-200 text-slate-700">
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <h3 className="text-sm font-bold text-slate-900 truncate">{p.name}</h3>
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-slate-200 text-slate-700 shrink-0">
                               {p.code}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1">
-                            <MapPin size={12} className="text-amber-600" />
-                            <span>{p.location}</span>
+                          <p className="text-xs text-slate-500 mt-0.5 flex items-center gap-1 truncate">
+                            <MapPin size={12} className="text-amber-600 shrink-0" />
+                            <span className="truncate">{p.location}</span>
                           </p>
                         </div>
-                        <div className="text-left sm:text-right">
+                        <div className="text-left sm:text-right shrink-0">
                           <p className="text-[11px] text-slate-500">Tender Value</p>
                           <p className="text-sm font-black text-slate-900">{formatINR(p.value)}</p>
                         </div>
@@ -708,7 +706,7 @@ export function AccountView({
                           <button
                             type="button"
                             onClick={() => onViewProject360(p)}
-                            className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-slate-800 transition"
+                            className="inline-flex items-center gap-1.5 rounded-xl bg-slate-900 px-3 py-1.5 text-xs font-bold text-white hover:bg-slate-800 transition shrink-0"
                           >
                             <Eye size={13} />
                             <span>Site 360° Ledger (હિસાબ)</span>
@@ -721,14 +719,14 @@ export function AccountView({
               )}
 
               {/* Head Office Support Info */}
-              <div className="rounded-2xl bg-slate-900 text-white p-4 flex items-center justify-between gap-3">
-                <div className="space-y-0.5">
+              <div className="rounded-2xl bg-slate-900 text-white p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div className="space-y-0.5 min-w-0 flex-1">
                   <p className="text-xs font-bold text-amber-400">Head Office Support (મુખ્ય કચેરી સંપર્ક)</p>
                   <p className="text-xs text-slate-300">Kanjibhai S. Godhani: +91 98250 12345</p>
                 </div>
                 <a
                   href="tel:9825012345"
-                  className="rounded-xl bg-amber-400 hover:bg-amber-300 px-3 py-1.5 text-xs font-black text-slate-950 transition shrink-0"
+                  className="rounded-xl bg-amber-400 hover:bg-amber-300 px-3.5 py-1.5 text-xs font-black text-slate-950 transition text-center shrink-0 self-start sm:self-auto"
                 >
                   Call Now
                 </a>
@@ -739,11 +737,11 @@ export function AccountView({
 
         {/* Right Column: Password Change Form & Security (5 Cols) */}
         <div className="space-y-6 lg:col-span-5">
-          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 sm:p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-1">
-              <KeyRound size={18} className="text-amber-600" />
+              <KeyRound size={18} className="text-amber-600 shrink-0" />
               <h2 className="text-base sm:text-lg font-bold text-slate-900">
-                {lang === "gu" ? "પાસવર્ડ બદલો" : lang === "hi" ? "પાસવર્ડ બદલો" : "Change Password"}
+                {lang === "gu" ? "પાસવર્ડ બદલો" : lang === "hi" ? "पासवर्ड बदलें" : "Change Password"}
               </h2>
             </div>
             <p className="text-xs text-slate-500 mb-5">

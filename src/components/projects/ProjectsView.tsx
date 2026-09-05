@@ -44,10 +44,10 @@ export function ProjectsView({
     <div className="space-y-6 pb-20">
       {/* Top Controls Bar */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2">
-            <Building2 className="text-amber-500" size={24} />
-            <span>{t.projects} ({projects.length})</span>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-xl sm:text-2xl font-bold text-slate-900 flex items-center gap-2 truncate">
+            <Building2 className="text-amber-500 shrink-0" size={24} />
+            <span className="truncate">{t.projects} ({projects.length})</span>
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
             {isAdmin
@@ -56,7 +56,7 @@ export function ProjectsView({
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
           {isAdmin && (
             <button
               onClick={() => exportConsolidatedSiteExcel(projects, [], [], [])}

@@ -104,16 +104,16 @@ export function BankPaymentsView({
     <div className="space-y-6 pb-20">
       {/* ── Header Title & Actions ────────────────────────────────────────── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div>
-          <div className="flex items-center gap-2">
-            <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 border border-blue-500/20">
-              <Landmark size={24} />
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="p-2 rounded-xl bg-blue-500/10 text-blue-600 border border-blue-500/20 shrink-0">
+              <Landmark size={22} />
             </div>
-            <div>
-              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            <div className="min-w-0 flex-1">
+              <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight truncate">
                 {t.bankPayments}
               </h1>
-              <p className="text-xs sm:text-sm text-slate-500">
+              <p className="text-xs sm:text-sm text-slate-500 truncate">
                 {lang === "gu"
                   ? "મુખ્ય કચેરીથી સીધી બેંક / RTGS / NEFT દ્વારા થયેલ પાર્ટી ચુકવણી"
                   : lang === "hi"
@@ -125,7 +125,7 @@ export function BankPaymentsView({
         </div>
 
         {/* Action Buttons */}
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2 shrink-0">
           {isAdmin && (
             <button
               onClick={onAddPayment}
