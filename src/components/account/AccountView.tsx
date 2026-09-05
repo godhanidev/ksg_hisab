@@ -13,11 +13,9 @@ import {
   Building2,
   MapPin,
   ShieldCheck,
-  Users,
   Plus,
   Pencil,
   Trash2,
-  ExternalLink,
 } from "lucide-react";
 import { Language, Project, Role, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
@@ -32,7 +30,6 @@ type AccountViewProps = {
   onSaveNewPassword: (newPassword: string) => void;
   onUpdateProfile?: (updatedData: { name: string; username: string; phone?: string }) => void;
   isCloudConnected: boolean;
-  onNavigateToTab?: (tabName: string) => void;
   onOpenCloudModal?: () => void;
   onAddNewProject?: () => void;
   onEditProject?: (project: Project) => void;
@@ -48,7 +45,6 @@ export function AccountView({
   onSaveNewPassword,
   onUpdateProfile,
   isCloudConnected,
-  onNavigateToTab,
   onOpenCloudModal,
   onAddNewProject,
   onEditProject,
@@ -327,8 +323,8 @@ export function AccountView({
           </div>
 
           {/* Quick Info & Action Buttons */}
-          <div className="flex flex-col sm:flex-row md:flex-col items-stretch sm:items-start md:items-end gap-2 w-full md:w-auto shrink-0 min-w-0">
-            {isAdmin && onAddNewProject && (
+          {isAdmin && onAddNewProject && (
+            <div className="flex flex-col sm:flex-row md:flex-col items-stretch sm:items-start md:items-end gap-2 w-full md:w-auto shrink-0 min-w-0">
               <button
                 type="button"
                 onClick={onAddNewProject}
@@ -337,19 +333,8 @@ export function AccountView({
                 <Plus size={15} />
                 <span>{lang === "gu" ? "+ નવી સાઇટ ઉમેરો" : "+ Add New Site"}</span>
               </button>
-            )}
-
-            {isAdmin && onNavigateToTab && (
-              <button
-                type="button"
-                onClick={() => onNavigateToTab("User Management")}
-                className="inline-flex items-center justify-center gap-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 px-3.5 py-2 text-xs font-bold text-white transition backdrop-blur w-full sm:w-auto"
-              >
-                <Users size={14} className="text-amber-400" />
-                <span>{lang === "gu" ? "યુઝર એકાઉન્ટ્સ મેનેજ કરો" : "Manage User Accounts"}</span>
-              </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       </div>
 

@@ -760,7 +760,6 @@ export function App() {
               onSaveNewPassword={handleSaveNewPassword}
               onUpdateProfile={handleUpdateProfile}
               isCloudConnected={isCloudConnected}
-              onNavigateToTab={tab => setActivePage(tab)}
               onOpenCloudModal={() => setShowCloudModal(true)}
               onAddNewProject={() => {
                 setEditingProject(null);
