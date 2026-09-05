@@ -8,7 +8,7 @@ import {
   Attachment, BankPayment, CashTransaction, GSTBill, Language, Project, UserAccount
 } from "../../types";
 import { getTranslation } from "../../i18n/translations";
-import { formatINR, getUserRoleLabel } from "../../utils/formatters";
+import { formatINR } from "../../utils/formatters";
 import { VisualCharts } from "./VisualCharts";
 
 type DashboardViewProps = {
@@ -192,37 +192,21 @@ export function DashboardView({
 
   return (
     <div className="space-y-6 pb-20">
-      {/* ── Executive Welcome Banner ─────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-3xl bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 p-4 sm:p-7 text-white shadow-xl border border-slate-800">
-        <div className="min-w-0 flex-1">
+      {/* ── Dashboard Site Filter Bar (For Admin) ──────────────────────────── */}
+      {isAdmin && (
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 rounded-2xl bg-white p-3.5 sm:p-4 border border-slate-200/80 shadow-xs">
           <div className="flex items-center gap-2">
-            <span className="inline-block h-2.5 w-2.5 rounded-full bg-amber-400 animate-pulse shrink-0" />
-            <span className="text-xs font-bold uppercase tracking-wider text-amber-400 truncate">
-              {getUserRoleLabel(currentUser.role, lang)}
+            <Building2 size={18} className="text-amber-600 shrink-0" />
+            <span className="text-xs sm:text-sm font-bold text-slate-900">
+              {lang === "gu" ? "સાઇટ મુજબ વિશ્લેષણ (Site Filter)" : "Overview by Site"}
             </span>
           </div>
-          <h1 className="text-xl sm:text-3xl font-black mt-1.5 tracking-tight text-white truncate max-w-full">
-            {currentUser.name}
-          </h1>
-          <p className="mt-1 text-xs sm:text-sm text-slate-400 max-w-xl">
-            {isAdmin
-              ? lang === "gu"
-                ? "મુખ્ય કચેરી હિસાબ કંટ્રોલ પેનલ - સાઇટ રોકડ, બેંક RTGS અને GST બીલ વ્યવહારોનું જીવંત વિશ્લેષણ."
-                : "Head Office Executive Dashboard - Live tracking of Site Cash, Direct Bank RTGS & GST Invoices."
-              : `${t.supervisorNotice}`}
-          </p>
-        </div>
 
-        {/* Site Filter in Banner if Admin */}
-        {isAdmin && (
-          <div className="rounded-2xl bg-slate-900/90 border border-slate-800 p-3 text-left w-full sm:w-auto shrink-0">
-            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">
-              {t.filterBySite}
-            </label>
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <select
               value={selectedSiteFilter}
               onChange={e => setSelectedSiteFilter(e.target.value)}
-              className="w-full sm:w-auto rounded-xl border border-slate-700 bg-slate-950 py-1.5 px-3 text-xs sm:text-sm font-semibold text-white focus:border-amber-400 focus:outline-none"
+              className="w-full sm:w-auto rounded-xl border border-slate-300 bg-slate-50 py-1.5 px-3 text-xs sm:text-sm font-bold text-slate-800 focus:border-slate-900 focus:outline-none"
             >
               <option value="ALL">{t.allSites}</option>
               {projects.map(p => (
@@ -232,8 +216,8 @@ export function DashboardView({
               ))}
             </select>
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       {/* ── 6 Excel-Matching Core KPI Metric Cards ─────────────────────────── */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
