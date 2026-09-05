@@ -210,49 +210,57 @@ export function DashboardView({
       )}
 
       {/* ── 6 Excel-Matching Core KPI Metric Cards (2 per line = 3 rows of 6 cards, unclickable) ── */}
-      <div className="grid grid-cols-2 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
         {/* 1. Total Cash Given (જમા) */}
-        <div className="rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-white p-3.5 sm:p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-emerald-800 uppercase tracking-wider truncate">
+        <div className="flex flex-col justify-between rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-white p-3 sm:p-4 shadow-xs">
+          <div className="flex items-start justify-between gap-1.5">
+            <span className="text-[11px] sm:text-xs font-bold text-emerald-900 leading-tight">
               {t.totalCashGiven}
             </span>
             <div className="rounded-lg bg-emerald-500/20 p-1.5 text-emerald-700 shrink-0">
               <ArrowDownLeft size={16} />
             </div>
           </div>
-          <p className="mt-2 text-lg sm:text-xl font-black text-emerald-700 tracking-tight truncate">
-            {formatINR(totalCashGiven)}
-          </p>
-          <p className="mt-1 text-[10px] text-emerald-600 font-medium truncate">Office Top-up (જમા)</p>
+          <div className="mt-2.5">
+            <p className="text-base sm:text-lg md:text-xl font-black text-emerald-700 tracking-tight leading-none tabular-nums">
+              {formatINR(totalCashGiven)}
+            </p>
+            <p className="mt-1 text-[10px] sm:text-[11px] text-emerald-600/90 font-medium leading-tight">
+              Office Top-up (જમા)
+            </p>
+          </div>
         </div>
 
         {/* 2. Total Site Expense (ઉધાર) */}
-        <div className="rounded-2xl border border-rose-200/80 bg-gradient-to-br from-rose-500/10 via-rose-500/5 to-white p-3.5 sm:p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-rose-800 uppercase tracking-wider truncate">
+        <div className="flex flex-col justify-between rounded-2xl border border-rose-200/80 bg-gradient-to-br from-rose-500/10 via-rose-500/5 to-white p-3 sm:p-4 shadow-xs">
+          <div className="flex items-start justify-between gap-1.5">
+            <span className="text-[11px] sm:text-xs font-bold text-rose-900 leading-tight">
               {t.totalSiteExpense}
             </span>
             <div className="rounded-lg bg-rose-500/20 p-1.5 text-rose-700 shrink-0">
               <ArrowUpRight size={16} />
             </div>
           </div>
-          <p className="mt-2 text-lg sm:text-xl font-black text-rose-700 tracking-tight truncate">
-            {formatINR(totalSiteExpense)}
-          </p>
-          <p className="mt-1 text-[10px] text-rose-600 font-medium truncate">Site Cash Out (ઉધાર)</p>
+          <div className="mt-2.5">
+            <p className="text-base sm:text-lg md:text-xl font-black text-rose-700 tracking-tight leading-none tabular-nums">
+              {formatINR(totalSiteExpense)}
+            </p>
+            <p className="mt-1 text-[10px] sm:text-[11px] text-rose-600/90 font-medium leading-tight">
+              Site Cash Out (ઉધાર)
+            </p>
+          </div>
         </div>
 
         {/* 3. Cash in Hand (સિલક) */}
         <div
-          className={`rounded-2xl border p-3.5 sm:p-4 shadow-xs ${
+          className={`flex flex-col justify-between rounded-2xl border p-3 sm:p-4 shadow-xs ${
             cashInHand >= 0
               ? "border-blue-200/80 bg-gradient-to-br from-blue-500/10 via-blue-500/5 to-white"
               : "border-red-300 bg-gradient-to-br from-red-500/15 via-red-500/5 to-white"
           }`}
         >
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-slate-800 uppercase tracking-wider truncate">
+          <div className="flex items-start justify-between gap-1.5">
+            <span className="text-[11px] sm:text-xs font-bold text-slate-900 leading-tight">
               {t.cashInHand}
             </span>
             <div
@@ -263,62 +271,78 @@ export function DashboardView({
               <Wallet size={16} />
             </div>
           </div>
-          <p
-            className={`mt-2 text-lg sm:text-xl font-black tracking-tight truncate ${
-              cashInHand >= 0 ? "text-blue-700" : "text-red-600"
-            }`}
-          >
-            {formatINR(cashInHand)}
-          </p>
-          <p className="mt-1 text-[10px] font-semibold text-slate-500 truncate">Live Available</p>
+          <div className="mt-2.5">
+            <p
+              className={`text-base sm:text-lg md:text-xl font-black tracking-tight leading-none tabular-nums ${
+                cashInHand >= 0 ? "text-blue-700" : "text-red-600"
+              }`}
+            >
+              {formatINR(cashInHand)}
+            </p>
+            <p className="mt-1 text-[10px] sm:text-[11px] font-semibold text-slate-500 leading-tight">
+              Live Available
+            </p>
+          </div>
         </div>
 
         {/* 4. Total Bank Payment (RTGS) */}
-        <div className="rounded-2xl border border-indigo-200/80 bg-gradient-to-br from-indigo-500/10 via-indigo-500/5 to-white p-3.5 sm:p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-indigo-800 uppercase tracking-wider truncate">
+        <div className="flex flex-col justify-between rounded-2xl border border-indigo-200/80 bg-gradient-to-br from-indigo-500/10 via-indigo-500/5 to-white p-3 sm:p-4 shadow-xs">
+          <div className="flex items-start justify-between gap-1.5">
+            <span className="text-[11px] sm:text-xs font-bold text-indigo-950 leading-tight">
               {t.totalBankPayment}
             </span>
             <div className="rounded-lg bg-indigo-500/20 p-1.5 text-indigo-700 shrink-0">
               <Landmark size={16} />
             </div>
           </div>
-          <p className="mt-2 text-lg sm:text-xl font-black text-indigo-700 tracking-tight truncate">
-            {formatINR(totalBankPayments)}
-          </p>
-          <p className="mt-1 text-[10px] text-indigo-600 font-medium truncate">Direct Party RTGS</p>
+          <div className="mt-2.5">
+            <p className="text-base sm:text-lg md:text-xl font-black text-indigo-700 tracking-tight leading-none tabular-nums">
+              {formatINR(totalBankPayments)}
+            </p>
+            <p className="mt-1 text-[10px] sm:text-[11px] text-indigo-600/90 font-medium leading-tight">
+              Direct Party RTGS
+            </p>
+          </div>
         </div>
 
         {/* 5. Total GST Bills */}
-        <div className="rounded-2xl border border-purple-200/80 bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-white p-3.5 sm:p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-purple-800 uppercase tracking-wider truncate">
+        <div className="flex flex-col justify-between rounded-2xl border border-purple-200/80 bg-gradient-to-br from-purple-500/10 via-purple-500/5 to-white p-3 sm:p-4 shadow-xs">
+          <div className="flex items-start justify-between gap-1.5">
+            <span className="text-[11px] sm:text-xs font-bold text-purple-950 leading-tight">
               {t.totalGstBills}
             </span>
             <div className="rounded-lg bg-purple-500/20 p-1.5 text-purple-700 shrink-0">
               <FileCheck size={16} />
             </div>
           </div>
-          <p className="mt-2 text-lg sm:text-xl font-black text-purple-700 tracking-tight truncate">
-            {formatINR(totalGstBills)}
-          </p>
-          <p className="mt-1 text-[10px] text-purple-600 font-medium truncate">{filteredGST.length} Invoices</p>
+          <div className="mt-2.5">
+            <p className="text-base sm:text-lg md:text-xl font-black text-purple-700 tracking-tight leading-none tabular-nums">
+              {formatINR(totalGstBills)}
+            </p>
+            <p className="mt-1 text-[10px] sm:text-[11px] text-purple-600/90 font-medium leading-tight">
+              {filteredGST.length} Invoices
+            </p>
+          </div>
         </div>
 
         {/* 6. Total Project Cost */}
-        <div className="rounded-2xl border border-slate-300 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-3.5 sm:p-4 shadow-xs">
-          <div className="flex items-center justify-between">
-            <span className="text-[10px] font-bold text-amber-400 uppercase tracking-wider truncate">
+        <div className="flex flex-col justify-between rounded-2xl border border-slate-700 bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white p-3 sm:p-4 shadow-xs">
+          <div className="flex items-start justify-between gap-1.5">
+            <span className="text-[11px] sm:text-xs font-bold text-amber-400 leading-tight">
               {t.totalProjectCost}
             </span>
             <div className="rounded-lg bg-amber-400/20 p-1.5 text-amber-400 shrink-0">
               <Activity size={16} />
             </div>
           </div>
-          <p className="mt-2 text-lg sm:text-xl font-black text-white tracking-tight truncate">
-            {formatINR(totalProjectCost)}
-          </p>
-          <p className="mt-1 text-[10px] text-slate-300 font-medium truncate">Cash Out + Bank RTGS</p>
+          <div className="mt-2.5">
+            <p className="text-base sm:text-lg md:text-xl font-black text-white tracking-tight leading-none tabular-nums">
+              {formatINR(totalProjectCost)}
+            </p>
+            <p className="mt-1 text-[10px] sm:text-[11px] text-slate-300 font-medium leading-tight">
+              Cash Out + Bank RTGS
+            </p>
+          </div>
         </div>
       </div>
 

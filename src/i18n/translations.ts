@@ -36,11 +36,11 @@ export const translations = {
     pendingSync: "Pending Sync",
 
     // Summary Cards (Excel Matching)
-    totalCashGiven: "Total Cash Given (જમા)",
-    totalSiteExpense: "Total Site Cash Expense (ઉધાર)",
-    cashInHand: "Cash in Hand (હાથ પર રોકડ)",
-    totalBankPayment: "Total Bank Payment (RTGS)",
-    totalGstBills: "Total GST Bills",
+    totalCashGiven: "Cash In (જમા)",
+    totalSiteExpense: "Site Expense (ઉધાર)",
+    cashInHand: "Cash in Hand (સિલક)",
+    totalBankPayment: "Bank Payment (RTGS)",
+    totalGstBills: "GST Bills",
     totalProjectCost: "Total Project Cost",
     activeProjects: "Active Sites",
     totalTenderValue: "Total Tender Value",
@@ -156,12 +156,12 @@ export const translations = {
     pendingSync: "ડેટા સમન્વય બાકી",
 
     // Summary Cards
-    totalCashGiven: "કુલ મળેલ રોકડ (જમા)",
-    totalSiteExpense: "કુલ સાઇટ રોકડ ખર્ચ (ઉધાર)",
-    cashInHand: "હાથ પર રોકડ સિલક (Cash in Hand)",
-    totalBankPayment: "કુલ બેંક ચુકવણી (RTGS)",
-    totalGstBills: "કુલ જીએસટી બીલ (GST Bills)",
-    totalProjectCost: "કુલ સાઇટ પ્રોજેક્ટ ખર્ચ",
+    totalCashGiven: "રોકડ જમા (Cash In)",
+    totalSiteExpense: "સાઇટ ખર્ચ (Cash Out)",
+    cashInHand: "હાથ પર સિલક (Balance)",
+    totalBankPayment: "બેંક ચુકવણી (RTGS)",
+    totalGstBills: "જીએસટી બીલ (GST)",
+    totalProjectCost: "કુલ પ્રોજેક્ટ ખર્ચ",
     activeProjects: "કાર્યરત સાઇટ્સ",
     totalTenderValue: "કુલ ટેન્ડર કિંમત",
 
@@ -276,12 +276,12 @@ export const translations = {
     pendingSync: "डेटा सिंक लंबित",
 
     // Summary Cards
-    totalCashGiven: "कुल प्राप्त रोकड़ (जमा)",
-    totalSiteExpense: "कुल साइट रोकड़ खर्च (उधार)",
-    cashInHand: "हाथ में रोकड़ शेष (Cash in Hand)",
-    totalBankPayment: "कुल बैंक भुगतान (RTGS)",
-    totalGstBills: "कुल जीएसटी बिल (GST Bills)",
-    totalProjectCost: "कुल साइट प्रोजेक्ट लागत",
+    totalCashGiven: "रोकड़ जमा (Cash In)",
+    totalSiteExpense: "साइट खर्च (Cash Out)",
+    cashInHand: "हाथ में शेष (Balance)",
+    totalBankPayment: "बैंक भुगतान (RTGS)",
+    totalGstBills: "जीएसटी बिल (GST)",
+    totalProjectCost: "कुल प्रोजेक्ट लागत",
     activeProjects: "सक्रिय साइट्स",
     totalTenderValue: "कुल टेंडर मूल्य",
 
