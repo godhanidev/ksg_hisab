@@ -862,40 +862,6 @@ export function AccountView({
               </button>
             </form>
           </div>
-
-          {/* Single-Device Session Security Card */}
-          <div className="rounded-3xl border border-amber-200/80 bg-amber-50/40 p-5 shadow-sm space-y-3">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <ShieldCheck size={18} className="text-amber-700" />
-                <h3 className="text-xs sm:text-sm font-bold text-slate-900">
-                  {lang === "gu" ? "સિંગલ ડિવાઇસ સિક્યુરિટી" : "Single Device Security"}
-                </h3>
-              </div>
-              <span className="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-extrabold px-2.5 py-0.5 border border-emerald-300">
-                ACTIVE
-              </span>
-            </div>
-            <p className="text-[11px] text-slate-600 leading-relaxed">
-              {lang === "gu"
-                ? "તમારું એકાઉન્ટ એક સાથે ફક્ત ૧ ડિવાઇસમાં જ ચાલુ રહી શકે છે. અન્ય કોઈપણ ડિવાઇસમાં લોગઇન થતાં જ અહીંથી ઓટોમેટિક લોગઆઉટ થઈ જશે."
-                : "Your account is secured to 1 active device at a time. Logging in from another device immediately logs out other sessions."}
-            </p>
-            {currentUser.lastLoginAt && (
-              <div className="pt-2 border-t border-amber-200/60 flex items-center justify-between text-[11px] text-slate-500">
-                <span>{lang === "gu" ? "છેલ્લું લોગીન:" : "Last Login:"}</span>
-                <span className="font-mono font-bold text-slate-700">
-                  {new Date(currentUser.lastLoginAt).toLocaleString("en-IN", {
-                    day: "2-digit",
-                    month: "short",
-                    year: "numeric",
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
-                </span>
-              </div>
-            )}
-          </div>
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Shield, Lock, User, Eye, EyeOff, RefreshCw, AlertTriangle, Globe, Smartphone, X, ShieldAlert } from "lucide-react";
+import { Shield, Lock, User, Eye, EyeOff, RefreshCw, AlertTriangle, Globe, Smartphone, X } from "lucide-react";
 import { Language, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
 
@@ -210,14 +210,6 @@ export function LoginPage({
                 </>
               )}
             </button>
-
-            {/* Single Device Session Protection Badge */}
-            <div className="pt-2 text-center">
-              <span className="inline-flex items-center gap-1.5 text-[11px] font-medium text-slate-400 bg-white/5 px-3 py-1 rounded-full border border-white/5">
-                <ShieldAlert size={12} className="text-amber-400" />
-                <span>{t.singleDevicePolicyNote}</span>
-              </span>
-            </div>
           </form>
         </div>
       </div>
