@@ -30,7 +30,7 @@ type AccountViewProps = {
   onOpenCloudModal?: () => void;
 };
 
-export function AccountView({
+export const AccountView = React.memo(function AccountView({
   currentUser,
   projects,
   users,
@@ -709,4 +709,4 @@ export function AccountView({
 
     </div>
   );
-}
+});

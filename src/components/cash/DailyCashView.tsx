@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Wallet, Plus, ArrowDownLeft, ArrowUpRight, Search, Filter,
   Download, Printer, Eye, Trash2, Edit2, Paperclip, Calendar, CheckCircle2, AlertCircle
@@ -9,6 +9,7 @@ import { formatINR } from "../../utils/formatters";
 import { exportCashTransactionsExcel } from "../../utils/exportUtils";
 import { StatCard } from "../common/StatCard";
 import { DeleteConfirmModal, DeleteTargetInfo } from "../common/DeleteConfirmModal";
+import { Pagination } from "../common/Pagination";
 
 type DailyCashViewProps = {
   transactions: CashTransaction[];
@@ -24,7 +25,7 @@ type DailyCashViewProps = {
   lang: Language;
 };
 
-export function DailyCashView({
+export const DailyCashView = React.memo(function DailyCashView({
   transactions,
   onAddCashIn,
   onAddCashOut,
@@ -44,6 +45,9 @@ export function DailyCashView({
   const [typeFilter, setTypeFilter] = useState<"all" | "cash_in" | "cash_out">("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState<DeleteTargetInfo | null>(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   // Allowed site list based on user role
   const userAllowedSites = useMemo(() => {
@@ -125,6 +129,17 @@ export function DailyCashView({
     // Return latest first for user view
     return withBal.reverse();
   }, [filteredTransactions]);
+
+  // Reset pagination to first page on filter change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, typeFilter, categoryFilter, selectedSiteFilter]);
+
+  // Paginated records for table
+  const paginatedTransactions = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return transactionsWithRunningBalance.slice(start, start + pageSize);
+  }, [transactionsWithRunningBalance, currentPage, pageSize]);
 
   const handleExport = () => {
     exportCashTransactionsExcel(
@@ -359,7 +374,7 @@ export function DailyCashView({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {transactionsWithRunningBalance.map(tx => {
+                {paginatedTransactions.map(tx => {
                   const isCashIn = tx.type === "cash_in";
                   return (
                     <tr
@@ -496,6 +511,16 @@ export function DailyCashView({
             </table>
           </div>
         )}
+
+        {/* Pagination Controls */}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={transactionsWithRunningBalance.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          lang={lang}
+        />
       </div>
 
       {/* Animated Deletion Modal */}
@@ -507,4 +532,4 @@ export function DailyCashView({
       />
     </div>
   );
-}
+});

@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   Landmark, Plus, Search, Filter, Download, Printer,
   Eye, Trash2, Edit2, Paperclip, CheckCircle2, Building, ArrowRight
@@ -8,6 +8,7 @@ import { getTranslation } from "../../i18n/translations";
 import { formatINR } from "../../utils/formatters";
 import { exportBankPaymentsExcel } from "../../utils/exportUtils";
 import { DeleteConfirmModal, DeleteTargetInfo } from "../common/DeleteConfirmModal";
+import { Pagination } from "../common/Pagination";
 
 type BankPaymentsViewProps = {
   payments: BankPayment[];
@@ -22,7 +23,7 @@ type BankPaymentsViewProps = {
   lang: Language;
 };
 
-export function BankPaymentsView({
+export const BankPaymentsView = React.memo(function BankPaymentsView({
   payments,
   onAddPayment,
   onEditPayment,
@@ -41,6 +42,9 @@ export function BankPaymentsView({
   const [modeFilter, setModeFilter] = useState("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState<DeleteTargetInfo | null>(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   // Allowed site list based on user role
   const userAllowedSites = useMemo(() => {
@@ -94,6 +98,17 @@ export function BankPaymentsView({
   const totalAmount = useMemo(() => {
     return filteredPayments.reduce((s, p) => s + p.amount, 0);
   }, [filteredPayments]);
+
+  // Reset pagination to first page on filter change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, modeFilter, categoryFilter, selectedSiteFilter]);
+
+  // Paginated records for table
+  const paginatedPayments = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredPayments.slice(start, start + pageSize);
+  }, [filteredPayments, currentPage, pageSize]);
 
   const handleExport = () => {
     exportBankPaymentsExcel(
@@ -302,7 +317,7 @@ export function BankPaymentsView({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredPayments.map(p => (
+                {paginatedPayments.map(p => (
                   <tr key={p.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-3 px-3 sm:px-4 text-slate-400 font-mono text-[11px]">
                       {p.id}
@@ -394,6 +409,16 @@ export function BankPaymentsView({
             </table>
           </div>
         )}
+
+        {/* Pagination Controls */}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredPayments.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          lang={lang}
+        />
       </div>
 
       {/* Animated Deletion Modal */}
@@ -405,4 +430,4 @@ export function BankPaymentsView({
       />
     </div>
   );
-}
+});

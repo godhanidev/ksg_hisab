@@ -1,3 +1,4 @@
+import React from "react";
 import {
   LayoutDashboard,
   Wallet,
@@ -27,7 +28,7 @@ type MenuItemConfig = {
   adminOnly?: boolean;
 };
 
-export function Sidebar({
+export const Sidebar = React.memo(function Sidebar({
   sidebarOpen,
   setSidebarOpen,
   activePage,
@@ -140,4 +141,4 @@ export function Sidebar({
       </aside>
     </>
   );
-}
+});

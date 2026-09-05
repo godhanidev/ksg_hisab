@@ -25,7 +25,7 @@ type HeaderProps = {
   onSiteFilterChange?: (site: string) => void;
 };
 
-export function Header({
+export const Header = React.memo(function Header({
   activePage,
   sidebarOpen,
   setSidebarOpen,
@@ -140,4 +140,4 @@ export function Header({
       </div>
     </header>
   );
-}
+});

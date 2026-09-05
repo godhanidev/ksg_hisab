@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
 import {
   FileCheck, Plus, Search, Filter, Download, Printer,
   Eye, Trash2, Edit2, Paperclip, CheckCircle2, Clock, AlertTriangle, FileText
@@ -8,6 +8,7 @@ import { getTranslation } from "../../i18n/translations";
 import { formatINR } from "../../utils/formatters";
 import { exportGSTBillsExcel } from "../../utils/exportUtils";
 import { DeleteConfirmModal, DeleteTargetInfo } from "../common/DeleteConfirmModal";
+import { Pagination } from "../common/Pagination";
 
 type GSTBillsViewProps = {
   bills: GSTBill[];
@@ -22,7 +23,7 @@ type GSTBillsViewProps = {
   lang: Language;
 };
 
-export function GSTBillsView({
+export const GSTBillsView = React.memo(function GSTBillsView({
   bills,
   onAddBill,
   onEditBill,
@@ -41,6 +42,9 @@ export function GSTBillsView({
   const [statusFilter, setStatusFilter] = useState("all");
   const [productFilter, setProductFilter] = useState("all");
   const [deleteTarget, setDeleteTarget] = useState<DeleteTargetInfo | null>(null);
+
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(25);
 
   // Allowed site list based on user role
   const userAllowedSites = useMemo(() => {
@@ -94,6 +98,17 @@ export function GSTBillsView({
   const totalAmount = useMemo(() => {
     return filteredBills.reduce((s, b) => s + b.totalAmount, 0);
   }, [filteredBills]);
+
+  // Reset pagination to first page on filter change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery, statusFilter, productFilter, selectedSiteFilter]);
+
+  // Paginated records for table
+  const paginatedBills = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return filteredBills.slice(start, start + pageSize);
+  }, [filteredBills, currentPage, pageSize]);
 
   const handleExport = () => {
     exportGSTBillsExcel(
@@ -297,7 +312,7 @@ export function GSTBillsView({
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
-                {filteredBills.map(b => (
+                {paginatedBills.map(b => (
                   <tr key={b.id} className="hover:bg-slate-50/80 transition-colors">
                     <td className="py-3 px-3 sm:px-4 font-mono font-bold text-slate-900 whitespace-nowrap">
                       {b.billNo}
@@ -402,6 +417,16 @@ export function GSTBillsView({
             </table>
           </div>
         )}
+
+        {/* Pagination Controls */}
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filteredBills.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+          lang={lang}
+        />
       </div>
 
       {/* Animated Deletion Modal */}
@@ -413,4 +438,4 @@ export function GSTBillsView({
       />
     </div>
   );
-}
+});

@@ -13,7 +13,7 @@ type UserManagementProps = {
   onDeleteUser: (id: number) => void;
 };
 
-export function UserManagement({
+export const UserManagement = React.memo(function UserManagement({
   users,
   projects,
   lang,
@@ -404,4 +404,4 @@ export function UserManagement({
       />
     </div>
   );
-}
+});

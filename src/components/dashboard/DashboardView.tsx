@@ -24,7 +24,7 @@ type DashboardViewProps = {
   onViewAttachment: (data: { attachment: Attachment; title: string; subtitle?: string; amount?: string }) => void;
 };
 
-export function DashboardView({
+export const DashboardView = React.memo(function DashboardView({
   projects,
   cashTransactions,
   bankPayments,
@@ -544,4 +544,4 @@ export function DashboardView({
       </div>
     </div>
   );
-}
+});

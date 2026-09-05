@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useCallback, Suspense } from "react";
 import {
   Attachment, BankPayment, CashTransaction, CashTransactionType,
   GSTBill, Language, Project, UserAccount
@@ -23,22 +23,35 @@ import { Header } from "./components/common/Header";
 import { Sidebar } from "./components/common/Sidebar";
 import { MobileNavBar } from "./components/common/MobileNavBar";
 import { LoginPage } from "./components/auth/LoginPage";
-import { UserManagement } from "./components/auth/UserManagement";
-import { DashboardView } from "./components/dashboard/DashboardView";
-import { DailyCashView } from "./components/cash/DailyCashView";
-import { BankPaymentsView } from "./components/bank/BankPaymentsView";
-import { GSTBillsView } from "./components/gst/GSTBillsView";
-import { ProjectsView } from "./components/projects/ProjectsView";
-import { Project360Modal } from "./components/projects/Project360Modal";
-import { ProjectModal } from "./components/projects/ProjectModal";
-import { CashTransactionModal } from "./components/forms/CashTransactionModal";
-import { BankPaymentModal } from "./components/forms/BankPaymentModal";
-import { GSTBillModal } from "./components/forms/GSTBillModal";
-import { BillViewerModal } from "./components/documents/BillViewerModal";
-import { CloudSyncModal } from "./components/common/CloudSyncModal";
-import { AccountView } from "./components/account/AccountView";
-import { LogoutModal } from "./components/auth/LogoutModal";
 import { CheckCircle2, X } from "lucide-react";
+
+// ── Lazy-loaded Views for Instant Initial Loading & Minimal Memory Footprint ──
+const DashboardView = React.lazy(() => import("./components/dashboard/DashboardView").then(m => ({ default: m.DashboardView })));
+const DailyCashView = React.lazy(() => import("./components/cash/DailyCashView").then(m => ({ default: m.DailyCashView })));
+const BankPaymentsView = React.lazy(() => import("./components/bank/BankPaymentsView").then(m => ({ default: m.BankPaymentsView })));
+const GSTBillsView = React.lazy(() => import("./components/gst/GSTBillsView").then(m => ({ default: m.GSTBillsView })));
+const ProjectsView = React.lazy(() => import("./components/projects/ProjectsView").then(m => ({ default: m.ProjectsView })));
+const UserManagement = React.lazy(() => import("./components/auth/UserManagement").then(m => ({ default: m.UserManagement })));
+const AccountView = React.lazy(() => import("./components/account/AccountView").then(m => ({ default: m.AccountView })));
+
+// ── Lazy-loaded Modals ─────────────────────────────────────────────────────────
+const Project360Modal = React.lazy(() => import("./components/projects/Project360Modal").then(m => ({ default: m.Project360Modal })));
+const ProjectModal = React.lazy(() => import("./components/projects/ProjectModal").then(m => ({ default: m.ProjectModal })));
+const CashTransactionModal = React.lazy(() => import("./components/forms/CashTransactionModal").then(m => ({ default: m.CashTransactionModal })));
+const BankPaymentModal = React.lazy(() => import("./components/forms/BankPaymentModal").then(m => ({ default: m.BankPaymentModal })));
+const GSTBillModal = React.lazy(() => import("./components/forms/GSTBillModal").then(m => ({ default: m.GSTBillModal })));
+const BillViewerModal = React.lazy(() => import("./components/documents/BillViewerModal").then(m => ({ default: m.BillViewerModal })));
+const CloudSyncModal = React.lazy(() => import("./components/common/CloudSyncModal").then(m => ({ default: m.CloudSyncModal })));
+const LogoutModal = React.lazy(() => import("./components/auth/LogoutModal").then(m => ({ default: m.LogoutModal })));
+
+function PageLoader() {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 min-h-[300px] gap-3 text-slate-400">
+      <div className="w-8 h-8 rounded-full border-2 border-amber-500/20 border-t-amber-500 animate-spin" />
+      <span className="text-xs font-semibold text-slate-500">લોડ થઈ રહ્યું છે...</span>
+    </div>
+  );
+}
 
 export function App() {
   // ── Language & Online / Offline Sync State ──────────────────────────────
@@ -246,7 +259,12 @@ export function App() {
     };
   }, []);
 
-  const triggerAutoSync = () => {
+  const showToast = useCallback((msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  }, []);
+
+  const triggerAutoSync = useCallback(() => {
     const queue = loadOfflineQueue();
     if (queue.length === 0) return;
 
@@ -261,28 +279,23 @@ export function App() {
           : `Synced ${queue.length} offline entries successfully!`
       );
     }, 800);
-  };
+  }, [lang, showToast]);
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
-  };
-
-  const handleLanguageChange = (newLang: Language) => {
+  const handleLanguageChange = useCallback((newLang: Language) => {
     setLang(newLang);
     setStoredLanguage(newLang);
-  };
+  }, []);
 
-  const handleOpenLogoutModal = () => {
+  const handleOpenLogoutModal = useCallback(() => {
     setShowLogoutModal(true);
-  };
+  }, []);
 
-  const handleConfirmLogout = () => {
+  const handleConfirmLogout = useCallback(() => {
     setShowLogoutModal(false);
     setCurrentUser(null);
     saveStoredSession(null);
     setSessionExpiredNotice(null);
-  };
+  }, []);
 
   // Helper for generating unique session IDs and client device info
   const generateSessionId = () => {
@@ -295,7 +308,7 @@ export function App() {
     return isMobile ? "Mobile Device" : "Desktop / Laptop";
   };
 
-  const handleLogin = (userToLogin: UserAccount) => {
+  const handleLogin = useCallback((userToLogin: UserAccount) => {
     const sessionId = generateSessionId();
     const updatedUser: UserAccount = {
       ...userToLogin,
@@ -316,10 +329,10 @@ export function App() {
     if (isCloudConnected) {
       saveDocumentToCloud("users", updatedUser);
     }
-  };
+  }, [isCloudConnected]);
 
   // ── CRUD: Site Daily Cash ───────────────────────────────────────────────
-  const handleSaveCashTransaction = async (txData: Omit<CashTransaction, "id"> | CashTransaction) => {
+  const handleSaveCashTransaction = useCallback(async (txData: Omit<CashTransaction, "id"> | CashTransaction) => {
     let savedTx: CashTransaction;
     if ("id" in txData && txData.id) {
       savedTx = txData as CashTransaction;
@@ -348,9 +361,9 @@ export function App() {
     }
 
     showToast(t.recordSavedSuccess);
-  };
+  }, [isOnline, isCloudConnected, showToast, t.recordSavedSuccess]);
 
-  const handleDeleteCashTransaction = (id: number) => {
+  const handleDeleteCashTransaction = useCallback((id: number) => {
     setCashTransactions(prev => prev.filter(item => item.id !== id));
     if (!isOnline) {
       addToOfflineQueue({ module: "daily_cash", action: "delete", data: { id } });
@@ -360,10 +373,10 @@ export function App() {
       deleteDocumentFromCloud("daily_cash", id);
     }
     showToast(t.recordDeletedSuccess);
-  };
+  }, [isOnline, isCloudConnected, showToast, t.recordDeletedSuccess]);
 
   // ── CRUD: Direct Office Bank Payments ───────────────────────────────────
-  const handleSaveBankPayment = async (paymentData: Omit<BankPayment, "id"> | BankPayment) => {
+  const handleSaveBankPayment = useCallback(async (paymentData: Omit<BankPayment, "id"> | BankPayment) => {
     let savedPayment: BankPayment;
     if ("id" in paymentData && paymentData.id) {
       savedPayment = paymentData as BankPayment;
@@ -391,9 +404,9 @@ export function App() {
     }
 
     showToast(t.recordSavedSuccess);
-  };
+  }, [isOnline, isCloudConnected, showToast, t.recordSavedSuccess]);
 
-  const handleDeleteBankPayment = (id: number) => {
+  const handleDeleteBankPayment = useCallback((id: number) => {
     setBankPayments(prev => prev.filter(item => item.id !== id));
     if (!isOnline) {
       addToOfflineQueue({ module: "bank_payment", action: "delete", data: { id } });
@@ -403,10 +416,10 @@ export function App() {
       deleteDocumentFromCloud("bank_payments", id);
     }
     showToast(t.recordDeletedSuccess);
-  };
+  }, [isOnline, isCloudConnected, showToast, t.recordDeletedSuccess]);
 
   // ── CRUD: GST Bills ─────────────────────────────────────────────────────
-  const handleSaveGSTBill = async (billData: Omit<GSTBill, "id"> | GSTBill) => {
+  const handleSaveGSTBill = useCallback(async (billData: Omit<GSTBill, "id"> | GSTBill) => {
     let savedBill: GSTBill;
     if ("id" in billData && billData.id) {
       savedBill = billData as GSTBill;
@@ -434,9 +447,9 @@ export function App() {
     }
 
     showToast(t.recordSavedSuccess);
-  };
+  }, [isOnline, isCloudConnected, showToast, t.recordSavedSuccess]);
 
-  const handleDeleteGSTBill = (id: number) => {
+  const handleDeleteGSTBill = useCallback((id: number) => {
     setGstBills(prev => prev.filter(item => item.id !== id));
     if (!isOnline) {
       addToOfflineQueue({ module: "gst_bill", action: "delete", data: { id } });
@@ -446,10 +459,10 @@ export function App() {
       deleteDocumentFromCloud("gst_bills", id);
     }
     showToast(t.recordDeletedSuccess);
-  };
+  }, [isOnline, isCloudConnected, showToast, t.recordDeletedSuccess]);
 
   // ── CRUD: Projects ──────────────────────────────────────────────────────
-  const handleSaveProject = (projectData: Omit<Project, "id"> | Project) => {
+  const handleSaveProject = useCallback((projectData: Omit<Project, "id"> | Project) => {
     let savedProject: Project;
     if ("id" in projectData && projectData.id) {
       savedProject = projectData as Project;
@@ -468,18 +481,18 @@ export function App() {
       saveDocumentToCloud("projects", savedProject);
     }
     showToast("Project site saved successfully!");
-  };
+  }, [isCloudConnected, showToast]);
 
-  const handleDeleteProject = (id: number) => {
+  const handleDeleteProject = useCallback((id: number) => {
     setProjects(prev => prev.filter(item => item.id !== id));
     if (isCloudConnected) {
       deleteDocumentFromCloud("projects", id);
     }
     showToast("Project deleted successfully");
-  };
+  }, [isCloudConnected, showToast]);
 
   // ── CRUD: Users ─────────────────────────────────────────────────────────
-  const handleSaveUser = (userData: UserAccount) => {
+  const handleSaveUser = useCallback((userData: UserAccount) => {
     const existing = users.find(u => u.id === userData.id);
     const mergedUser: UserAccount = {
       ...userData,
@@ -497,9 +510,9 @@ export function App() {
       saveDocumentToCloud("users", mergedUser);
     }
     showToast("User account saved successfully!");
-  };
+  }, [users, isCloudConnected, showToast]);
 
-  const handleDeleteUser = (id: number) => {
+  const handleDeleteUser = useCallback((id: number) => {
     setUsers(prev => prev.filter(u => u.id !== id));
     if (isCloudConnected) {
       deleteDocumentFromCloud("users", id);
@@ -510,9 +523,9 @@ export function App() {
       setSessionExpiredNotice(t.accountDeletedNotice);
     }
     showToast(lang === "gu" ? "યુઝર એકાઉન્ટ ડિલીટ કરવામાં આવ્યું" : "User deleted successfully");
-  };
+  }, [currentUser, isCloudConnected, lang, showToast, t.accountDeletedNotice]);
 
-  const handleSaveNewPassword = (newPassword: string) => {
+  const handleSaveNewPassword = useCallback((newPassword: string) => {
     if (!currentUser) return;
     const newSessionId = generateSessionId();
     const updatedUser: UserAccount = {
@@ -532,9 +545,9 @@ export function App() {
       saveDocumentToCloud("users", updatedUser);
     }
     showToast(lang === "gu" ? "પાસવર્ડ સફળતાપૂર્વક બદલાઈ ગયો!" : "Password updated successfully!");
-  };
+  }, [currentUser, isCloudConnected, lang, showToast]);
 
-  const handleUpdateProfile = (updatedData: { name: string; username: string; phone?: string }) => {
+  const handleUpdateProfile = useCallback((updatedData: { name: string; username: string; phone?: string }) => {
     if (!currentUser) return;
     const updatedUser: UserAccount = {
       ...currentUser,
@@ -557,7 +570,7 @@ export function App() {
         ? "પ્રોફાઇલ માહિતી સફળતાપૂર્વક અપડેટ થઈ ગઈ છે!"
         : "Profile details updated successfully!"
     );
-  };
+  }, [currentUser, isCloudConnected, lang, showToast]);
 
   // If user is not logged in, show Login Screen
   if (!currentUser) {
@@ -636,132 +649,134 @@ export function App() {
 
         {/* Dynamic Main Body Content */}
         <main className="flex-1 p-3 sm:p-6 lg:p-8 max-w-7xl w-full min-w-0 mx-auto pb-32 sm:pb-24 lg:pb-12 overflow-x-hidden">
-          {activePage === "Dashboard" && (
-            <DashboardView
-              projects={projects}
-              cashTransactions={cashTransactions}
-              bankPayments={bankPayments}
-              gstBills={gstBills}
-              currentUser={currentUser}
-              selectedSiteFilter={selectedSiteFilter}
-              setSelectedSiteFilter={setSelectedSiteFilter}
-              lang={lang}
-              onNavigateToTab={tab => setActivePage(tab)}
-              onViewAttachment={data => setViewingAttachment(data)}
-            />
-          )}
+          <Suspense fallback={<PageLoader />}>
+            {activePage === "Dashboard" && (
+              <DashboardView
+                projects={projects}
+                cashTransactions={cashTransactions}
+                bankPayments={bankPayments}
+                gstBills={gstBills}
+                currentUser={currentUser}
+                selectedSiteFilter={selectedSiteFilter}
+                setSelectedSiteFilter={setSelectedSiteFilter}
+                lang={lang}
+                onNavigateToTab={tab => setActivePage(tab)}
+                onViewAttachment={data => setViewingAttachment(data)}
+              />
+            )}
 
-          {activePage === "Site Daily Cash" && (
-            <DailyCashView
-              transactions={cashTransactions}
-              onAddCashIn={() => {
-                setEditingCashTx(null);
-                setCashModalType("cash_in");
-                setShowCashModal(true);
-              }}
-              onAddCashOut={() => {
-                setEditingCashTx(null);
-                setCashModalType("cash_out");
-                setShowCashModal(true);
-              }}
-              onEditTransaction={tx => {
-                setEditingCashTx(tx);
-                setCashModalType(tx.type);
-                setShowCashModal(true);
-              }}
-              onDeleteTransaction={handleDeleteCashTransaction}
-              onViewAttachment={data => setViewingAttachment(data)}
-              projects={userAllowedProjects}
-              selectedSiteFilter={selectedSiteFilter}
-              setSelectedSiteFilter={setSelectedSiteFilter}
-              currentUser={currentUser}
-              lang={lang}
-            />
-          )}
+            {activePage === "Site Daily Cash" && (
+              <DailyCashView
+                transactions={cashTransactions}
+                onAddCashIn={() => {
+                  setEditingCashTx(null);
+                  setCashModalType("cash_in");
+                  setShowCashModal(true);
+                }}
+                onAddCashOut={() => {
+                  setEditingCashTx(null);
+                  setCashModalType("cash_out");
+                  setShowCashModal(true);
+                }}
+                onEditTransaction={tx => {
+                  setEditingCashTx(tx);
+                  setCashModalType(tx.type);
+                  setShowCashModal(true);
+                }}
+                onDeleteTransaction={handleDeleteCashTransaction}
+                onViewAttachment={data => setViewingAttachment(data)}
+                projects={userAllowedProjects}
+                selectedSiteFilter={selectedSiteFilter}
+                setSelectedSiteFilter={setSelectedSiteFilter}
+                currentUser={currentUser}
+                lang={lang}
+              />
+            )}
 
-          {activePage === "Bank Payments" && (
-            <BankPaymentsView
-              payments={bankPayments}
-              onAddPayment={() => {
-                setEditingBankPayment(null);
-                setShowBankModal(true);
-              }}
-              onEditPayment={p => {
-                setEditingBankPayment(p);
-                setShowBankModal(true);
-              }}
-              onDeletePayment={handleDeleteBankPayment}
-              onViewAttachment={data => setViewingAttachment(data)}
-              projects={userAllowedProjects}
-              selectedSiteFilter={selectedSiteFilter}
-              setSelectedSiteFilter={setSelectedSiteFilter}
-              currentUser={currentUser}
-              lang={lang}
-            />
-          )}
+            {activePage === "Bank Payments" && (
+              <BankPaymentsView
+                payments={bankPayments}
+                onAddPayment={() => {
+                  setEditingBankPayment(null);
+                  setShowBankModal(true);
+                }}
+                onEditPayment={p => {
+                  setEditingBankPayment(p);
+                  setShowBankModal(true);
+                }}
+                onDeletePayment={handleDeleteBankPayment}
+                onViewAttachment={data => setViewingAttachment(data)}
+                projects={userAllowedProjects}
+                selectedSiteFilter={selectedSiteFilter}
+                setSelectedSiteFilter={setSelectedSiteFilter}
+                currentUser={currentUser}
+                lang={lang}
+              />
+            )}
 
-          {activePage === "GST Bills" && (
-            <GSTBillsView
-              bills={gstBills}
-              onAddBill={() => {
-                setEditingGstBill(null);
-                setShowGstModal(true);
-              }}
-              onEditBill={b => {
-                setEditingGstBill(b);
-                setShowGstModal(true);
-              }}
-              onDeleteBill={handleDeleteGSTBill}
-              onViewAttachment={data => setViewingAttachment(data)}
-              projects={userAllowedProjects}
-              selectedSiteFilter={selectedSiteFilter}
-              setSelectedSiteFilter={setSelectedSiteFilter}
-              currentUser={currentUser}
-              lang={lang}
-            />
-          )}
+            {activePage === "GST Bills" && (
+              <GSTBillsView
+                bills={gstBills}
+                onAddBill={() => {
+                  setEditingGstBill(null);
+                  setShowGstModal(true);
+                }}
+                onEditBill={b => {
+                  setEditingGstBill(b);
+                  setShowGstModal(true);
+                }}
+                onDeleteBill={handleDeleteGSTBill}
+                onViewAttachment={data => setViewingAttachment(data)}
+                projects={userAllowedProjects}
+                selectedSiteFilter={selectedSiteFilter}
+                setSelectedSiteFilter={setSelectedSiteFilter}
+                currentUser={currentUser}
+                lang={lang}
+              />
+            )}
 
-          {activePage === "Projects" && (
-            <ProjectsView
-              projects={userAllowedProjects}
-              allProjects={projects}
-              currentUser={currentUser}
-              lang={lang}
-              onAddNew={() => {
-                setEditingProject(null);
-                setShowProjectModal(true);
-              }}
-              onEdit={p => {
-                setEditingProject(p);
-                setShowProjectModal(true);
-              }}
-              onDelete={handleDeleteProject}
-              onView360={p => setViewingProject360(p)}
-            />
-          )}
+            {activePage === "Projects" && (
+              <ProjectsView
+                projects={userAllowedProjects}
+                allProjects={projects}
+                currentUser={currentUser}
+                lang={lang}
+                onAddNew={() => {
+                  setEditingProject(null);
+                  setShowProjectModal(true);
+                }}
+                onEdit={p => {
+                  setEditingProject(p);
+                  setShowProjectModal(true);
+                }}
+                onDelete={handleDeleteProject}
+                onView360={p => setViewingProject360(p)}
+              />
+            )}
 
-          {activePage === "User Management" && isAdmin && (
-            <UserManagement
-              users={users}
-              projects={projects}
-              lang={lang}
-              onSaveUser={handleSaveUser}
-              onDeleteUser={handleDeleteUser}
-            />
-          )}
+            {activePage === "User Management" && isAdmin && (
+              <UserManagement
+                users={users}
+                projects={projects}
+                lang={lang}
+                onSaveUser={handleSaveUser}
+                onDeleteUser={handleDeleteUser}
+              />
+            )}
 
-          {activePage === "Account" && (
-            <AccountView
-              currentUser={currentUser}
-              projects={projects}
-              users={users}
-              lang={lang}
-              onSaveNewPassword={handleSaveNewPassword}
-              onUpdateProfile={handleUpdateProfile}
-              isCloudConnected={isCloudConnected}
-              onOpenCloudModal={() => setShowCloudModal(true)}
-            />
-          )}
+            {activePage === "Account" && (
+              <AccountView
+                currentUser={currentUser}
+                projects={projects}
+                users={users}
+                lang={lang}
+                onSaveNewPassword={handleSaveNewPassword}
+                onUpdateProfile={handleUpdateProfile}
+                isCloudConnected={isCloudConnected}
+                onOpenCloudModal={() => setShowCloudModal(true)}
+              />
+            )}
+          </Suspense>
         </main>
 
         {/* ── Mobile Bottom Navigation Bar ───────────────────────────────── */}
@@ -791,100 +806,114 @@ export function App() {
         />
       </div>
 
-      {/* ── Modals & Lightboxes ──────────────────────────────────────────── */}
-      {/* 1. Cash Transaction Modal (જમા & ઉધાર) */}
-      <CashTransactionModal
-        isOpen={showCashModal}
-        onClose={() => setShowCashModal(false)}
-        onSave={handleSaveCashTransaction}
-        editingTransaction={editingCashTx}
-        defaultType={cashModalType}
-        projects={userAllowedProjects}
-        currentUser={currentUser}
-        lang={lang}
-      />
+      {/* ── Modals & Lightboxes (Loaded Lazily on Demand) ─────────────────── */}
+      <Suspense fallback={null}>
+        {/* 1. Cash Transaction Modal (જમા & ઉધાર) */}
+        {showCashModal && (
+          <CashTransactionModal
+            isOpen={showCashModal}
+            onClose={() => setShowCashModal(false)}
+            onSave={handleSaveCashTransaction}
+            editingTransaction={editingCashTx}
+            defaultType={cashModalType}
+            projects={userAllowedProjects}
+            currentUser={currentUser}
+            lang={lang}
+          />
+        )}
 
-      {/* 2. Direct Bank Payment Modal */}
-      <BankPaymentModal
-        isOpen={showBankModal}
-        onClose={() => setShowBankModal(false)}
-        onSave={handleSaveBankPayment}
-        editingPayment={editingBankPayment}
-        projects={userAllowedProjects}
-        currentUser={currentUser}
-        lang={lang}
-      />
+        {/* 2. Direct Bank Payment Modal */}
+        {showBankModal && (
+          <BankPaymentModal
+            isOpen={showBankModal}
+            onClose={() => setShowBankModal(false)}
+            onSave={handleSaveBankPayment}
+            editingPayment={editingBankPayment}
+            projects={userAllowedProjects}
+            currentUser={currentUser}
+            lang={lang}
+          />
+        )}
 
-      {/* 3. GST Bill Modal */}
-      <GSTBillModal
-        isOpen={showGstModal}
-        onClose={() => setShowGstModal(false)}
-        onSave={handleSaveGSTBill}
-        editingBill={editingGstBill}
-        projects={userAllowedProjects}
-        currentUser={currentUser}
-        lang={lang}
-      />
+        {/* 3. GST Bill Modal */}
+        {showGstModal && (
+          <GSTBillModal
+            isOpen={showGstModal}
+            onClose={() => setShowGstModal(false)}
+            onSave={handleSaveGSTBill}
+            editingBill={editingGstBill}
+            projects={userAllowedProjects}
+            currentUser={currentUser}
+            lang={lang}
+          />
+        )}
 
-      {/* 4. Project Site Modal */}
-      <ProjectModal
-        isOpen={showProjectModal}
-        onClose={() => setShowProjectModal(false)}
-        onSave={handleSaveProject}
-        editingProject={editingProject}
-        supervisors={users.filter(u => u.role !== "admin")}
-        lang={lang}
-      />
+        {/* 4. Project Site Modal */}
+        {showProjectModal && (
+          <ProjectModal
+            isOpen={showProjectModal}
+            onClose={() => setShowProjectModal(false)}
+            onSave={handleSaveProject}
+            editingProject={editingProject}
+            supervisors={users.filter(u => u.role !== "admin")}
+            lang={lang}
+          />
+        )}
 
-      {/* 5. 360 Site Hisab Modal */}
-      {viewingProject360 && (
-        <Project360Modal
-          project={viewingProject360}
-          cashTransactions={cashTransactions}
-          bankPayments={bankPayments}
-          gstBills={gstBills}
-          lang={lang}
-          onClose={() => setViewingProject360(null)}
-          onViewAttachment={data => setViewingAttachment(data)}
-        />
-      )}
+        {/* 5. 360 Site Hisab Modal */}
+        {viewingProject360 && (
+          <Project360Modal
+            project={viewingProject360}
+            cashTransactions={cashTransactions}
+            bankPayments={bankPayments}
+            gstBills={gstBills}
+            lang={lang}
+            onClose={() => setViewingProject360(null)}
+            onViewAttachment={data => setViewingAttachment(data)}
+          />
+        )}
 
-      {/* 6. Lightbox Bill / Receipt Photo Viewer */}
-      {viewingAttachment && (
-        <BillViewerModal
-          attachment={viewingAttachment.attachment}
-          title={viewingAttachment.title}
-          subtitle={viewingAttachment.subtitle}
-          amount={viewingAttachment.amount}
-          lang={lang}
-          onClose={() => setViewingAttachment(null)}
-        />
-      )}
+        {/* 6. Lightbox Bill / Receipt Photo Viewer */}
+        {viewingAttachment && (
+          <BillViewerModal
+            attachment={viewingAttachment.attachment}
+            title={viewingAttachment.title}
+            subtitle={viewingAttachment.subtitle}
+            amount={viewingAttachment.amount}
+            lang={lang}
+            onClose={() => setViewingAttachment(null)}
+          />
+        )}
 
-      {/* 7. Real-Time Cloud Sync Modal */}
-      <CloudSyncModal
-        isOpen={showCloudModal}
-        onClose={() => setShowCloudModal(false)}
-        isCloudConnected={isCloudConnected}
-        onConfigUpdated={() => {
-          setIsCloudConnected(!!loadStoredFirebaseConfig());
-        }}
-        projects={projects}
-        cashTransactions={cashTransactions}
-        bankPayments={bankPayments}
-        gstBills={gstBills}
-        users={users}
-        lang={lang}
-      />
+        {/* 7. Real-Time Cloud Sync Modal */}
+        {showCloudModal && (
+          <CloudSyncModal
+            isOpen={showCloudModal}
+            onClose={() => setShowCloudModal(false)}
+            isCloudConnected={isCloudConnected}
+            onConfigUpdated={() => {
+              setIsCloudConnected(!!loadStoredFirebaseConfig());
+            }}
+            projects={projects}
+            cashTransactions={cashTransactions}
+            bankPayments={bankPayments}
+            gstBills={gstBills}
+            users={users}
+            lang={lang}
+          />
+        )}
 
-      {/* 8. Animated Logout Confirmation Modal */}
-      <LogoutModal
-        isOpen={showLogoutModal}
-        onClose={() => setShowLogoutModal(false)}
-        onConfirm={handleConfirmLogout}
-        currentUser={currentUser}
-        lang={lang}
-      />
+        {/* 8. Animated Logout Confirmation Modal */}
+        {showLogoutModal && (
+          <LogoutModal
+            isOpen={showLogoutModal}
+            onClose={() => setShowLogoutModal(false)}
+            onConfirm={handleConfirmLogout}
+            currentUser={currentUser}
+            lang={lang}
+          />
+        )}
+      </Suspense>
     </div>
   );
 }

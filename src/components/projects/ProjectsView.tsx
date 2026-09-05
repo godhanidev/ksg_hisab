@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { Plus, Search, Eye, Pencil, Trash2, Building2, MapPin, Download, AlertCircle } from "lucide-react";
 import { Language, Project, UserAccount } from "../../types";
 import { formatINR } from "../../utils/formatters";
@@ -17,7 +17,7 @@ type ProjectsViewProps = {
   onView360: (project: Project) => void;
 };
 
-export function ProjectsView({
+export const ProjectsView = React.memo(function ProjectsView({
   projects,
   allProjects,
   currentUser,
@@ -32,15 +32,19 @@ export function ProjectsView({
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<DeleteTargetInfo | null>(null);
 
-  const filtered = projects.filter(p => {
-    return (
-      p.name.toLowerCase().includes(search.toLowerCase()) ||
-      p.code.toLowerCase().includes(search.toLowerCase()) ||
-      p.department.toLowerCase().includes(search.toLowerCase()) ||
-      (p.supervisorName && p.supervisorName.toLowerCase().includes(search.toLowerCase())) ||
-      (p.location && p.location.toLowerCase().includes(search.toLowerCase()))
-    );
-  });
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    if (!q) return projects;
+    return projects.filter(p => {
+      return (
+        p.name.toLowerCase().includes(q) ||
+        p.code.toLowerCase().includes(q) ||
+        p.department.toLowerCase().includes(q) ||
+        (p.supervisorName && p.supervisorName.toLowerCase().includes(q)) ||
+        (p.location && p.location.toLowerCase().includes(q))
+      );
+    });
+  }, [projects, search]);
 
   return (
     <div className="space-y-6 pb-20">
@@ -310,4 +314,4 @@ export function ProjectsView({
       />
     </div>
   );
-}
+});

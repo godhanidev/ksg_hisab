@@ -12,7 +12,7 @@ type VisualChartsProps = {
   lang: Language;
 };
 
-export function VisualCharts({
+export const VisualCharts = React.memo(function VisualCharts({
   cashTransactions,
   bankPayments,
   gstBills,
@@ -46,17 +46,26 @@ export function VisualCharts({
     };
   }, [cashTransactions]);
 
-  // Comparison totals
-  const totalCashGiven = cashTransactions
-    .filter(c => c.type === "cash_in")
-    .reduce((s, c) => s + c.amount, 0);
+  // Comparison totals memoized
+  const { totalCashGiven, totalCashSpent, totalBankSpent, totalCombinedOut } = useMemo(() => {
+    const cashGiven = cashTransactions
+      .filter(c => c.type === "cash_in")
+      .reduce((s, c) => s + c.amount, 0);
 
-  const totalCashSpent = cashTransactions
-    .filter(c => c.type === "cash_out")
-    .reduce((s, c) => s + c.amount, 0);
+    const cashSpent = cashTransactions
+      .filter(c => c.type === "cash_out")
+      .reduce((s, c) => s + c.amount, 0);
 
-  const totalBankSpent = bankPayments.reduce((s, b) => s + b.amount, 0);
-  const totalCombinedOut = totalCashSpent + totalBankSpent;
+    const bankSpent = bankPayments.reduce((s, b) => s + b.amount, 0);
+    const combinedOut = cashSpent + bankSpent;
+
+    return {
+      totalCashGiven: cashGiven,
+      totalCashSpent: cashSpent,
+      totalBankSpent: bankSpent,
+      totalCombinedOut: combinedOut,
+    };
+  }, [cashTransactions, bankPayments]);
 
   return (
     <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
@@ -184,4 +193,4 @@ export function VisualCharts({
       </div>
     </div>
   );
-}
+});

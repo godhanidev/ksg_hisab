@@ -17,7 +17,7 @@ type MobileNavBarProps = {
   onOpenGstBillModal: () => void;
 };
 
-export function MobileNavBar({
+export const MobileNavBar = React.memo(function MobileNavBar({
   activePage,
   setActivePage,
   currentUser,
@@ -199,4 +199,4 @@ export function MobileNavBar({
       )}
     </>
   );
-}
+});

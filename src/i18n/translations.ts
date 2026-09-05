@@ -121,7 +121,15 @@ export const translations = {
     close: "Close",
     sessionExpiredNotice: "Your account was logged in on another device/browser. You have been automatically logged out from this device.",
     passwordChangedNotice: "Your password was updated. Please log in again.",
-    accountDeletedNotice: "Your user account has been deleted by the Admin. You have been automatically logged out."
+    accountDeletedNotice: "Your user account has been deleted by the Admin. You have been automatically logged out.",
+    showingRecords: "Showing",
+    to: "to",
+    of: "of",
+    records: "records",
+    prevPage: "Previous",
+    nextPage: "Next",
+    perPage: "per page",
+    page: "Page"
   },
 
   gu: {
@@ -241,7 +249,15 @@ export const translations = {
     close: "બંધ કરો",
     sessionExpiredNotice: "તમારું એકાઉન્ટ બીજા ડિવાઇસ અથવા બ્રાઉઝરમાં લોગઇન થયું હોવાથી, આ ડિવાઇસમાંથી આપમેળે લોગ આઉટ કરવામાં આવ્યું છે.",
     passwordChangedNotice: "તમારો પાસવર્ડ બદલાઈ ગયો છે. સુરક્ષા માટે ફરીથી લોગઇન કરો.",
-    accountDeletedNotice: "તમારું એકાઉન્ટ એડમિન દ્વારા ડિલીટ કરવામાં આવ્યું છે, તેથી તમને આપમેળે લોગ આઉટ કરવામાં આવ્યા છે."
+    accountDeletedNotice: "તમારું એકાઉન્ટ એડમિન દ્વારા ડિલીટ કરવામાં આવ્યું છે, તેથી તમને આપમેળે લોગ આઉટ કરવામાં આવ્યા છે.",
+    showingRecords: "દર્શાવેલ",
+    to: "થી",
+    of: "કુલ",
+    records: "રેકોર્ડ્સ",
+    prevPage: "પાછળ",
+    nextPage: "આગળ",
+    perPage: "પ્રતિ પેજ",
+    page: "પેજ"
   },
 
   hi: {
@@ -361,7 +377,15 @@ export const translations = {
     close: "बंद करें",
     sessionExpiredNotice: "आपका खाता किसी अन्य डिवाइस या ब्राउज़र पर लॉगिन हो गया है, इसलिए इस डिवाइस से अपने आप लॉगआउट कर दिया गया है।",
     passwordChangedNotice: "आपका पासवर्ड बदल गया है। कृपया दोबारा लॉगिन करें।",
-    accountDeletedNotice: "आपका खाता एडमिन द्वारा हटा दिया गया है, इसलिए आपको अपने आप लॉगआउट कर दिया गया है।"
+    accountDeletedNotice: "आपका खाता एडमिन द्वारा हटा दिया गया है, इसलिए आपको अपने आप लॉगआउट कर दिया गया है।",
+    showingRecords: "दिखाया गया",
+    to: "से",
+    of: "कुल",
+    records: "रिकॉर्ड्स",
+    prevPage: "पिछला",
+    nextPage: "अगला",
+    perPage: "प्रति पेज",
+    page: "पेज"
   }
 };
 
