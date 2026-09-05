@@ -37,6 +37,7 @@ import { GSTBillModal } from "./components/forms/GSTBillModal";
 import { BillViewerModal } from "./components/documents/BillViewerModal";
 import { CloudSyncModal } from "./components/common/CloudSyncModal";
 import { AccountView } from "./components/account/AccountView";
+import { LogoutModal } from "./components/auth/LogoutModal";
 
 export function App() {
   // ── Language & Online / Offline Sync State ──────────────────────────────
@@ -100,6 +101,8 @@ export function App() {
 
   const [showProjectModal, setShowProjectModal] = useState(false);
   const [editingProject, setEditingProject] = useState<Project | null>(null);
+
+  const [showLogoutModal, setShowLogoutModal] = useState(false);
 
   const [viewingProject360, setViewingProject360] = useState<Project | null>(null);
   const [viewingAttachment, setViewingAttachment] = useState<{
@@ -256,12 +259,15 @@ export function App() {
     setStoredLanguage(newLang);
   };
 
-  const handleLogout = () => {
-    if (window.confirm(t.confirmLogout)) {
-      setCurrentUser(null);
-      saveStoredSession(null);
-      setSessionExpiredNotice(null);
-    }
+  const handleOpenLogoutModal = () => {
+    setShowLogoutModal(true);
+  };
+
+  const handleConfirmLogout = () => {
+    setShowLogoutModal(false);
+    setCurrentUser(null);
+    saveStoredSession(null);
+    setSessionExpiredNotice(null);
   };
 
   // Helper for generating unique session IDs and client device info
@@ -572,6 +578,7 @@ export function App() {
         setActivePage={setActivePage}
         currentUser={currentUser}
         lang={lang}
+        onLogout={handleOpenLogoutModal}
       />
 
       {/* ── Main Layout Wrapper ──────────────────────────────────────────── */}
@@ -586,7 +593,7 @@ export function App() {
           sidebarOpen={sidebarOpen}
           setSidebarOpen={setSidebarOpen}
           currentUser={currentUser}
-          onLogout={handleLogout}
+          onLogout={handleOpenLogoutModal}
           onOpenAccount={() => setActivePage("Account")}
           lang={lang}
           onLanguageChange={handleLanguageChange}
@@ -784,7 +791,7 @@ export function App() {
             setEditingGstBill(null);
             setShowGstModal(true);
           }}
-          onLogout={handleLogout}
+          onLogout={handleOpenLogoutModal}
         />
       </div>
 
@@ -871,6 +878,15 @@ export function App() {
         bankPayments={bankPayments}
         gstBills={gstBills}
         users={users}
+        lang={lang}
+      />
+
+      {/* 8. Animated Logout Confirmation Modal */}
+      <LogoutModal
+        isOpen={showLogoutModal}
+        onClose={() => setShowLogoutModal(false)}
+        onConfirm={handleConfirmLogout}
+        currentUser={currentUser}
         lang={lang}
       />
     </div>

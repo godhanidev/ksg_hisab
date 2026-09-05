@@ -10,6 +10,7 @@ import {
   UserCheck,
   ChevronRight,
   X,
+  LogOut,
 } from "lucide-react";
 import { Language, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
@@ -22,6 +23,7 @@ type SidebarProps = {
   setActivePage: (page: string) => void;
   currentUser: UserAccount;
   lang: Language;
+  onLogout?: () => void;
 };
 
 type MenuItemConfig = {
@@ -38,6 +40,7 @@ export function Sidebar({
   setActivePage,
   currentUser,
   lang,
+  onLogout,
 }: SidebarProps) {
   const t = getTranslation(lang);
   const isAdmin = currentUser.role === "admin";
@@ -144,7 +147,7 @@ export function Sidebar({
         </div>
 
         {/* Bottom Current User Card (Click to open Account) */}
-        <div className="p-3 border-t border-slate-800/80 bg-slate-950 shrink-0">
+        <div className="p-3 border-t border-slate-800/80 bg-slate-950 shrink-0 flex items-center gap-2">
           <button
             type="button"
             onClick={() => {
@@ -153,7 +156,7 @@ export function Sidebar({
                 setSidebarOpen(false);
               }
             }}
-            className={`w-full flex items-center gap-3 rounded-2xl p-2.5 sm:p-3 border transition text-left group ${
+            className={`flex-1 flex items-center gap-3 rounded-2xl p-2 sm:p-2.5 border transition text-left group min-w-0 ${
               activePage === "Account"
                 ? "bg-amber-500/20 border-amber-500/40 text-amber-300"
                 : "bg-slate-900/90 border-slate-800 hover:bg-slate-800/80"
@@ -170,6 +173,20 @@ export function Sidebar({
               </p>
             </div>
           </button>
+
+          {/* Quick Logout Button on Sidebar */}
+          {onLogout && (
+            <button
+              type="button"
+              onClick={onLogout}
+              className={`p-2.5 rounded-2xl border border-slate-800 bg-slate-900/80 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 hover:border-rose-500/30 transition shrink-0 ${
+                sidebarOpen ? "block" : "hidden lg:hidden"
+              }`}
+              title={t.logout}
+            >
+              <LogOut size={18} />
+            </button>
+          )}
         </div>
       </aside>
     </>
