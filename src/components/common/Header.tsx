@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  Menu, X, WifiOff, RefreshCw, LogOut, CheckCircle2, User
+  Menu, X, LogOut, User
 } from "lucide-react";
 import { Language, Project, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
@@ -15,10 +15,10 @@ type HeaderProps = {
   onOpenAccount?: () => void;
   lang: Language;
   onLanguageChange?: (lang: Language) => void;
-  isOnline: boolean;
-  pendingSyncCount: number;
-  onManualSync: () => void;
-  isSyncing: boolean;
+  isOnline?: boolean;
+  pendingSyncCount?: number;
+  onManualSync?: () => void;
+  isSyncing?: boolean;
   projects?: Project[];
   userAllowedProjects?: Project[];
   selectedSiteFilter?: string;
@@ -33,10 +33,6 @@ export const Header = React.memo(function Header({
   onLogout,
   onOpenAccount,
   lang,
-  isOnline,
-  pendingSyncCount,
-  onManualSync,
-  isSyncing,
 }: HeaderProps) {
   const t = getTranslation(lang);
 
@@ -78,40 +74,13 @@ export const Header = React.memo(function Header({
           </div>
         </div>
 
-        {/* Right Action Tools: Sync Status, User Profile, Logout */}
+        {/* Right Action Tools: User Profile, Logout */}
         <div className="flex items-center gap-1.5 sm:gap-3 shrink-0">
-          {/* Sync Status Badge (Online / Offline / Pending Sync) */}
-          <div className="flex items-center shrink-0">
-            {isOnline ? (
-              <div className="flex items-center gap-1.5 rounded-full bg-emerald-50 border border-emerald-200 px-2 py-0.5 sm:px-2.5 sm:py-1 text-[10px] sm:text-[11px] font-semibold text-emerald-800">
-                <span className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shrink-0" />
-                <span className="hidden md:inline">{t.online}</span>
-                {pendingSyncCount > 0 ? (
-                  <button
-                    onClick={onManualSync}
-                    disabled={isSyncing}
-                    className="ml-1 inline-flex items-center gap-1 rounded bg-emerald-600 px-1.5 py-0.5 text-[10px] text-white hover:bg-emerald-700 shrink-0"
-                  >
-                    <RefreshCw size={10} className={isSyncing ? "animate-spin" : ""} />
-                    {pendingSyncCount} <span className="hidden md:inline">{t.pendingSync}</span>
-                  </button>
-                ) : (
-                  <CheckCircle2 size={12} className="text-emerald-600 ml-0.5 shrink-0" />
-                )}
-              </div>
-            ) : (
-              <div className="flex items-center gap-1 rounded-full bg-amber-50 border border-amber-300 px-2 py-0.5 text-[10px] sm:text-[11px] font-semibold text-amber-800 animate-pulse shrink-0">
-                <WifiOff size={12} className="text-amber-600 shrink-0" />
-                <span>{t.offline}</span>
-              </div>
-            )}
-          </div>
-
           {/* Admin / User Profile Button: Click to open Account & Profile */}
           <button
             type="button"
             onClick={onOpenAccount}
-            className={`flex items-center gap-2 pl-1.5 sm:pl-2 border-l border-slate-200 p-1 sm:p-1.5 rounded-2xl transition group shrink-0 ${
+            className={`flex items-center gap-2 border-slate-200 p-1 sm:p-1.5 rounded-2xl transition group shrink-0 ${
               activePage === "Account"
                 ? "bg-amber-500/15 ring-2 ring-amber-500/40 text-amber-900"
                 : "hover:bg-slate-50 cursor-pointer text-slate-900"

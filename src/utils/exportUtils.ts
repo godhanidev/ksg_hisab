@@ -5,23 +5,62 @@ import { formatINR } from "./formatters";
 
 
 /**
+ * Universal Mobile & Desktop file downloader and sharing helper.
+ * On iOS (iPhone/iPad) & Android, uses native Web Share Sheet if supported,
+ * allowing users to choose "Open in Excel", "Save to Files", "WhatsApp", or "Drive"
+ * instead of opening raw text in Notepad/Notes.
+ */
+export async function downloadOrShareBlob(blob: Blob, fullFilename: string, mimeType: string): Promise<void> {
+  // Check if Web Share API with files is available (iOS Safari 15+, Android Chrome 75+)
+  if (typeof navigator !== "undefined" && typeof navigator.share === "function" && typeof navigator.canShare === "function") {
+    try {
+      const file = new File([blob], fullFilename, { type: mimeType });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({
+          files: [file],
+          title: fullFilename,
+        });
+        return;
+      }
+    } catch (err: any) {
+      // User cancelled share dialog -> return without error
+      if (err && (err.name === "AbortError" || err.name === "NotAllowedError")) {
+        return;
+      }
+      console.warn("Web Share API failed, falling back to anchor download:", err);
+    }
+  }
+
+  // Standard Desktop / Browser Fallback Download
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.setAttribute("href", url);
+  link.setAttribute("download", fullFilename);
+  link.style.display = "none";
+  document.body.appendChild(link);
+  link.click();
+  setTimeout(() => {
+    try {
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+    } catch {
+      // Ignore cleanup error
+    }
+  }, 1000);
+}
+
+/**
  * Downloads data as a UTF-8 CSV/Excel file with BOM so Gujarati/Hindi characters open properly in Excel.
  */
-export function exportToExcelCSV(filename: string, headers: string[], rows: (string | number)[][]) {
+export async function exportToExcelCSV(filename: string, headers: string[], rows: (string | number)[][]): Promise<void> {
   const csvContent = [
     headers.map(h => `"${String(h).replace(/"/g, '""')}"`).join(","),
     ...rows.map(row => row.map(cell => `"${String(cell ?? "").replace(/"/g, '""')}"`).join(","))
   ].join("\r\n");
 
+  const fullFilename = `${filename}_${new Date().toISOString().slice(0, 10)}.csv`;
   const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.setAttribute("href", url);
-  link.setAttribute("download", `${filename}_${new Date().toISOString().slice(0, 10)}.csv`);
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  await downloadOrShareBlob(blob, fullFilename, "text/csv");
 }
 
 /**
@@ -416,13 +455,13 @@ export function printAuditReport({
 /**
  * Generates an encrypted/JSON full system snapshot backup file containing all 5 collections.
  */
-export function exportFullSystemBackupJSON(data: {
+export async function exportFullSystemBackupJSON(data: {
   projects: Project[];
   cashTransactions: CashTransaction[];
   bankPayments: BankPayment[];
   gstBills: GSTBill[];
   users: UserAccount[];
-}) {
+}): Promise<void> {
   const payload = {
     appName: "KSG Hisab Enterprise ERP",
     version: "5.0",
@@ -437,18 +476,9 @@ export function exportFullSystemBackupJSON(data: {
     data,
   };
 
-  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
-  link.setAttribute("href", url);
-  link.setAttribute(
-    "download",
-    `KSG_Hisab_FULL_BACKUP_${new Date().toISOString().slice(0, 10)}.json`
-  );
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-  URL.revokeObjectURL(url);
+  const fullFilename = `KSG_Hisab_FULL_BACKUP_${new Date().toISOString().slice(0, 10)}.json`;
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json;charset=utf-8;" });
+  await downloadOrShareBlob(blob, fullFilename, "application/json");
 }
 
 /**

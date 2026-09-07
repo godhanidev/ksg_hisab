@@ -45,8 +45,6 @@ type AccountViewProps = {
   onSaveNewPassword: (newPassword: string) => void;
   onUpdateProfile?: (updatedData: { name: string; username: string; phone?: string }) => void;
   onRestoreBackup?: (backupData: any) => void;
-  isCloudConnected: boolean;
-  onOpenCloudModal?: () => void;
 };
 
 export const AccountView = React.memo(function AccountView({
@@ -60,8 +58,6 @@ export const AccountView = React.memo(function AccountView({
   onSaveNewPassword,
   onUpdateProfile,
   onRestoreBackup,
-  isCloudConnected,
-  onOpenCloudModal,
 }: AccountViewProps) {
   const t = getTranslation(lang);
   const isAdmin = currentUser.role === "admin";
@@ -234,9 +230,9 @@ export const AccountView = React.memo(function AccountView({
   };
 
   // ── Backup Download & Restore Handlers ─────────────────────────────────────
-  const handleDownloadFullBackup = () => {
+  const handleDownloadFullBackup = async () => {
     try {
-      exportFullSystemBackupJSON({
+      await exportFullSystemBackupJSON({
         projects,
         cashTransactions,
         bankPayments,
@@ -244,7 +240,7 @@ export const AccountView = React.memo(function AccountView({
         users,
       });
       setBackupMsg({
-        text: lang === "gu" ? "સંપૂર્ણ બેકઅપ ફાઈલ ડાઉનલોડ થઈ ગઈ છે!" : "Full backup file downloaded successfully!",
+        text: lang === "gu" ? "સંપૂર્ણ બેકઅપ ફાઈલ ડાઉનલોડ/શેર થઈ ગઈ છે!" : "Full backup file downloaded/shared successfully!",
         type: "success",
       });
       setTimeout(() => setBackupMsg(null), 4000);
@@ -253,11 +249,11 @@ export const AccountView = React.memo(function AccountView({
     }
   };
 
-  const handleDownloadExcelBackup = () => {
+  const handleDownloadExcelBackup = async () => {
     try {
-      exportConsolidatedSiteExcel(projects, cashTransactions, bankPayments, gstBills);
+      await exportConsolidatedSiteExcel(projects, cashTransactions, bankPayments, gstBills);
       setBackupMsg({
-        text: lang === "gu" ? "સાઇટ હિસાબ એક્સેલ શીટ ડાઉનલોડ થઈ ગઈ છે!" : "Consolidated Excel report downloaded!",
+        text: lang === "gu" ? "સાઇટ હિસાબ એક્સેલ શીટ ડાઉનલોડ/શેર થઈ ગઈ છે!" : "Consolidated Excel report downloaded/shared!",
         type: "success",
       });
       setTimeout(() => setBackupMsg(null), 4000);
@@ -291,7 +287,7 @@ export const AccountView = React.memo(function AccountView({
     onRestoreBackup(restoreConfirmData);
     setRestoreConfirmData(null);
     setBackupMsg({
-      text: lang === "gu" ? "ડેટાબેઝ સફળતાપૂર્વક પુનઃસ્થાપિત (Restore) થઈ ગયો છે!" : "Database restored and synced successfully!",
+      text: lang === "gu" ? "ડેટાબેઝ સફળતાપૂર્વક પુનઃસ્થાપિત (Restore) થઈ ગયો છે!" : "Database restored successfully!",
       type: "success",
     });
     setTimeout(() => setBackupMsg(null), 4000);
@@ -374,30 +370,6 @@ export const AccountView = React.memo(function AccountView({
               </p>
             </div>
           </div>
-        </div>
-
-        {/* Cloud Connection Badge */}
-        <div className="flex items-center gap-2 self-start sm:self-auto shrink-0">
-          <button
-            type="button"
-            onClick={onOpenCloudModal}
-            className={`inline-flex items-center gap-2 rounded-2xl px-4 py-2 text-xs font-bold transition shadow-xs border ${
-              isCloudConnected
-                ? "bg-emerald-50 text-emerald-800 border-emerald-200 hover:bg-emerald-100"
-                : "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100"
-            }`}
-          >
-            <span
-              className={`h-2.5 w-2.5 rounded-full ${
-                isCloudConnected ? "bg-emerald-500 animate-pulse" : "bg-amber-500"
-              }`}
-            />
-            <span>
-              {isCloudConnected
-                ? lang === "gu" ? "ક્લાઉડ લાઈવ: ચાલુ" : "Cloud Sync: Connected"
-                : lang === "gu" ? "ક્લાઉડ કનેક્ટ કરો" : "Connect Cloud"}
-            </span>
-          </button>
         </div>
       </div>
 
@@ -648,7 +620,7 @@ export const AccountView = React.memo(function AccountView({
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 <div className="rounded-2xl bg-white p-3 border border-slate-200/80 shadow-2xs">
                   <Server size={16} className="text-emerald-600 mb-1" />
-                  <p className="text-[10px] text-slate-500 font-semibold">Cloud Database</p>
+                  <p className="text-[10px] text-slate-500 font-semibold">Database Vault</p>
                   <p className="text-xs font-bold text-slate-900">Encrypted (Active)</p>
                 </div>
 
@@ -864,7 +836,7 @@ export const AccountView = React.memo(function AccountView({
                   {lang === "gu" ? "બેકઅપ પુનઃસ્થાપિત કરો?" : "Restore Database Backup?"}
                 </h3>
                 <p className="text-xs text-slate-500">
-                  {lang === "gu" ? "આ ફાઇલમાંથી ડેટા લોડ થઈ જશે." : "This will load and sync records from the backup file."}
+                  {lang === "gu" ? "આ ફાઇલમાંથી ડેટા પુનઃસ્થાપિત થઈ જશે." : "This will restore all records from the backup file."}
                 </p>
               </div>
             </div>

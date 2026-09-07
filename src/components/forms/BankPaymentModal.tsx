@@ -303,7 +303,7 @@ export function BankPaymentModal({
           {isCompressing ? (
             <div className="flex items-center justify-center gap-2 rounded-xl border border-blue-200 bg-blue-50/70 p-3 text-xs font-bold text-blue-800 animate-pulse">
               <div className="w-4 h-4 rounded-full border-2 border-blue-600/30 border-t-blue-600 animate-spin" />
-              <span>{lang === "gu" ? "ફોટો ઓપ્ટિમાઇઝ થઈ રહ્યો છે..." : "Optimizing photo for fast sync..."}</span>
+              <span>{lang === "gu" ? "ફોટો ઓપ્ટિમાઇઝ થઈ રહ્યો છે..." : "Optimizing receipt photo..."}</span>
             </div>
           ) : attachments.length > 0 ? (
             <div className="flex items-center justify-between rounded-xl border border-slate-200 bg-slate-50 p-2.5">

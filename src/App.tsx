@@ -43,7 +43,6 @@ const CashTransactionModal = React.lazy(() => import("./components/forms/CashTra
 const BankPaymentModal = React.lazy(() => import("./components/forms/BankPaymentModal").then(m => ({ default: m.BankPaymentModal })));
 const GSTBillModal = React.lazy(() => import("./components/forms/GSTBillModal").then(m => ({ default: m.GSTBillModal })));
 const BillViewerModal = React.lazy(() => import("./components/documents/BillViewerModal").then(m => ({ default: m.BillViewerModal })));
-const CloudSyncModal = React.lazy(() => import("./components/common/CloudSyncModal").then(m => ({ default: m.CloudSyncModal })));
 const LogoutModal = React.lazy(() => import("./components/auth/LogoutModal").then(m => ({ default: m.LogoutModal })));
 
 function PageLoader() {
@@ -70,7 +69,6 @@ export function App() {
   const [isCloudConnected, setIsCloudConnected] = useState<boolean>(() => {
     return !!loadStoredFirebaseConfig();
   });
-  const [showCloudModal, setShowCloudModal] = useState(false);
 
   // ── User Session & Navigation State ─────────────────────────────────────
   const [currentUser, setCurrentUser] = useState<UserAccount | null>(() => {
@@ -307,17 +305,12 @@ export function App() {
       }
       clearOfflineQueue();
       setPendingSyncQueue([]);
-      showToast(
-        lang === "gu"
-          ? `${queue.length} ઓફલાઇન એન્ટ્રીઓ સફળતાપૂર્વક ક્લાઉડમાં સેવ થઇ!`
-          : `Synced ${queue.length} offline entries successfully to Cloud!`
-      );
     } catch (err) {
       console.error("Auto-sync error:", err);
     } finally {
       setIsSyncing(false);
     }
-  }, [isCloudConnected, lang, showToast]);
+  }, [isCloudConnected]);
 
   const handleLanguageChange = useCallback((newLang: Language) => {
     setLang(newLang);
@@ -721,10 +714,6 @@ export function App() {
           onOpenAccount={() => setActivePage("Account")}
           lang={lang}
           onLanguageChange={handleLanguageChange}
-          isOnline={isOnline}
-          pendingSyncCount={pendingSyncQueue.length}
-          onManualSync={triggerAutoSync}
-          isSyncing={isSyncing}
           projects={projects}
           userAllowedProjects={userAllowedProjects}
           selectedSiteFilter={selectedSiteFilter}
@@ -860,8 +849,6 @@ export function App() {
                 onSaveNewPassword={handleSaveNewPassword}
                 onUpdateProfile={handleUpdateProfile}
                 onRestoreBackup={handleRestoreBackup}
-                isCloudConnected={isCloudConnected}
-                onOpenCloudModal={() => setShowCloudModal(true)}
               />
             )}
 
@@ -974,25 +961,7 @@ export function App() {
           />
         )}
 
-        {/* 7. Real-Time Cloud Sync Modal */}
-        {showCloudModal && (
-          <CloudSyncModal
-            isOpen={showCloudModal}
-            onClose={() => setShowCloudModal(false)}
-            isCloudConnected={isCloudConnected}
-            onConfigUpdated={() => {
-              setIsCloudConnected(!!loadStoredFirebaseConfig());
-            }}
-            projects={projects}
-            cashTransactions={cashTransactions}
-            bankPayments={bankPayments}
-            gstBills={gstBills}
-            users={users}
-            lang={lang}
-          />
-        )}
-
-        {/* 8. Animated Logout Confirmation Modal */}
+        {/* 7. Animated Logout Confirmation Modal */}
         {showLogoutModal && (
           <LogoutModal
             isOpen={showLogoutModal}
