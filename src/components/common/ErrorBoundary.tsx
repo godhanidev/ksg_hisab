@@ -39,16 +39,16 @@ export class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4 py-8 text-white">
-          <div className="max-w-md w-full rounded-3xl bg-white/5 border border-white/10 p-6 sm:p-8 backdrop-blur-xl shadow-2xl text-center">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-amber-500/20 text-amber-400 border border-amber-500/30 mb-4">
+        <div className="min-h-screen flex items-center justify-center bg-slate-100 px-4 py-8 text-slate-900">
+          <div className="max-w-md w-full rounded-2xl sm:rounded-3xl bg-white border border-slate-200 p-6 sm:p-8 shadow-xl text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-amber-50 text-amber-600 border border-amber-200 mb-4">
               <AlertTriangle size={32} />
             </div>
 
-            <h1 className="text-xl sm:text-2xl font-black text-white mb-2">
+            <h1 className="text-xl sm:text-2xl font-black text-slate-900 mb-2">
               કંઈક ખોટું થયું છે (App Error)
             </h1>
-            <p className="text-xs sm:text-sm text-slate-400 leading-relaxed mb-6">
+            <p className="text-xs sm:text-sm text-slate-500 leading-relaxed mb-6">
               એપ્લિકેશન લોડ કરવામાં સમસ્યા આવી છે. નીચેના બટન પર ક્લિક કરીને એપ ફરી શરૂ કરો.
             </p>
 
@@ -56,7 +56,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <button
                 type="button"
                 onClick={this.handleReload}
-                className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-5 py-3 text-sm transition shadow-lg"
+                className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-5 py-3 text-sm transition shadow-md"
               >
                 <RefreshCw size={16} />
                 <span>ફરીથી શરૂ કરો (Reload App)</span>
@@ -65,7 +65,7 @@ export class ErrorBoundary extends Component<Props, State> {
               <button
                 type="button"
                 onClick={this.handleClearAndReset}
-                className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold px-4 py-2.5 text-xs transition border border-white/10"
+                className="w-full inline-flex items-center justify-center gap-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-semibold px-4 py-2.5 text-xs transition border border-slate-200"
               >
                 <Home size={14} />
                 <span>લોગિન પેજ પર જાઓ (Go to Login)</span>
