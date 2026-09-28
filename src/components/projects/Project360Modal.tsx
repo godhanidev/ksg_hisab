@@ -56,7 +56,7 @@ export function Project360Modal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-2.5 sm:p-4 md:p-6 backdrop-blur-md animate-in fade-in duration-200 overflow-y-auto">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-2.5 sm:p-4 md:p-6 animate-in fade-in duration-200 overflow-y-auto">
       <div className="relative flex flex-col w-full max-w-5xl max-h-[90dvh] rounded-2xl sm:rounded-3xl bg-white shadow-2xl overflow-hidden border border-slate-100 my-auto">
         {/* Modal Top Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-slate-200 bg-slate-950 p-4 sm:p-5 sm:px-7 text-white gap-3 shrink-0">

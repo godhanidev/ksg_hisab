@@ -825,7 +825,7 @@ export const AccountView = React.memo(function AccountView({
 
       {/* ── Restore Confirmation Modal ────────────────────────────────────── */}
       {restoreConfirmData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4 animate-in fade-in duration-200">
           <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl border border-slate-200 space-y-4">
             <div className="flex items-center gap-3 text-amber-600">
               <div className="p-3 rounded-2xl bg-amber-50 border border-amber-200">

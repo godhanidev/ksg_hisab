@@ -37,7 +37,7 @@ export const Header = React.memo(function Header({
   const t = getTranslation(lang);
 
   return (
-    <header className="sticky top-0 z-30 w-full border-b border-slate-200/80 bg-white/95 backdrop-blur transition-all safe-header-top shadow-xs">
+    <header className="sticky top-0 z-30 w-full border-b border-slate-200 bg-white transition-all safe-header-top shadow-xs">
       <div className="flex h-14 sm:h-16 w-full items-center justify-between px-2.5 sm:px-6 gap-2">
         {/* Left: Mobile Toggle & Page Title */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">

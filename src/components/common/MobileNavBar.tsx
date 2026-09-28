@@ -34,7 +34,7 @@ export const MobileNavBar = React.memo(function MobileNavBar({
   return (
     <>
       {/* ─── Mobile Bottom Navigation Bar ───────────────────────────────── */}
-      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950/95 backdrop-blur-xl border-t border-slate-800/80 px-2 py-1.5 safe-nav-bottom shadow-[0_-8px_20px_rgba(0,0,0,0.5)]">
+      <nav className="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-slate-950 border-t border-slate-800 px-2 py-1.5 safe-nav-bottom shadow-[0_-8px_20px_rgba(0,0,0,0.5)]">
         <div className="flex items-center justify-around">
           {/* Dashboard Tab */}
           <button
@@ -110,7 +110,7 @@ export const MobileNavBar = React.memo(function MobileNavBar({
 
       {/* ─── Mobile Fast Entry Sheet ────────────────────────────────────── */}
       {showQuickSheet && (
-        <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end bg-slate-950/75 backdrop-blur-sm animate-in fade-in duration-150">
+        <div className="lg:hidden fixed inset-0 z-50 flex flex-col justify-end bg-black/60 animate-in fade-in duration-150">
           <div className="bg-slate-900 border-t border-slate-800 rounded-t-3xl p-5 space-y-4 shadow-2xl animate-in slide-in-from-bottom duration-200 max-h-[85vh] overflow-y-auto">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div>
@@ -119,7 +119,7 @@ export const MobileNavBar = React.memo(function MobileNavBar({
               </div>
               <button
                 onClick={() => setShowQuickSheet(false)}
-                className="p-1.5 rounded-full bg-white/10 text-slate-400 hover:text-white"
+                className="p-1.5 rounded-full bg-slate-800 text-slate-400 hover:text-white transition"
               >
                 <X size={18} />
               </button>

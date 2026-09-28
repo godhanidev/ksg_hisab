@@ -673,7 +673,7 @@ export function App() {
       {/* ── Floating Global Toast Notification (Safe from mobile notch/status bar) ───── */}
       {toastMessage && (
         <div className="fixed top-[calc(env(safe-area-inset-top,0px)+3.85rem)] sm:top-5 left-1/2 -translate-x-1/2 sm:left-auto sm:right-6 sm:translate-x-0 z-50 max-w-[92vw] sm:max-w-md w-max pointer-events-auto">
-          <div className="flex items-center gap-2.5 rounded-2xl bg-slate-950/95 backdrop-blur-md text-white px-4 py-2.5 text-xs sm:text-sm font-bold shadow-2xl border border-amber-500/40 ring-1 ring-amber-500/20 text-center animate-in fade-in slide-in-from-top-3 duration-200">
+          <div className="flex items-center gap-2.5 rounded-2xl bg-slate-900 text-white px-4 py-2.5 text-xs sm:text-sm font-bold shadow-2xl border border-slate-700 text-center animate-in fade-in slide-in-from-top-3 duration-200">
             <CheckCircle2 size={16} className="text-amber-400 shrink-0" />
             <span className="truncate max-w-[280px] sm:max-w-sm">{toastMessage}</span>
             <button
