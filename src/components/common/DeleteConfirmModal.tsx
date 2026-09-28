@@ -42,10 +42,14 @@ export function DeleteConfirmModal({
   };
 
   return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 animate-in fade-in duration-200">
-      {/* Main Modal Card */}
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in duration-200">
+      {/* Ambient Red/Rose Danger Glow */}
+      <div className="absolute w-72 h-72 rounded-full bg-rose-500/15 blur-3xl pointer-events-none -top-10 -right-10 animate-pulse" />
+      <div className="absolute w-72 h-72 rounded-full bg-red-600/10 blur-3xl pointer-events-none -bottom-10 -left-10 animate-pulse" />
+
+      {/* Main Animated Modal Card */}
       <div
-        className={`relative w-full max-w-md rounded-3xl bg-slate-900 border border-slate-800 p-6 sm:p-7 shadow-2xl text-center transform transition-all duration-300 ${
+        className={`relative w-full max-w-md rounded-3xl bg-gradient-to-b from-slate-900/95 via-slate-900 to-slate-950 border border-slate-700/80 p-6 sm:p-7 shadow-2xl text-center transform transition-all duration-300 ${
           isDeleting ? "scale-95 opacity-60" : "animate-in zoom-in-95 duration-200"
         }`}
       >

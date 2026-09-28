@@ -50,10 +50,19 @@ export function LoginPage({
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4 py-8 safe-header-top safe-nav-bottom relative overflow-y-auto">
-      <div className="w-full max-w-md">
+      {/* Background ambient glow effects */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -left-40 w-96 h-96 rounded-full bg-amber-500/10 blur-3xl animate-pulse" />
+        <div
+          className="absolute -bottom-40 -right-40 w-96 h-96 rounded-full bg-blue-500/10 blur-3xl animate-pulse"
+          style={{ animationDelay: "1s" }}
+        />
+      </div>
+
+      <div className="relative z-10 w-full max-w-md">
         {/* Top Branding */}
         <div className="text-center mb-6">
-          <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full shadow-xl mb-3.5 overflow-hidden border-2 border-amber-500/50 bg-slate-900 ring-4 ring-amber-500/10">
+          <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 rounded-full shadow-2xl mb-3.5 overflow-hidden border-2 border-amber-400/50 bg-transparent ring-4 ring-amber-400/10">
             <img
               src="/logo.png"
               alt="K.S.Godhani Logo"
@@ -67,14 +76,14 @@ export function LoginPage({
           <h1 className="text-2xl sm:text-3xl font-black text-white tracking-wide">{t.appName}</h1>
           <p className="text-slate-400 text-xs sm:text-sm mt-1">{t.appSubtitle}</p>
 
-          {/* Language Switcher on Login Form (Solid Clean Dark) */}
-          <div className="inline-flex items-center gap-1 rounded-xl bg-slate-900 p-1 border border-slate-800 mt-3.5 shadow-md">
+          {/* Language Switcher on Login Form */}
+          <div className="inline-flex items-center gap-1 rounded-full bg-white/10 p-1 border border-white/15 mt-3.5 backdrop-blur shadow-md">
             <Globe size={13} className="text-amber-400 ml-2 mr-0.5" />
             <button
               type="button"
               onClick={() => onLanguageChange("en")}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition ${
-                lang === "en" ? "bg-amber-500 text-slate-950 shadow-sm" : "text-slate-400 hover:text-slate-200"
+              className={`px-3 py-1 text-xs font-bold rounded-full transition ${
+                lang === "en" ? "bg-amber-400 text-slate-950 shadow-sm" : "text-slate-300 hover:text-white"
               }`}
             >
               English
@@ -82,8 +91,8 @@ export function LoginPage({
             <button
               type="button"
               onClick={() => onLanguageChange("gu")}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition ${
-                lang === "gu" ? "bg-amber-500 text-slate-950 shadow-sm" : "text-slate-400 hover:text-slate-200"
+              className={`px-3 py-1 text-xs font-bold rounded-full transition ${
+                lang === "gu" ? "bg-amber-400 text-slate-950 shadow-sm" : "text-slate-300 hover:text-white"
               }`}
             >
               ગુજરાતી
@@ -91,8 +100,8 @@ export function LoginPage({
             <button
               type="button"
               onClick={() => onLanguageChange("hi")}
-              className={`px-3 py-1 text-xs font-bold rounded-lg transition ${
-                lang === "hi" ? "bg-amber-500 text-slate-950 shadow-sm" : "text-slate-400 hover:text-slate-200"
+              className={`px-3 py-1 text-xs font-bold rounded-full transition ${
+                lang === "hi" ? "bg-amber-400 text-slate-950 shadow-sm" : "text-slate-300 hover:text-white"
               }`}
             >
               हिन्दी
@@ -100,11 +109,11 @@ export function LoginPage({
           </div>
         </div>
 
-        {/* Login Box (Solid Slate Card - No Glass/Blur) */}
-        <div className="rounded-2xl sm:rounded-3xl bg-slate-900 border border-slate-800 p-6 sm:p-8 shadow-2xl">
+        {/* Login Box */}
+        <div className="rounded-3xl bg-white/5 border border-white/10 p-6 sm:p-8 backdrop-blur-xl shadow-2xl">
           {/* Multi-Device Logout Notice Alert */}
           {sessionExpiredNotice && (
-            <div className="mb-5 rounded-xl bg-amber-950/40 border border-amber-500/30 p-3.5 text-amber-200 text-xs sm:text-sm relative shadow-md">
+            <div className="mb-5 rounded-2xl bg-amber-500/15 border border-amber-500/30 p-3.5 text-amber-200 text-xs sm:text-sm animate-in fade-in slide-in-from-top-2 duration-300 relative shadow-lg">
               <div className="flex items-start gap-2.5">
                 <div className="p-1.5 rounded-lg bg-amber-500/20 text-amber-300 shrink-0 mt-0.5">
                   <Smartphone size={18} />
@@ -123,7 +132,7 @@ export function LoginPage({
                   <button
                     type="button"
                     onClick={onClearNotice}
-                    className="absolute right-2.5 top-2.5 text-amber-400/70 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition"
+                    className="absolute right-2.5 top-2.5 text-amber-400/70 hover:text-white p-1 rounded-lg hover:bg-white/10 transition"
                     title="Dismiss"
                   >
                     <X size={15} />
@@ -147,7 +156,7 @@ export function LoginPage({
                     if (sessionExpiredNotice && onClearNotice) onClearNotice();
                   }}
                   placeholder={lang === "gu" ? "યુઝરનેમ દાખલ કરો" : lang === "hi" ? "यूजरनेम दर्ज करें" : "Enter username"}
-                  className="w-full rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 pl-10 pr-4 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 transition"
+                  className="w-full rounded-xl bg-white/10 border border-white/15 text-white placeholder-slate-500 pl-10 pr-4 py-2.5 text-sm outline-none focus:border-amber-400 focus:bg-white/15 transition"
                 />
               </div>
             </div>
@@ -165,7 +174,7 @@ export function LoginPage({
                     if (sessionExpiredNotice && onClearNotice) onClearNotice();
                   }}
                   placeholder="••••••••"
-                  className="w-full rounded-xl bg-slate-950 border border-slate-700 text-white placeholder-slate-500 pl-10 pr-11 py-2.5 text-sm outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500/30 transition"
+                  className="w-full rounded-xl bg-white/10 border border-white/15 text-white placeholder-slate-500 pl-10 pr-11 py-2.5 text-sm outline-none focus:border-amber-400 focus:bg-white/15 transition"
                 />
                 <button
                   type="button"
@@ -178,7 +187,7 @@ export function LoginPage({
             </div>
 
             {error && (
-              <div className="flex items-center gap-2 rounded-xl bg-red-950/50 border border-red-800/60 p-3 text-red-300 text-xs">
+              <div className="flex items-center gap-2 rounded-xl bg-red-500/15 border border-red-500/30 p-3 text-red-300 text-xs">
                 <AlertTriangle size={15} className="shrink-0" />
                 <span>{error}</span>
               </div>
@@ -187,7 +196,7 @@ export function LoginPage({
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 py-3 text-sm font-extrabold hover:from-amber-300 hover:to-amber-400 transition shadow-lg disabled:opacity-60 cursor-pointer"
+              className="w-full flex items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 text-slate-950 py-3 text-sm font-extrabold hover:from-amber-300 hover:to-amber-400 transition shadow-lg disabled:opacity-60"
             >
               {loading ? (
                 <>

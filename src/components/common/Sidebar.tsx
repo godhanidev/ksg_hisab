@@ -61,7 +61,7 @@ export const Sidebar = React.memo(function Sidebar({
       {sidebarOpen && (
         <div
           onClick={() => setSidebarOpen(false)}
-          className="fixed inset-0 z-40 bg-black/60 transition-opacity lg:hidden"
+          className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-xs transition-opacity lg:hidden"
         />
       )}
 
