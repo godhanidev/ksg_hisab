@@ -17,6 +17,7 @@ type BankPaymentModalProps = {
   projects: Project[];
   currentUser: UserAccount;
   lang: Language;
+  selectedSiteFilter?: string;
 };
 
 const COMMON_CATEGORIES = [
@@ -38,6 +39,7 @@ export function BankPaymentModal({
   projects,
   currentUser,
   lang,
+  selectedSiteFilter,
 }: BankPaymentModalProps) {
   const t = getTranslation(lang);
 
@@ -64,11 +66,15 @@ export function BankPaymentModal({
       setAttachments(editingPayment.attachments || []);
     } else {
       setDate(todayStr());
-      if (currentUser.assignedProjects.length > 0) {
-        setProject(currentUser.assignedProjects[0]);
-      } else if (projects.length > 0) {
-        setProject(projects[0].name);
-      }
+      // Set valid default project matching available projects list
+      const siteFilterMatch = selectedSiteFilter && selectedSiteFilter !== "ALL"
+        ? projects.find(p => p.name === selectedSiteFilter)?.name
+        : null;
+      const userAssignedMatch = currentUser.assignedProjects.find(name =>
+        projects.some(p => p.name === name)
+      );
+      const defaultProj = siteFilterMatch || userAssignedMatch || projects[0]?.name || currentUser.assignedProjects[0] || "";
+      setProject(defaultProj);
       setPartyName("");
       setAmount("");
       setPaymentMode("RTGS / NEFT");
@@ -78,7 +84,24 @@ export function BankPaymentModal({
     }
     setIsCompressing(false);
     setErrorMsg(null);
-  }, [editingPayment, isOpen, currentUser, projects]);
+  }, [editingPayment, isOpen, currentUser, projects, selectedSiteFilter]);
+
+  // Ensure project state stays valid whenever projects list updates
+  useEffect(() => {
+    if (!editingPayment && projects.length > 0) {
+      const isValid = projects.some(p => p.name === project);
+      if (!isValid) {
+        const siteFilterMatch = selectedSiteFilter && selectedSiteFilter !== "ALL"
+          ? projects.find(p => p.name === selectedSiteFilter)?.name
+          : null;
+        const userAssignedMatch = currentUser.assignedProjects.find(name =>
+          projects.some(p => p.name === name)
+        );
+        const best = siteFilterMatch || userAssignedMatch || projects[0]?.name || "";
+        if (best) setProject(best);
+      }
+    }
+  }, [projects, currentUser, editingPayment, project, selectedSiteFilter]);
 
   if (!isOpen) return null;
 
@@ -174,6 +197,9 @@ export function BankPaymentModal({
               required
               className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             >
+              {project && !projects.some(p => p.name === project) && (
+                <option value={project}>{project}</option>
+              )}
               {projects.map(p => (
                 <option key={p.id} value={p.name}>
                   {p.name}

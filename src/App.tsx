@@ -893,6 +893,7 @@ export function App() {
             editingTransaction={editingCashTx}
             defaultType={cashModalType}
             projects={userAllowedProjects}
+            selectedSiteFilter={selectedSiteFilter}
             currentUser={currentUser}
             lang={lang}
           />
@@ -906,6 +907,7 @@ export function App() {
             onSave={handleSaveBankPayment}
             editingPayment={editingBankPayment}
             projects={userAllowedProjects}
+            selectedSiteFilter={selectedSiteFilter}
             currentUser={currentUser}
             lang={lang}
           />
@@ -919,6 +921,7 @@ export function App() {
             onSave={handleSaveGSTBill}
             editingBill={editingGstBill}
             projects={userAllowedProjects}
+            selectedSiteFilter={selectedSiteFilter}
             currentUser={currentUser}
             lang={lang}
           />

@@ -17,6 +17,7 @@ type GSTBillModalProps = {
   projects: Project[];
   currentUser: UserAccount;
   lang: Language;
+  selectedSiteFilter?: string;
 };
 
 const COMMON_PRODUCTS = [
@@ -41,6 +42,7 @@ export function GSTBillModal({
   projects,
   currentUser,
   lang,
+  selectedSiteFilter,
 }: GSTBillModalProps) {
   const t = getTranslation(lang);
 
@@ -79,11 +81,15 @@ export function GSTBillModal({
       setBillNo("");
       setPartyName("");
       setProduct("HDPE Pipe");
-      if (currentUser.assignedProjects.length > 0) {
-        setProject(currentUser.assignedProjects[0]);
-      } else if (projects.length > 0) {
-        setProject(projects[0].name);
-      }
+      // Set valid default project matching available projects list
+      const siteFilterMatch = selectedSiteFilter && selectedSiteFilter !== "ALL"
+        ? projects.find(p => p.name === selectedSiteFilter)?.name
+        : null;
+      const userAssignedMatch = currentUser.assignedProjects.find(name =>
+        projects.some(p => p.name === name)
+      );
+      const defaultProj = siteFilterMatch || userAssignedMatch || projects[0]?.name || currentUser.assignedProjects[0] || "";
+      setProject(defaultProj);
       setBasicAmount("");
       setGstRate(18);
       setStatus("Paid");
@@ -92,7 +98,24 @@ export function GSTBillModal({
     }
     setIsCompressing(false);
     setErrorMsg(null);
-  }, [editingBill, isOpen, currentUser, projects]);
+  }, [editingBill, isOpen, currentUser, projects, selectedSiteFilter]);
+
+  // Ensure project state stays valid whenever projects list updates
+  useEffect(() => {
+    if (!editingBill && projects.length > 0) {
+      const isValid = projects.some(p => p.name === project);
+      if (!isValid) {
+        const siteFilterMatch = selectedSiteFilter && selectedSiteFilter !== "ALL"
+          ? projects.find(p => p.name === selectedSiteFilter)?.name
+          : null;
+        const userAssignedMatch = currentUser.assignedProjects.find(name =>
+          projects.some(p => p.name === name)
+        );
+        const best = siteFilterMatch || userAssignedMatch || projects[0]?.name || "";
+        if (best) setProject(best);
+      }
+    }
+  }, [projects, currentUser, editingBill, project, selectedSiteFilter]);
 
   if (!isOpen) return null;
 
@@ -261,6 +284,9 @@ export function GSTBillModal({
               required
               className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
             >
+              {project && !projects.some(p => p.name === project) && (
+                <option value={project}>{project}</option>
+              )}
               {projects.map(p => (
                 <option key={p.id} value={p.name}>
                   {p.name}

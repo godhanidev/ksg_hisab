@@ -19,6 +19,7 @@ type CashTransactionModalProps = {
   projects: Project[];
   currentUser: UserAccount;
   lang: Language;
+  selectedSiteFilter?: string;
 };
 
 const COMMON_CATEGORIES = [
@@ -43,6 +44,7 @@ export function CashTransactionModal({
   projects,
   currentUser,
   lang,
+  selectedSiteFilter,
 }: CashTransactionModalProps) {
   const t = getTranslation(lang);
   const isAdmin = currentUser.role === "admin";
@@ -74,12 +76,15 @@ export function CashTransactionModal({
     } else {
       setType(defaultType);
       setDate(todayStr());
-      // Set default project based on user
-      if (currentUser.assignedProjects.length > 0) {
-        setProject(currentUser.assignedProjects[0]);
-      } else if (projects.length > 0) {
-        setProject(projects[0].name);
-      }
+      // Set valid default project matching available projects list
+      const siteFilterMatch = selectedSiteFilter && selectedSiteFilter !== "ALL"
+        ? projects.find(p => p.name === selectedSiteFilter)?.name
+        : null;
+      const userAssignedMatch = currentUser.assignedProjects.find(name =>
+        projects.some(p => p.name === name)
+      );
+      const defaultProj = siteFilterMatch || userAssignedMatch || projects[0]?.name || currentUser.assignedProjects[0] || "";
+      setProject(defaultProj);
       setDetails("");
       setCategory(defaultType === "cash_in" ? "Office Cash Top-up" : "Labour");
       setAmount("");
@@ -89,7 +94,24 @@ export function CashTransactionModal({
     }
     setIsCompressing(false);
     setErrorMsg(null);
-  }, [editingTransaction, defaultType, isOpen, currentUser, projects]);
+  }, [editingTransaction, defaultType, isOpen, currentUser, projects, selectedSiteFilter]);
+
+  // Ensure project state stays valid whenever projects list updates
+  useEffect(() => {
+    if (!editingTransaction && projects.length > 0) {
+      const isValid = projects.some(p => p.name === project);
+      if (!isValid) {
+        const siteFilterMatch = selectedSiteFilter && selectedSiteFilter !== "ALL"
+          ? projects.find(p => p.name === selectedSiteFilter)?.name
+          : null;
+        const userAssignedMatch = currentUser.assignedProjects.find(name =>
+          projects.some(p => p.name === name)
+        );
+        const best = siteFilterMatch || userAssignedMatch || projects[0]?.name || "";
+        if (best) setProject(best);
+      }
+    }
+  }, [projects, currentUser, editingTransaction, project, selectedSiteFilter]);
 
   if (!isOpen) return null;
 
@@ -240,6 +262,9 @@ export function CashTransactionModal({
               required
               className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
             >
+              {project && !projects.some(p => p.name === project) && (
+                <option value={project}>{project}</option>
+              )}
               {projects.map(p => (
                 <option key={p.id} value={p.name}>
                   {p.name}
