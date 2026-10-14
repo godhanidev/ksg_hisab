@@ -1,5 +1,5 @@
 // ─── KSG Hisab Ultra-Fast Service Worker ─────────────────────────────────────
-const CACHE_NAME = "ksg-hisab-v1";
+const CACHE_NAME = "ksg-hisab-v2";
 
 const STATIC_PRECACHE = [
   "/",

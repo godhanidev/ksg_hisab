@@ -428,7 +428,7 @@ export function CashTransactionModal({
                     ? "उदा. बिजली बिल, स्टेशनरी, वाहन किराया..."
                     : "e.g. Electricity Bill, Stationery, Vehicle Rent...")
               }
-              className="w-full rounded-lg border border-amber-300 bg-white p-2.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+              className="w-full rounded-lg border border-amber-300 bg-white p-2.5 text-base sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
             />
             <p className="mt-1 text-[11px] text-amber-800">
               {lang === "gu"

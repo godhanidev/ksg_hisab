@@ -356,7 +356,7 @@ export function GSTBillModal({
                   ? "उदा. ईंटें (Bricks), पेवर ब्लॉक, सेफ्टी नेट, इलेक्ट्रिकल वायरिंग..."
                   : "e.g. Red Bricks, Paver Blocks, Safety Nets, Electrical Wiring..."
               }
-              className="w-full rounded-lg border border-purple-300 bg-white p-2.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+              className="w-full rounded-lg border border-purple-300 bg-white p-2.5 text-base sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
             />
             <p className="mt-1 text-[11px] text-purple-800">
               {lang === "gu"
