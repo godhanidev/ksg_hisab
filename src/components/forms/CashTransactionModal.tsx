@@ -368,9 +368,31 @@ export function CashTransactionModal({
 
           {/* Category */}
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              {t.category}
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-bold text-slate-700">
+                {t.category} *
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  if (category === "Other") {
+                    setCategory(type === "cash_in" ? "Office Cash Top-up" : "Labour");
+                    setCustomCategory("");
+                  } else {
+                    setCategory("Other");
+                  }
+                }}
+                className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border transition ${
+                  category === "Other"
+                    ? "bg-amber-600 text-white border-amber-600 shadow-xs"
+                    : "bg-amber-50 text-amber-800 border-amber-200 hover:bg-amber-100"
+                }`}
+              >
+                {category === "Other"
+                  ? (lang === "gu" ? "✓ અન્ય (Other)" : "✓ Other")
+                  : (lang === "gu" ? "✏️ અન્ય (Other)" : "✏️ Other")}
+              </button>
+            </div>
             <select
               value={category}
               onChange={e => {

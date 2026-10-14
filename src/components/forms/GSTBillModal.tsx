@@ -281,9 +281,31 @@ export function GSTBillModal({
         {/* Product / Material & Project Site */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
-            <label className="block text-xs font-bold text-slate-700 mb-1">
-              {t.product} *
-            </label>
+            <div className="flex items-center justify-between mb-1">
+              <label className="text-xs font-bold text-slate-700">
+                {t.product} *
+              </label>
+              <button
+                type="button"
+                onClick={() => {
+                  if (product === "Other") {
+                    setProduct("HDPE Pipe");
+                    setCustomProduct("");
+                  } else {
+                    setProduct("Other");
+                  }
+                }}
+                className={`text-[11px] font-bold px-2 py-0.5 rounded-lg border transition ${
+                  product === "Other"
+                    ? "bg-purple-600 text-white border-purple-600 shadow-xs"
+                    : "bg-purple-50 text-purple-700 border-purple-200 hover:bg-purple-100"
+                }`}
+              >
+                {product === "Other"
+                  ? (lang === "gu" ? "✓ અન્ય (Other)" : "✓ Other")
+                  : (lang === "gu" ? "✏️ અન્ય (Other)" : "✏️ Other")}
+              </button>
+            </div>
             <select
               value={product}
               onChange={e => {
