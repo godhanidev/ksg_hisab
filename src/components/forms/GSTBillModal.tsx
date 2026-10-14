@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  FileCheck, Upload, Camera, Trash2, Check, AlertCircle, Calculator
+  FileCheck, Upload, Camera, Trash2, Check, AlertCircle, Calculator, FileText
 } from "lucide-react";
 import { Attachment, GSTBill, Language, Project, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
@@ -50,6 +50,7 @@ export function GSTBillModal({
   const [billNo, setBillNo] = useState<string>("");
   const [partyName, setPartyName] = useState<string>("");
   const [product, setProduct] = useState<string>("HDPE Pipe");
+  const [customProduct, setCustomProduct] = useState<string>("");
   const [project, setProject] = useState<string>("");
   const [basicAmount, setBasicAmount] = useState<string>("");
   const [gstRate, setGstRate] = useState<number>(18);
@@ -69,7 +70,14 @@ export function GSTBillModal({
       setDate(editingBill.date);
       setBillNo(editingBill.billNo);
       setPartyName(editingBill.partyName);
-      setProduct(editingBill.product);
+      const existingProduct = editingBill.product || "HDPE Pipe";
+      if (COMMON_PRODUCTS.includes(existingProduct) && existingProduct !== "Other") {
+        setProduct(existingProduct);
+        setCustomProduct("");
+      } else {
+        setProduct("Other");
+        setCustomProduct(existingProduct === "Other" ? "" : existingProduct);
+      }
       setProject(editingBill.project);
       setBasicAmount(String(editingBill.basicAmount));
       setGstRate(editingBill.gstRate || 18);
@@ -81,6 +89,7 @@ export function GSTBillModal({
       setBillNo("");
       setPartyName("");
       setProduct("HDPE Pipe");
+      setCustomProduct("");
       // Set valid default project matching available projects list
       const siteFilterMatch = selectedSiteFilter && selectedSiteFilter !== "ALL"
         ? projects.find(p => p.name === selectedSiteFilter)?.name
@@ -164,13 +173,27 @@ export function GSTBillModal({
       setErrorMsg("Please enter a valid basic amount greater than zero");
       return;
     }
+    if (product === "Other" && !customProduct.trim()) {
+      setErrorMsg(
+        lang === "gu"
+          ? "કૃપા કરીને અન્ય પ્રોડક્ટ / મટિરિયલનું નામ લખો"
+          : lang === "hi"
+          ? "कृपया अन्य उत्पाद / सामग्री का नाम लिखें"
+          : "Please specify the other product / material name"
+      );
+      return;
+    }
+
+    const finalProduct = product === "Other"
+      ? (customProduct.trim() || "Other")
+      : product;
 
     const payload = {
       ...(editingBill ? { id: editingBill.id } : {}),
       billNo: billNo.trim(),
       date,
       partyName: partyName.trim(),
-      product,
+      product: finalProduct,
       project,
       basicAmount: numBasic,
       gstRate,
@@ -263,12 +286,18 @@ export function GSTBillModal({
             </label>
             <select
               value={product}
-              onChange={e => setProduct(e.target.value)}
+              onChange={e => {
+                const val = e.target.value;
+                setProduct(val);
+                if (val !== "Other") {
+                  setCustomProduct("");
+                }
+              }}
               className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
             >
               {COMMON_PRODUCTS.map(p => (
                 <option key={p} value={p}>
-                  {p}
+                  {p === "Other" ? (lang === "gu" ? "Other (અન્ય)" : lang === "hi" ? "Other (अन्य)" : "Other") : p}
                 </option>
               ))}
             </select>
@@ -295,6 +324,49 @@ export function GSTBillModal({
             </select>
           </div>
         </div>
+
+        {/* Other Product / Material Writing Box */}
+        {product === "Other" && (
+          <div className="rounded-xl bg-purple-50/70 border border-purple-200 p-3 shadow-xs animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-bold text-purple-950 flex items-center gap-1.5">
+                <FileText size={14} className="text-purple-600" />
+                <span>
+                  {lang === "gu"
+                    ? "અન્ય પ્રોડક્ટ / મટિરિયલનું નામ લખો (Custom Product) *"
+                    : lang === "hi"
+                    ? "अन्य उत्पाद / सामग्री का नाम लिखें *"
+                    : "Specify Other Product / Material *"}
+                </span>
+              </label>
+              <span className="text-[10px] font-bold text-purple-800 bg-purple-100 px-2 py-0.5 rounded-md">
+                {lang === "gu" ? "લખવું જરૂરી" : lang === "hi" ? "आवश्यक" : "Required"}
+              </span>
+            </div>
+            <input
+              type="text"
+              value={customProduct}
+              onChange={e => setCustomProduct(e.target.value)}
+              required
+              autoFocus
+              placeholder={
+                lang === "gu"
+                  ? "દા.ત. ઈંટો (Bricks), પેવર બ્લોક, સેફ્ટી નેટ, ઇલેક્ટ્રિક વાયરીંગ..."
+                  : lang === "hi"
+                  ? "उदा. ईंटें (Bricks), पेवर ब्लॉक, सेफ्टी नेट, इलेक्ट्रिकल वायरिंग..."
+                  : "e.g. Red Bricks, Paver Blocks, Safety Nets, Electrical Wiring..."
+              }
+              className="w-full rounded-lg border border-purple-300 bg-white p-2.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-purple-500 focus:outline-none focus:ring-2 focus:ring-purple-500/20"
+            />
+            <p className="mt-1 text-[11px] text-purple-800">
+              {lang === "gu"
+                ? "💡 આ નામ પ્રોડક્ટ લિસ્ટ અને GST રિપોર્ટમાં સેવ થશે."
+                : lang === "hi"
+                ? "💡 यह नाम उत्पाद सूची और GST रिपोर्ट में दिखेगा।"
+                : "💡 This custom name will appear in product filters & GST reports."}
+            </p>
+          </div>
+        )}
 
         {/* ── Auto GST Calculation Panel ─────────────────────────────────── */}
         <div className="rounded-2xl border border-purple-200 bg-purple-50/50 p-4 space-y-3">

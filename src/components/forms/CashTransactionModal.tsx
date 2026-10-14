@@ -54,6 +54,7 @@ export function CashTransactionModal({
   const [project, setProject] = useState<string>("");
   const [details, setDetails] = useState<string>("");
   const [category, setCategory] = useState<string>("Labour");
+  const [customCategory, setCustomCategory] = useState<string>("");
   const [amount, setAmount] = useState<string>("");
   const [paymentMode, setPaymentMode] = useState<"Cash" | "UPI" | "Cheque">("Cash");
   const [voucherNo, setVoucherNo] = useState<string>("");
@@ -68,7 +69,14 @@ export function CashTransactionModal({
       setDate(editingTransaction.date);
       setProject(editingTransaction.project);
       setDetails(editingTransaction.details);
-      setCategory(editingTransaction.category || "Labour");
+      const existingCat = editingTransaction.category || (editingTransaction.type === "cash_in" ? "Office Cash Top-up" : "Labour");
+      if (COMMON_CATEGORIES.includes(existingCat) && existingCat !== "Other") {
+        setCategory(existingCat);
+        setCustomCategory("");
+      } else {
+        setCategory("Other");
+        setCustomCategory(existingCat === "Other" ? "" : existingCat);
+      }
       setAmount(editingTransaction.amount ? String(editingTransaction.amount) : "");
       setPaymentMode(editingTransaction.paymentMode || "Cash");
       setVoucherNo(editingTransaction.voucherNo || "");
@@ -87,6 +95,7 @@ export function CashTransactionModal({
       setProject(defaultProj);
       setDetails("");
       setCategory(defaultType === "cash_in" ? "Office Cash Top-up" : "Labour");
+      setCustomCategory("");
       setAmount("");
       setPaymentMode("Cash");
       setVoucherNo("");
@@ -162,6 +171,20 @@ export function CashTransactionModal({
       setErrorMsg("Please enter a valid amount greater than zero");
       return;
     }
+    if (category === "Other" && !customCategory.trim()) {
+      setErrorMsg(
+        lang === "gu"
+          ? "કૃપા કરીને અન્ય કેટેગરીનું નામ લખો"
+          : lang === "hi"
+          ? "कृपया अन्य श्रेणी का नाम लिखें"
+          : "Please specify the other category name"
+      );
+      return;
+    }
+
+    const finalCategory = category === "Other"
+      ? (customCategory.trim() || "Other")
+      : category;
 
     const payload = {
       ...(editingTransaction ? { id: editingTransaction.id } : {}),
@@ -169,7 +192,7 @@ export function CashTransactionModal({
       type,
       project,
       details: details.trim(),
-      category: category || "Other",
+      category: finalCategory,
       amount: numAmount,
       paymentMode,
       voucherNo: voucherNo.trim() || undefined,
@@ -221,6 +244,7 @@ export function CashTransactionModal({
               onClick={() => {
                 setType("cash_in");
                 setCategory("Office Cash Top-up");
+                setCustomCategory("");
               }}
               className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition ${
                 type === "cash_in"
@@ -236,6 +260,7 @@ export function CashTransactionModal({
               onClick={() => {
                 setType("cash_out");
                 setCategory("Labour");
+                setCustomCategory("");
               }}
               className={`flex items-center justify-center gap-2 py-2.5 rounded-lg text-xs sm:text-sm font-bold transition ${
                 type === "cash_out"
@@ -348,17 +373,72 @@ export function CashTransactionModal({
             </label>
             <select
               value={category}
-              onChange={e => setCategory(e.target.value)}
+              onChange={e => {
+                const val = e.target.value;
+                setCategory(val);
+                if (val !== "Other") {
+                  setCustomCategory("");
+                }
+              }}
               className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
             >
               {COMMON_CATEGORIES.map(c => (
                 <option key={c} value={c}>
-                  {c}
+                  {c === "Other" ? (lang === "gu" ? "Other (અન્ય)" : lang === "hi" ? "Other (अन्य)" : "Other") : c}
                 </option>
               ))}
             </select>
           </div>
         </div>
+
+        {/* Other Category Writing Box */}
+        {category === "Other" && (
+          <div className="rounded-xl bg-amber-50/70 border border-amber-300/80 p-3 shadow-xs animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-bold text-amber-950 flex items-center gap-1.5">
+                <FileText size={14} className="text-amber-600" />
+                <span>
+                  {lang === "gu"
+                    ? "અન્ય કેટેગરીનું નામ લખો (Custom Category) *"
+                    : lang === "hi"
+                    ? "अन्य श्रेणी का नाम / विवरण लिखें *"
+                    : "Specify Other Category *"}
+                </span>
+              </label>
+              <span className="text-[10px] font-bold text-amber-800 bg-amber-200/80 px-2 py-0.5 rounded-md">
+                {lang === "gu" ? "લખવું જરૂરી" : lang === "hi" ? "आवश्यक" : "Required"}
+              </span>
+            </div>
+            <input
+              type="text"
+              value={customCategory}
+              onChange={e => setCustomCategory(e.target.value)}
+              required
+              autoFocus
+              placeholder={
+                type === "cash_in"
+                  ? (lang === "gu"
+                    ? "દા.ત. ક્લાયન્ટ એડવાન્સ, પાર્ટનર ડિપોઝીટ, સ્ક્રૅપ વેચાણ, વગેરે..."
+                    : lang === "hi"
+                    ? "उदा. क्लाइंट एडवांस, पार्टनर डिपॉजिट, स्क्रैप बिक्री..."
+                    : "e.g. Client Advance, Partner Deposit, Scrap Sale...")
+                  : (lang === "gu"
+                    ? "દા.ત. વીજળી બિલ, ઓફિસ સ્ટેશનરી, વાહન ભાડું, વગેરે..."
+                    : lang === "hi"
+                    ? "उदा. बिजली बिल, स्टेशनरी, वाहन किराया..."
+                    : "e.g. Electricity Bill, Stationery, Vehicle Rent...")
+              }
+              className="w-full rounded-lg border border-amber-300 bg-white p-2.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+            />
+            <p className="mt-1 text-[11px] text-amber-800">
+              {lang === "gu"
+                ? "💡 આ નામ કેટેગરી ફિલ્ટર અને એક્સેલ રિપોર્ટમાં સેવ થશે."
+                : lang === "hi"
+                ? "💡 यह नाम श्रेणी सूची और एक्सेल रिपोर्ट में दिखेगा।"
+                : "💡 This custom name will appear in category filters & Excel reports."}
+            </p>
+          </div>
+        )}
 
         {/* Payment Mode & Voucher / Ref */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

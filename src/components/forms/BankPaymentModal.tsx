@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  Landmark, Upload, Camera, Trash2, Check, AlertCircle
+  Landmark, Upload, Camera, Trash2, Check, AlertCircle, FileText
 } from "lucide-react";
 import { Attachment, BankPayment, Language, Project, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
@@ -50,6 +50,7 @@ export function BankPaymentModal({
   const [paymentMode, setPaymentMode] = useState<BankPayment["paymentMode"]>("RTGS / NEFT");
   const [referenceNo, setReferenceNo] = useState<string>("");
   const [category, setCategory] = useState<string>("Material & Spares");
+  const [customCategory, setCustomCategory] = useState<string>("");
   const [attachments, setAttachments] = useState<Attachment[]>([]);
   const [isCompressing, setIsCompressing] = useState<boolean>(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -62,7 +63,14 @@ export function BankPaymentModal({
       setAmount(editingPayment.amount ? String(editingPayment.amount) : "");
       setPaymentMode(editingPayment.paymentMode);
       setReferenceNo(editingPayment.referenceNo || "");
-      setCategory(editingPayment.category || "Material & Spares");
+      const existingCat = editingPayment.category || "Material & Spares";
+      if (COMMON_CATEGORIES.includes(existingCat) && existingCat !== "Other") {
+        setCategory(existingCat);
+        setCustomCategory("");
+      } else {
+        setCategory("Other");
+        setCustomCategory(existingCat === "Other" ? "" : existingCat);
+      }
       setAttachments(editingPayment.attachments || []);
     } else {
       setDate(todayStr());
@@ -80,6 +88,7 @@ export function BankPaymentModal({
       setPaymentMode("RTGS / NEFT");
       setReferenceNo("");
       setCategory("Material & Spares");
+      setCustomCategory("");
       setAttachments([]);
     }
     setIsCompressing(false);
@@ -147,6 +156,20 @@ export function BankPaymentModal({
       setErrorMsg("Please enter a valid amount greater than zero");
       return;
     }
+    if (category === "Other" && !customCategory.trim()) {
+      setErrorMsg(
+        lang === "gu"
+          ? "કૃપા કરીને અન્ય કેટેગરીનું નામ લખો"
+          : lang === "hi"
+          ? "कृपया अन्य श्रेणी का नाम लिखें"
+          : "Please specify the other category name"
+      );
+      return;
+    }
+
+    const finalCategory = category === "Other"
+      ? (customCategory.trim() || "Other")
+      : category;
 
     const payload = {
       ...(editingPayment ? { id: editingPayment.id } : {}),
@@ -156,7 +179,7 @@ export function BankPaymentModal({
       amount: numAmount,
       paymentMode,
       referenceNo: referenceNo.trim() || undefined,
-      category: category || "Other",
+      category: finalCategory,
       notes: editingPayment?.notes,
       enteredBy: currentUser.name,
       attachments: attachments.length > 0 ? attachments : undefined,
@@ -277,17 +300,59 @@ export function BankPaymentModal({
             </label>
             <select
               value={category}
-              onChange={e => setCategory(e.target.value)}
+              onChange={e => {
+                const val = e.target.value;
+                setCategory(val);
+                if (val !== "Other") {
+                  setCustomCategory("");
+                }
+              }}
               className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
             >
               {COMMON_CATEGORIES.map(c => (
                 <option key={c} value={c}>
-                  {c}
+                  {c === "Other" ? (lang === "gu" ? "Other (અન્ય)" : lang === "hi" ? "Other (अन्य)" : "Other") : c}
                 </option>
               ))}
             </select>
           </div>
         </div>
+
+        {/* Other Category Writing Box */}
+        {category === "Other" && (
+          <div className="rounded-xl bg-blue-50/70 border border-blue-200 p-3 shadow-xs animate-in fade-in slide-in-from-top-1 duration-200">
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="text-xs font-bold text-blue-950 flex items-center gap-1.5">
+                <FileText size={14} className="text-blue-600" />
+                <span>
+                  {lang === "gu"
+                    ? "અન્ય કેટેગરીનું નામ લખો (Custom Category) *"
+                    : lang === "hi"
+                    ? "अन्य श्रेणी का नाम / विवरण लिखें *"
+                    : "Specify Other Category *"}
+                </span>
+              </label>
+              <span className="text-[10px] font-bold text-blue-800 bg-blue-100 px-2 py-0.5 rounded-md">
+                {lang === "gu" ? "લખવું જરૂરી" : lang === "hi" ? "आवश्यक" : "Required"}
+              </span>
+            </div>
+            <input
+              type="text"
+              value={customCategory}
+              onChange={e => setCustomCategory(e.target.value)}
+              required
+              autoFocus
+              placeholder={
+                lang === "gu"
+                  ? "દા.ત. વીજળી બિલ, ઓફિસ ભાડું, સરકારી ફી..."
+                  : lang === "hi"
+                  ? "उदा. बिजली बिल, ऑफिस किराया, सरकारी फीस..."
+                  : "e.g. Electricity Bill, Office Rent, Govt Fees..."
+              }
+              className="w-full rounded-lg border border-blue-300 bg-white p-2.5 text-xs sm:text-sm font-semibold text-slate-900 placeholder:text-slate-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-500/20"
+            />
+          </div>
+        )}
 
         {/* Payment Mode & Reference / UTR */}
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
