@@ -1,6 +1,6 @@
 import React from "react";
 import {
-  Menu, X, LogOut, User, RotateCw
+  Menu, X, LogOut, User
 } from "lucide-react";
 import { Language, Project, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
@@ -96,32 +96,6 @@ export const Header = React.memo(function Header({
             </div>
           </button>
 
-          {/* App Update / Hard Refresh Button */}
-          <button
-            type="button"
-            onClick={async () => {
-              try {
-                if ('caches' in window) {
-                  const keys = await caches.keys();
-                  await Promise.all(keys.map(k => caches.delete(k)));
-                }
-                if ('serviceWorker' in navigator) {
-                  const regs = await navigator.serviceWorker.getRegistrations();
-                  for (const reg of regs) {
-                    await reg.unregister();
-                  }
-                }
-              } catch (e) {
-                console.error("Cache purge error:", e);
-              }
-              window.location.reload();
-            }}
-            title={lang === "gu" ? "નવા સુધારા લોડ કરો (Update App)" : "Update / Refresh App"}
-            className="flex items-center gap-1 rounded-xl border border-amber-300 bg-amber-50/80 p-2 text-xs font-bold text-amber-900 hover:bg-amber-100 transition shrink-0 active:scale-95"
-          >
-            <RotateCw size={15} className="text-amber-700 animate-spin-hover" />
-            <span className="hidden md:inline text-[11px] font-bold">Update</span>
-          </button>
 
           {/* Primary Dedicated Logout Button */}
           <button
