@@ -1,5 +1,5 @@
 // ─── KSG Hisab Ultra-Fast Service Worker ─────────────────────────────────────
-const CACHE_NAME = "ksg-hisab-v4";
+const CACHE_NAME = "ksg-hisab-v5";
 
 const STATIC_PRECACHE = [
   "/",
@@ -10,13 +10,20 @@ const STATIC_PRECACHE = [
 
 // Install: Precache critical shell assets
 self.addEventListener("install", (event) => {
+  self.skipWaiting();
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       return cache.addAll(STATIC_PRECACHE).catch((err) => {
         console.warn("Precache partial warning:", err);
       });
-    }).then(() => self.skipWaiting())
+    })
   );
+});
+
+self.addEventListener("message", (event) => {
+  if (event.data && event.data.type === "SKIP_WAITING") {
+    self.skipWaiting();
+  }
 });
 
 // Activate: Clean up older cache versions immediately
