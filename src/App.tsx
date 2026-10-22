@@ -98,9 +98,19 @@ export function App() {
   const [gstBills, setGstBills] = useState<GSTBill[]>(() =>
     loadStoredCollection<GSTBill[]>("gst_bills", initialGSTBills)
   );
-  const [users, setUsers] = useState<UserAccount[]>(() =>
-    loadStoredCollection<UserAccount[]>("users", initialUsers)
-  );
+  const [users, setUsers] = useState<UserAccount[]>(() => {
+    const stored = loadStoredCollection<UserAccount[]>("users", initialUsers);
+    if (Array.isArray(stored)) {
+      const existingIds = new Set(stored.map(u => u.id));
+      const missing = initialUsers.filter(u => !existingIds.has(u.id));
+      if (missing.length > 0) {
+        const merged = [...stored, ...missing];
+        saveStoredCollection("users", merged);
+        return merged;
+      }
+    }
+    return stored;
+  });
 
   // ── Modals & Viewers State ──────────────────────────────────────────────
   const [showCashModal, setShowCashModal] = useState(false);
@@ -493,7 +503,7 @@ export function App() {
   }, [isOnline, isCloudConnected, showToast, t.recordDeletedSuccess]);
 
   // ── CRUD: Projects ──────────────────────────────────────────────────────
-  const handleSaveProject = useCallback((projectData: Omit<Project, "id"> | Project) => {
+  const handleSaveProject = useCallback((projectData: Omit<Project, "id"> | Project, assignedUserIds?: number[]) => {
     let savedProject: Project;
     if ("id" in projectData && projectData.id) {
       savedProject = projectData as Project;
@@ -511,8 +521,34 @@ export function App() {
     if (isCloudConnected) {
       saveDocumentToCloud("projects", savedProject);
     }
-    showToast("Project site saved successfully!");
-  }, [isCloudConnected, showToast]);
+
+    // Sync team members assigned to this site
+    if (assignedUserIds) {
+      setUsers(prev => {
+        const updated = prev.map(u => {
+          if (u.role === "admin") return u;
+          const shouldHave = assignedUserIds.includes(u.id);
+          const currentList = u.assignedProjects || [];
+          const hasIt = currentList.includes(savedProject.name);
+
+          if (shouldHave && !hasIt) {
+            const newU = { ...u, assignedProjects: [...currentList, savedProject.name] };
+            if (isCloudConnected) saveDocumentToCloud("users", newU);
+            return newU;
+          } else if (!shouldHave && hasIt && editingProject) {
+            const newU = { ...u, assignedProjects: currentList.filter(p => p !== savedProject.name) };
+            if (isCloudConnected) saveDocumentToCloud("users", newU);
+            return newU;
+          }
+          return u;
+        });
+        saveStoredCollection("users", updated);
+        return updated;
+      });
+    }
+
+    showToast(lang === "gu" ? "સાઇટ સફળતાપૂર્વક સેવ થઈ ગઈ છે!" : "Project site saved successfully!");
+  }, [editingProject, isCloudConnected, lang, showToast]);
 
 
   const handleDeleteProject = useCallback((id: number) => {
@@ -751,6 +787,11 @@ export function App() {
                   setCashModalType("cash_out");
                   setShowCashModal(true);
                 }}
+                onAddTransfer={() => {
+                  setEditingCashTx(null);
+                  setCashModalType("transfer");
+                  setShowCashModal(true);
+                }}
                 onEditTransaction={tx => {
                   setEditingCashTx(tx);
                   setCashModalType(tx.type);
@@ -762,6 +803,7 @@ export function App() {
                 selectedSiteFilter={selectedSiteFilter}
                 setSelectedSiteFilter={setSelectedSiteFilter}
                 currentUser={currentUser}
+                users={users}
                 lang={lang}
               />
             )}
@@ -884,7 +926,7 @@ export function App() {
 
       {/* ── Modals & Lightboxes (Loaded Lazily on Demand) ─────────────────── */}
       <Suspense fallback={null}>
-        {/* 1. Cash Transaction Modal (જમા & ઉધાર) */}
+        {/* 1. Cash Transaction Modal (જમા & ઉધાર & ટ્રાન્સફર) */}
         {showCashModal && (
           <CashTransactionModal
             isOpen={showCashModal}
@@ -895,6 +937,8 @@ export function App() {
             projects={userAllowedProjects}
             selectedSiteFilter={selectedSiteFilter}
             currentUser={currentUser}
+            users={users}
+            cashTransactions={cashTransactions}
             lang={lang}
           />
         )}
@@ -935,6 +979,7 @@ export function App() {
             onSave={handleSaveProject}
             editingProject={editingProject}
             supervisors={users.filter(u => u.role !== "admin")}
+            users={users}
             lang={lang}
           />
         )}

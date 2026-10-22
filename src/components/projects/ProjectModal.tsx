@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Building2, Check, AlertCircle, MapPin, User, DollarSign } from "lucide-react";
+import { Building2, Check, AlertCircle, MapPin, User, DollarSign, Users } from "lucide-react";
 import { Language, Project, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
 import { formatINR } from "../../utils/formatters";
@@ -8,9 +8,10 @@ import { ModalWrapper } from "../common/ModalWrapper";
 type ProjectModalProps = {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (projectData: Omit<Project, "id"> | Project) => void;
+  onSave: (projectData: Omit<Project, "id"> | Project, assignedUserIds?: number[]) => void;
   editingProject?: Project | null;
   supervisors: UserAccount[];
+  users?: UserAccount[];
   lang: Language;
 };
 
@@ -20,6 +21,7 @@ export function ProjectModal({
   onSave,
   editingProject,
   supervisors,
+  users = [],
   lang,
 }: ProjectModalProps) {
   const t = getTranslation(lang);
@@ -32,7 +34,10 @@ export function ProjectModal({
   const [targetDate, setTargetDate] = useState("");
   const [location, setLocation] = useState("");
   const [supervisorName, setSupervisorName] = useState("");
+  const [selectedUserIds, setSelectedUserIds] = useState<number[]>([]);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const candidateUsers = users && users.length > 0 ? users : supervisors;
 
   useEffect(() => {
     if (editingProject) {
@@ -44,6 +49,12 @@ export function ProjectModal({
       setTargetDate(editingProject.targetDate || "");
       setLocation(editingProject.location || "");
       setSupervisorName(editingProject.supervisorName || "");
+
+      // Pre-select users currently assigned to this project
+      const preselected = candidateUsers
+        .filter(u => u.role !== "admin" && u.assignedProjects && u.assignedProjects.includes(editingProject.name))
+        .map(u => u.id);
+      setSelectedUserIds(preselected);
     } else {
       setCode(`PRJ-${new Date().getFullYear()}-${Math.floor(100 + Math.random() * 900)}`);
       setName("");
@@ -53,9 +64,10 @@ export function ProjectModal({
       setTargetDate("31/12/2026");
       setLocation("");
       setSupervisorName("");
+      setSelectedUserIds([]);
     }
     setErrorMsg(null);
-  }, [editingProject, isOpen, supervisors]);
+  }, [editingProject, isOpen, candidateUsers]);
 
   if (!isOpen) return null;
 
@@ -64,11 +76,11 @@ export function ProjectModal({
     const numValue = parseFloat(value);
 
     if (!name.trim()) {
-      setErrorMsg("Please enter site / project name");
+      setErrorMsg(lang === "gu" ? "કૃપા કરીને સાઇટ / પ્રોજેક્ટનું નામ લખો" : "Please enter site / project name");
       return;
     }
     if (isNaN(numValue) || numValue <= 0) {
-      setErrorMsg("Please enter a valid tender value");
+      setErrorMsg(lang === "gu" ? "કૃપા કરીને માન્ય ટેન્ડર રકમ દાખલ કરો" : "Please enter a valid tender value");
       return;
     }
 
@@ -78,7 +90,7 @@ export function ProjectModal({
       name: name.trim(),
       department: department.trim(),
       value: numValue,
-      progress: 0,
+      progress: editingProject ? editingProject.progress : 0,
       received: editingProject ? editingProject.received : 0,
       expense: editingProject ? editingProject.expense : 0,
       status: editingProject ? editingProject.status : "Active",
@@ -89,7 +101,7 @@ export function ProjectModal({
       notes: editingProject?.notes,
     };
 
-    onSave(payload as any);
+    onSave(payload as any, selectedUserIds);
     onClose();
   };
 
@@ -98,7 +110,11 @@ export function ProjectModal({
       isOpen={isOpen}
       onClose={onClose}
       title={editingProject ? `Edit Site: ${editingProject.name}` : t.addProject}
-      subtitle="Register new government contract / civil works construction site"
+      subtitle={
+        lang === "gu"
+          ? "નવી બાંધકામ સાઇટ નોંધણી અને તેના માટે ટીમ સભ્યો ફાળવો"
+          : "Register new government contract / civil works construction site"
+      }
     >
       <form onSubmit={handleSubmit} className="space-y-4">
         {errorMsg && (
@@ -111,7 +127,7 @@ export function ProjectModal({
         {/* Site / Project Name */}
         <div>
           <label className="block text-xs font-bold text-slate-700 mb-1">
-            Site / Project Name *
+            Site / Project Name (સાઇટનું નામ) *
           </label>
           <input
             type="text"
@@ -171,18 +187,18 @@ export function ProjectModal({
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <div>
             <label className="block text-xs font-bold text-slate-700 mb-1">
-              Site In-charge (સાઇટ ઇન-ચાર્જ)
+              Main In-charge / Supervisor (મુખ્ય ઇન-ચાર્જ)
             </label>
             <input
               type="text"
               list="supervisor-suggestions"
               value={supervisorName}
               onChange={e => setSupervisorName(e.target.value)}
-              placeholder="e.g. Partner, Engineer or Supervisor Name"
+              placeholder="e.g. Rajubhai or Engineer Name"
               className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm font-semibold text-slate-900 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
             />
             <datalist id="supervisor-suggestions">
-              {supervisors.map(s => (
+              {candidateUsers.map(s => (
                 <option key={s.id} value={s.name} />
               ))}
             </datalist>
@@ -199,6 +215,71 @@ export function ProjectModal({
               placeholder="e.g. Devgadh Baria, Dahod District"
               className="w-full rounded-xl border border-slate-200 bg-white p-2.5 text-xs sm:text-sm text-slate-800 focus:border-amber-500 focus:outline-none focus:ring-2 focus:ring-amber-500/20"
             />
+          </div>
+        </div>
+
+        {/* ── 🌟 NEW: Assign Team Members Directly on Site Creation ── */}
+        <div className="rounded-2xl bg-slate-50 border border-slate-200 p-3.5 space-y-2.5">
+          <div className="flex items-center justify-between">
+            <label className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+              <Users size={15} className="text-amber-600" />
+              <span>
+                {lang === "gu"
+                  ? "આ સાઇટ માટે સભ્યો પસંદ કરો (પાર્ટનર, એન્જિનિયર, સુપરવાઇઝર):"
+                  : "Assign Team Members to this Site:"}
+              </span>
+            </label>
+            <span className="text-[10px] text-amber-800 bg-amber-100 font-bold px-2 py-0.5 rounded-md">
+              {selectedUserIds.length} {lang === "gu" ? "સભ્યો પસંદ" : "Selected"}
+            </span>
+          </div>
+
+          <p className="text-[11px] text-slate-500">
+            {lang === "gu"
+              ? "આ સાઇટમાં જે સભ્યો સિલેક્ટ કરશો ફક્ત તેમના નામ જ સાઇટ રોકડ જમા, ખર્ચ અને આંતરિક ટ્રાન્સફરમાં આવશે."
+              : "Only members checked here will appear in Cash In, Expenses, and Internal Transfers for this site."}
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 max-h-48 overflow-y-auto">
+            {candidateUsers
+              .filter(u => u.role !== "admin")
+              .map(u => {
+                const isChecked = selectedUserIds.includes(u.id);
+                const roleBadge =
+                  u.role === "site_partner"
+                    ? { label: lang === "gu" ? "સાઇટ પાર્ટનર" : "Site Partner", color: "text-purple-700 bg-purple-50" }
+                    : u.role === "site_engineer"
+                    ? { label: lang === "gu" ? "સાઇટ એન્જિનિયર" : "Site Engineer", color: "text-blue-700 bg-blue-50" }
+                    : { label: lang === "gu" ? "સાઇટ સુપરવાઇઝર" : "Site Supervisor", color: "text-sky-700 bg-sky-50" };
+
+                return (
+                  <label
+                    key={u.id}
+                    className={`flex items-center gap-2.5 rounded-xl border p-2.5 text-xs cursor-pointer transition ${
+                      isChecked
+                        ? "bg-amber-50/80 border-amber-300 font-bold text-amber-950 shadow-2xs"
+                        : "bg-white border-slate-200 text-slate-700 hover:bg-slate-50"
+                    }`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={isChecked}
+                      onChange={() => {
+                        setSelectedUserIds(prev =>
+                          prev.includes(u.id) ? prev.filter(id => id !== u.id) : [...prev, u.id]
+                        );
+                      }}
+                      className="rounded accent-slate-900"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate font-bold text-slate-900">{u.name}</p>
+                      <span className={`inline-block mt-0.5 text-[10px] font-semibold px-1.5 py-0.2 rounded ${roleBadge.color}`}>
+                        {roleBadge.label}
+                      </span>
+                    </div>
+                  </label>
+                );
+              })}
           </div>
         </div>
 

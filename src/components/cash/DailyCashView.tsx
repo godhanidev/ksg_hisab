@@ -1,20 +1,22 @@
 import React, { useState, useMemo, useEffect } from "react";
 import {
-  Wallet, Plus, ArrowDownLeft, ArrowUpRight, Search, Filter,
-  Download, Printer, Eye, Trash2, Edit2, Paperclip, Calendar, CheckCircle2, AlertCircle
+  Wallet, Plus, ArrowDownLeft, ArrowUpRight, ArrowLeftRight, Search, Filter,
+  Download, Printer, Eye, Trash2, Edit2, Paperclip, Calendar, CheckCircle2,
+  AlertCircle, Users, ArrowRight, UserCheck, Shield
 } from "lucide-react";
-import { Attachment, CashTransaction, Language, Project, UserAccount } from "../../types";
+import { Attachment, CashTransaction, Language, Project, Role, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
 import { formatINR } from "../../utils/formatters";
 import { exportCashTransactionsExcel } from "../../utils/exportUtils";
-import { StatCard } from "../common/StatCard";
 import { DeleteConfirmModal, DeleteTargetInfo } from "../common/DeleteConfirmModal";
 import { Pagination } from "../common/Pagination";
+import { calculateSiteTeamBalances, getSiteTeamMembers } from "../../utils/cashCalculations";
 
 type DailyCashViewProps = {
   transactions: CashTransaction[];
   onAddCashIn: () => void;
   onAddCashOut: () => void;
+  onAddTransfer?: () => void;
   onEditTransaction: (tx: CashTransaction) => void;
   onDeleteTransaction: (id: number) => void;
   onViewAttachment: (data: { attachment: Attachment; title: string; subtitle?: string; amount?: string }) => void;
@@ -22,6 +24,7 @@ type DailyCashViewProps = {
   selectedSiteFilter: string;
   setSelectedSiteFilter: (site: string) => void;
   currentUser: UserAccount;
+  users: UserAccount[];
   lang: Language;
 };
 
@@ -29,6 +32,7 @@ export const DailyCashView = React.memo(function DailyCashView({
   transactions,
   onAddCashIn,
   onAddCashOut,
+  onAddTransfer,
   onEditTransaction,
   onDeleteTransaction,
   onViewAttachment,
@@ -36,14 +40,16 @@ export const DailyCashView = React.memo(function DailyCashView({
   selectedSiteFilter,
   setSelectedSiteFilter,
   currentUser,
+  users = [],
   lang,
 }: DailyCashViewProps) {
   const t = getTranslation(lang);
   const isAdmin = currentUser.role === "admin";
 
   const [searchQuery, setSearchQuery] = useState("");
-  const [typeFilter, setTypeFilter] = useState<"all" | "cash_in" | "cash_out">("all");
+  const [typeFilter, setTypeFilter] = useState<"all" | "cash_in" | "cash_out" | "transfer">("all");
   const [categoryFilter, setCategoryFilter] = useState("all");
+  const [selectedMemberFilter, setSelectedMemberFilter] = useState<string>("ALL");
   const [deleteTarget, setDeleteTarget] = useState<DeleteTargetInfo | null>(null);
 
   const [currentPage, setCurrentPage] = useState(1);
@@ -56,6 +62,16 @@ export const DailyCashView = React.memo(function DailyCashView({
       ? currentUser.assignedProjects
       : projects.map(p => p.name);
   }, [isAdmin, projects, currentUser]);
+
+  // Active project object
+  const activeProjectObj = useMemo(() => {
+    return projects.find(p => p.name === selectedSiteFilter);
+  }, [projects, selectedSiteFilter]);
+
+  // Live balances per team member on the selected site (or all sites)
+  const siteTeamBalances = useMemo(() => {
+    return calculateSiteTeamBalances(selectedSiteFilter, transactions, users, activeProjectObj);
+  }, [selectedSiteFilter, transactions, users, activeProjectObj]);
 
   // Filtered transactions
   const filteredTransactions = useMemo(() => {
@@ -72,22 +88,49 @@ export const DailyCashView = React.memo(function DailyCashView({
       // Category filter
       if (categoryFilter !== "all" && tx.category !== categoryFilter) return false;
 
+      // Member filter (Person's personal hisab)
+      if (selectedMemberFilter !== "ALL") {
+        const target = selectedMemberFilter.toLowerCase().trim();
+        const recipient = (tx.recipientName || tx.supervisorName || "").toLowerCase().trim();
+        const paidBy = (tx.paidByName || tx.supervisorName || tx.enteredBy || "").toLowerCase().trim();
+        const inDetails = (tx.details || "").toLowerCase().includes(target);
+
+        const matchRecipient = recipient === target || recipient.includes(target) || target.includes(recipient);
+        const matchPaidBy = paidBy === target || paidBy.includes(target) || target.includes(paidBy);
+
+        if (!matchRecipient && !matchPaidBy && !inDetails) {
+          return false;
+        }
+      }
+
       // Search query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
         const matchDetails = tx.details.toLowerCase().includes(q);
         const matchCat = (tx.category || "").toLowerCase().includes(q);
         const matchSup = (tx.supervisorName || "").toLowerCase().includes(q);
+        const matchRecipient = (tx.recipientName || "").toLowerCase().includes(q);
+        const matchPaidBy = (tx.paidByName || "").toLowerCase().includes(q);
         const matchNotes = (tx.notes || "").toLowerCase().includes(q);
         const matchVoucher = (tx.voucherNo || "").toLowerCase().includes(q);
-        if (!matchDetails && !matchCat && !matchSup && !matchNotes && !matchVoucher) {
+
+        if (!matchDetails && !matchCat && !matchSup && !matchRecipient && !matchPaidBy && !matchNotes && !matchVoucher) {
           return false;
         }
       }
 
       return true;
     });
-  }, [transactions, isAdmin, userAllowedSites, selectedSiteFilter, typeFilter, categoryFilter, searchQuery]);
+  }, [
+    transactions,
+    isAdmin,
+    userAllowedSites,
+    selectedSiteFilter,
+    typeFilter,
+    categoryFilter,
+    selectedMemberFilter,
+    searchQuery
+  ]);
 
   // Categories list
   const categories = useMemo(() => {
@@ -111,29 +154,72 @@ export const DailyCashView = React.memo(function DailyCashView({
       .reduce((s, t) => s + t.amount, 0);
   }, [filteredTransactions]);
 
-  const cashInHand = totalCashIn - totalCashOut;
+  const totalTransfers = useMemo(() => {
+    return filteredTransactions
+      .filter(t => t.type === "transfer")
+      .reduce((s, t) => s + t.amount, 0);
+  }, [filteredTransactions]);
+
+  // If a specific member is filtered, show that member's net cash balance; else show overall site cash balance
+  const activeMemberSummary = useMemo(() => {
+    if (selectedMemberFilter === "ALL") return null;
+    return siteTeamBalances.find(b =>
+      b.name.toLowerCase() === selectedMemberFilter.toLowerCase() ||
+      b.name.toLowerCase().includes(selectedMemberFilter.toLowerCase())
+    ) || null;
+  }, [selectedMemberFilter, siteTeamBalances]);
+
+  const cashInHand = activeMemberSummary
+    ? activeMemberSummary.balance
+    : (totalCashIn - totalCashOut);
 
   // Running balance calculation for ledger display
   const transactionsWithRunningBalance = useMemo(() => {
     let currentBalance = 0;
-    // Sort oldest first for running balance calculation, then we can present in order
+    // Sort oldest first for running balance calculation, then reverse for display
     const sortedOldestFirst = [...filteredTransactions].sort((a, b) => a.id - b.id);
+
     const withBal = sortedOldestFirst.map(tx => {
-      if (tx.type === "cash_in") {
-        currentBalance += tx.amount;
+      const amt = Number(tx.amount) || 0;
+
+      if (selectedMemberFilter !== "ALL") {
+        const mem = selectedMemberFilter.toLowerCase().trim();
+        const rec = (tx.recipientName || tx.supervisorName || "").toLowerCase().trim();
+        const pBy = (tx.paidByName || tx.supervisorName || tx.enteredBy || "").toLowerCase().trim();
+
+        if (tx.type === "cash_in") {
+          if (rec === mem || rec.includes(mem) || mem.includes(rec)) {
+            currentBalance += amt;
+          }
+        } else if (tx.type === "cash_out") {
+          if (pBy === mem || pBy.includes(mem) || mem.includes(pBy)) {
+            currentBalance -= amt;
+          }
+        } else if (tx.type === "transfer") {
+          const isReceiver = rec === mem || rec.includes(mem) || mem.includes(rec);
+          const isGiver = pBy === mem || pBy.includes(mem) || mem.includes(pBy);
+          if (isReceiver) currentBalance += amt;
+          if (isGiver) currentBalance -= amt;
+        }
       } else {
-        currentBalance -= tx.amount;
+        // Site running balance: cash_in increases, cash_out decreases, internal transfers do not affect site total
+        if (tx.type === "cash_in") {
+          currentBalance += amt;
+        } else if (tx.type === "cash_out") {
+          currentBalance -= amt;
+        }
       }
+
       return { ...tx, runningBalance: currentBalance };
     });
-    // Return latest first for user view
-    return withBal.reverse();
-  }, [filteredTransactions]);
 
-  // Reset pagination to first page on filter change
+    return withBal.reverse();
+  }, [filteredTransactions, selectedMemberFilter]);
+
+  // Reset pagination on filter change
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchQuery, typeFilter, categoryFilter, selectedSiteFilter]);
+  }, [searchQuery, typeFilter, categoryFilter, selectedSiteFilter, selectedMemberFilter]);
 
   // Paginated records for table
   const paginatedTransactions = useMemo(() => {
@@ -148,14 +234,40 @@ export const DailyCashView = React.memo(function DailyCashView({
     );
   };
 
+  const getRoleBadge = (role?: Role) => {
+    switch (role) {
+      case "admin":
+        return {
+          label: lang === "gu" ? "ઓનર / એડમિન" : "Owner / Admin",
+          bg: "bg-amber-100 text-amber-800 border-amber-200",
+        };
+      case "site_partner":
+        return {
+          label: lang === "gu" ? "સાઇટ પાર્ટનર" : "Site Partner",
+          bg: "bg-purple-100 text-purple-800 border-purple-200",
+        };
+      case "site_engineer":
+        return {
+          label: lang === "gu" ? "સાઇટ એન્જિનિયર" : "Site Engineer",
+          bg: "bg-blue-100 text-blue-800 border-blue-200",
+        };
+      case "supervisor":
+      default:
+        return {
+          label: lang === "gu" ? "સાઇટ સુપરવાઇઝર" : "Site Supervisor",
+          bg: "bg-sky-100 text-sky-800 border-sky-200",
+        };
+    }
+  };
+
   return (
     <div className="space-y-6 pb-20">
       {/* ── Header Title & Actions ────────────────────────────────────────── */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2.5 min-w-0">
-            <div className="p-2 rounded-xl bg-amber-500/10 text-amber-600 border border-amber-500/20 shrink-0">
-              <Wallet size={22} />
+            <div className="p-2.5 rounded-2xl bg-amber-500/10 text-amber-600 border border-amber-500/20 shrink-0">
+              <Wallet size={24} />
             </div>
             <div className="min-w-0 flex-1">
               <h1 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight truncate">
@@ -163,10 +275,8 @@ export const DailyCashView = React.memo(function DailyCashView({
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 truncate">
                 {lang === "gu"
-                  ? "રોકડ જમા (Cash In) અને સાઇટ ખર્ચ (Cash Out) દૈનિક લેજર"
-                  : lang === "hi"
-                  ? "रोकड़ जमा (Cash In) और साइट खर्च (Cash Out) दैनिक लेजर"
-                  : "Daily Site Cash Ledger & Live Cash in Hand"}
+                  ? "રોકડ જમા, સાઇટ ખર્ચ અને ટીમ વચ્ચે અંદરોઅંદર ફેરબદલીનો લાઈવ હિસાબ"
+                  : "Cash In, Site Expenses & Internal Cash Handover Ledger"}
               </p>
             </div>
           </div>
@@ -188,11 +298,22 @@ export const DailyCashView = React.memo(function DailyCashView({
           {/* Add Cash Out (ઉધાર / ખર્ચ) Button */}
           <button
             onClick={onAddCashOut}
-            className="flex items-center gap-1.5 rounded-xl bg-amber-500 px-3.5 py-2.5 text-xs sm:text-sm font-bold text-slate-950 shadow-md shadow-amber-500/20 hover:bg-amber-400 transition active:scale-95"
+            className="flex items-center gap-1.5 rounded-xl bg-rose-600 px-3.5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-rose-600/20 hover:bg-rose-700 transition active:scale-95"
           >
             <ArrowUpRight size={16} />
             <span>{t.addCashOut}</span>
           </button>
+
+          {/* Add Internal Transfer (આંતરિક ફેરબદલી) Button */}
+          {onAddTransfer && (
+            <button
+              onClick={onAddTransfer}
+              className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3.5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-indigo-600/20 hover:bg-indigo-700 transition active:scale-95"
+            >
+              <ArrowLeftRight size={15} />
+              <span>{lang === "gu" ? "આંતરિક ટ્રાન્સફર" : "Internal Transfer"}</span>
+            </button>
+          )}
 
           {/* Export Button */}
           <button
@@ -211,17 +332,19 @@ export const DailyCashView = React.memo(function DailyCashView({
         <div className="rounded-2xl border border-emerald-200/80 bg-gradient-to-br from-emerald-500/10 via-emerald-500/5 to-white p-4 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between">
             <p className="text-xs font-bold text-emerald-800 uppercase tracking-wider">
-              {t.totalCashGiven}
+              {activeMemberSummary ? `${activeMemberSummary.name}: મળેલ જમા` : t.totalCashGiven}
             </p>
             <div className="rounded-xl bg-emerald-500/20 p-2 text-emerald-700">
               <ArrowDownLeft size={18} />
             </div>
           </div>
           <p className="mt-2 text-2xl sm:text-3xl font-black text-emerald-700 tracking-tight">
-            {formatINR(totalCashIn)}
+            {formatINR(activeMemberSummary ? activeMemberSummary.totalReceived : totalCashIn)}
           </p>
           <p className="mt-1 text-[11px] text-emerald-600 font-medium">
-            {filteredTransactions.filter(t => t.type === "cash_in").length} {lang === "gu" ? "જમા વ્યવહારો" : "Credits Received"}
+            {activeMemberSummary
+              ? `${lang === "gu" ? "ઓફિસ + ટ્રાન્સફરથી મળેલ" : "Total Received"}`
+              : `${filteredTransactions.filter(t => t.type === "cash_in").length} ${lang === "gu" ? "જમા વ્યવહારો" : "Credits Received"}`}
           </p>
         </div>
 
@@ -229,17 +352,19 @@ export const DailyCashView = React.memo(function DailyCashView({
         <div className="rounded-2xl border border-rose-200/80 bg-gradient-to-br from-rose-500/10 via-rose-500/5 to-white p-4 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between">
             <p className="text-xs font-bold text-rose-800 uppercase tracking-wider">
-              {t.totalSiteExpense}
+              {activeMemberSummary ? `${activeMemberSummary.name}: ખર્ચ કરેલ` : t.totalSiteExpense}
             </p>
             <div className="rounded-xl bg-rose-500/20 p-2 text-rose-700">
               <ArrowUpRight size={18} />
             </div>
           </div>
           <p className="mt-2 text-2xl sm:text-3xl font-black text-rose-700 tracking-tight">
-            {formatINR(totalCashOut)}
+            {formatINR(activeMemberSummary ? activeMemberSummary.totalSpent : totalCashOut)}
           </p>
           <p className="mt-1 text-[11px] text-rose-600 font-medium">
-            {filteredTransactions.filter(t => t.type === "cash_out").length} {lang === "gu" ? "ખર્ચ વ્યવહારો" : "Expenses Incurred"}
+            {activeMemberSummary && activeMemberSummary.totalTransferredOut > 0
+              ? `+ ${formatINR(activeMemberSummary.totalTransferredOut)} અન્યને આપેલ`
+              : `${filteredTransactions.filter(t => t.type === "cash_out").length} ${lang === "gu" ? "ખર્ચ વ્યવહારો" : "Expenses Incurred"}`}
           </p>
         </div>
 
@@ -253,7 +378,7 @@ export const DailyCashView = React.memo(function DailyCashView({
         >
           <div className="flex items-center justify-between">
             <p className="text-xs font-bold text-slate-800 uppercase tracking-wider">
-              {t.cashInHand}
+              {activeMemberSummary ? `${activeMemberSummary.name}: હાથ પર સિલક` : t.cashInHand}
             </p>
             <div
               className={`rounded-xl p-2 font-black ${
@@ -271,7 +396,11 @@ export const DailyCashView = React.memo(function DailyCashView({
             {formatINR(cashInHand)}
           </p>
           <p className="mt-1 text-[11px] font-semibold text-slate-500">
-            {cashInHand >= 0
+            {activeMemberSummary
+              ? lang === "gu"
+                ? `આ સભ્ય પાસે અત્યારે ${formatINR(cashInHand)} રોકડા ઉપલબ્ધ છે`
+                : `Active balance currently held by ${activeMemberSummary.name}`
+              : cashInHand >= 0
               ? lang === "gu"
                 ? "હાથ પર પૂરતી રોકડ સિલક ઉપલબ્ધ"
                 : "Active Available Site Cash Balance"
@@ -282,11 +411,121 @@ export const DailyCashView = React.memo(function DailyCashView({
         </div>
       </div>
 
+      {/* ── 🌟 NEW: Site Team Cash in Hand (સાઇટ સભ્યોની હાથ પર રોકડ સિલક) ──── */}
+      {siteTeamBalances.length > 0 && (
+        <div className="rounded-3xl border border-slate-200/90 bg-white p-4 sm:p-5 shadow-xs space-y-3.5">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-100 pb-3">
+            <div>
+              <div className="flex items-center gap-2">
+                <Users size={18} className="text-amber-500" />
+                <h2 className="text-sm sm:text-base font-extrabold text-slate-900">
+                  {lang === "gu" ? "સાઇટ સભ્યોની હાથ પર રોકડ સિલક (Site Team Cash in Hand)" : "Site Team Cash Balances"}
+                </h2>
+              </div>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {lang === "gu"
+                  ? "દરેક પાર્ટનર, એન્જિનિયર કે સુપરવાઇઝર પાસે અત્યારે કેટલા પૈસા છે તેનો લાઈવ હિસાબ"
+                  : "Live petty cash currently held by each site partner, engineer, or supervisor"}
+              </p>
+            </div>
+
+            {selectedMemberFilter !== "ALL" && (
+              <button
+                onClick={() => setSelectedMemberFilter("ALL")}
+                className="self-start sm:self-auto text-xs font-bold text-amber-700 bg-amber-50 hover:bg-amber-100 px-3 py-1.5 rounded-xl border border-amber-200 transition"
+              >
+                ✕ {lang === "gu" ? "બધા સભ્યોનો હિસાબ જુઓ" : "Show All Members"}
+              </button>
+            )}
+          </div>
+
+          {/* Cards Grid for each member */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3">
+            {siteTeamBalances.map(member => {
+              const badge = getRoleBadge(member.role);
+              const isSelected = selectedMemberFilter.toLowerCase() === member.name.toLowerCase();
+
+              return (
+                <div
+                  key={member.name}
+                  onClick={() => {
+                    setSelectedMemberFilter(isSelected ? "ALL" : member.name);
+                  }}
+                  className={`relative flex flex-col justify-between rounded-2xl border p-3.5 cursor-pointer transition-all ${
+                    isSelected
+                      ? "border-amber-500 bg-amber-50/40 shadow-md ring-2 ring-amber-500/30 scale-[1.01]"
+                      : "border-slate-200/90 bg-slate-50/50 hover:bg-white hover:border-slate-300 hover:shadow-xs"
+                  }`}
+                >
+                  <div>
+                    {/* Top row: Name & Role Badge */}
+                    <div className="flex items-start justify-between gap-1.5">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs sm:text-sm font-bold text-slate-900 truncate" title={member.name}>
+                          {member.name}
+                        </p>
+                        <span className={`inline-block mt-1 rounded-md px-1.5 py-0.5 text-[10px] font-bold border ${badge.bg}`}>
+                          {badge.label}
+                        </span>
+                      </div>
+
+                      {isSelected && (
+                        <span className="rounded-full bg-amber-500 p-1 text-slate-950 shrink-0 shadow-xs">
+                          <CheckCircle2 size={12} />
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Breakdown Numbers */}
+                    <div className="mt-3 space-y-1 text-[11px] text-slate-600">
+                      <div className="flex items-center justify-between">
+                        <span>{lang === "gu" ? "મળેલ (Received):" : "Received:"}</span>
+                        <span className="font-bold text-emerald-700">+{formatINR(member.totalReceived)}</span>
+                      </div>
+                      <div className="flex items-center justify-between">
+                        <span>{lang === "gu" ? "ખર્ચ (Expenses):" : "Expenses:"}</span>
+                        <span className="font-bold text-rose-700">-{formatINR(member.totalSpent)}</span>
+                      </div>
+                      {member.totalTransferredOut > 0 && (
+                        <div className="flex items-center justify-between">
+                          <span>{lang === "gu" ? "અન્યને આપેલ:" : "Transferred Out:"}</span>
+                          <span className="font-bold text-indigo-700">-{formatINR(member.totalTransferredOut)}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Net Cash in Hand Badge */}
+                  <div
+                    className={`mt-3 pt-2.5 border-t border-slate-200/70 flex items-center justify-between ${
+                      member.balance >= 0 ? "text-slate-900" : "text-rose-600"
+                    }`}
+                  >
+                    <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                      {lang === "gu" ? "હાથ પર સિલક" : "In Hand"}
+                    </span>
+                    <span
+                      className={`text-sm sm:text-base font-black px-2 py-0.5 rounded-lg ${
+                        member.balance >= 0
+                          ? "bg-emerald-50 text-emerald-800 border border-emerald-200"
+                          : "bg-rose-50 text-rose-700 border border-rose-200"
+                      }`}
+                    >
+                      {formatINR(member.balance)}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
       {/* ── Filters & Search Control Bar ──────────────────────────────────── */}
       <div className="flex flex-col gap-3 rounded-2xl border border-slate-200/80 bg-white p-3.5 sm:p-4 shadow-xs">
         <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-12">
           {/* Search Input */}
-          <div className="relative sm:col-span-4">
+          <div className="relative sm:col-span-3">
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
@@ -297,13 +536,16 @@ export const DailyCashView = React.memo(function DailyCashView({
             />
           </div>
 
-          {/* Site Filter (Admin or Multi-site) */}
+          {/* Site Filter */}
           {isAdmin && (
             <div className="sm:col-span-3">
               <select
                 value={selectedSiteFilter}
-                onChange={e => setSelectedSiteFilter(e.target.value)}
-                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-3 text-xs sm:text-sm text-slate-800 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+                onChange={e => {
+                  setSelectedSiteFilter(e.target.value);
+                  setSelectedMemberFilter("ALL");
+                }}
+                className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-3 text-xs sm:text-sm font-semibold text-slate-800 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
               >
                 <option value="ALL">{t.allSites}</option>
                 {projects.map(p => (
@@ -315,25 +557,42 @@ export const DailyCashView = React.memo(function DailyCashView({
             </div>
           )}
 
+          {/* Member Filter (Filter by specific site member) */}
+          <div className={isAdmin ? "sm:col-span-2" : "sm:col-span-3"}>
+            <select
+              value={selectedMemberFilter}
+              onChange={e => setSelectedMemberFilter(e.target.value)}
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-3 text-xs sm:text-sm font-semibold text-slate-800 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+            >
+              <option value="ALL">{lang === "gu" ? "બધા સભ્યો (All Members)" : "All Members"}</option>
+              {siteTeamBalances.map(m => (
+                <option key={m.name} value={m.name}>
+                  {m.name} (₹{m.balance.toLocaleString("en-IN")})
+                </option>
+              ))}
+            </select>
+          </div>
+
           {/* Type Filter */}
-          <div className={isAdmin ? "sm:col-span-3" : "sm:col-span-4"}>
+          <div className={isAdmin ? "sm:col-span-2" : "sm:col-span-3"}>
             <select
               value={typeFilter}
               onChange={e => setTypeFilter(e.target.value as any)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-3 text-xs sm:text-sm text-slate-800 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-3 text-xs sm:text-sm text-slate-800 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 font-medium"
             >
               <option value="all">{t.allTypes}</option>
               <option value="cash_in">{t.cashIn}</option>
               <option value="cash_out">{t.cashOut}</option>
+              <option value="transfer">{lang === "gu" ? "આંતરિક ટ્રાન્સફર (Transfer)" : "Internal Transfer"}</option>
             </select>
           </div>
 
           {/* Category Filter */}
-          <div className={isAdmin ? "sm:col-span-2" : "sm:col-span-4"}>
+          <div className={isAdmin ? "sm:col-span-2" : "sm:col-span-3"}>
             <select
               value={categoryFilter}
               onChange={e => setCategoryFilter(e.target.value)}
-              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-3 text-xs sm:text-sm text-slate-800 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20"
+              className="w-full rounded-xl border border-slate-200 bg-slate-50/50 py-2 px-3 text-xs sm:text-sm text-slate-800 focus:border-amber-500 focus:bg-white focus:outline-none focus:ring-2 focus:ring-amber-500/20 font-medium"
             >
               <option value="all">{t.allCategories}</option>
               {categories.map(c => (
@@ -347,7 +606,7 @@ export const DailyCashView = React.memo(function DailyCashView({
       </div>
 
       {/* ── Transaction Ledger Table ─────────────────────────────────────── */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-xs">
+      <div className="overflow-hidden rounded-3xl border border-slate-200/80 bg-white shadow-xs">
         {transactionsWithRunningBalance.length === 0 ? (
           <div className="flex flex-col items-center justify-center p-12 text-center">
             <div className="h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
@@ -366,16 +625,18 @@ export const DailyCashView = React.memo(function DailyCashView({
                   <th className="py-3 px-3 sm:px-4">{t.type}</th>
                   <th className="py-3 px-3 sm:px-4">{t.details}</th>
                   <th className="py-3 px-3 sm:px-4">{t.category}</th>
+                  <th className="py-3 px-3 sm:px-4">{lang === "gu" ? "સભ્ય હિસાબ (Handled By)" : "Handled By"}</th>
                   <th className="py-3 px-3 sm:px-4 text-right">{t.cashIn}</th>
                   <th className="py-3 px-3 sm:px-4 text-right">{t.cashOut}</th>
-                  <th className="py-3 px-3 sm:px-4 text-right">Balance (₹)</th>
-                  <th className="py-3 px-3 sm:px-4">{t.supervisor}</th>
+                  <th className="py-3 px-3 sm:px-4 text-right">{lang === "gu" ? "સિલક (₹)" : "Balance (₹)"}</th>
                   <th className="py-3 px-3 sm:px-4 text-center">{t.actions}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {paginatedTransactions.map(tx => {
                   const isCashIn = tx.type === "cash_in";
+                  const isTransfer = tx.type === "transfer";
+
                   return (
                     <tr
                       key={tx.id}
@@ -392,6 +653,8 @@ export const DailyCashView = React.memo(function DailyCashView({
                           className={`inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[11px] font-bold ${
                             isCashIn
                               ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                              : isTransfer
+                              ? "bg-indigo-50 text-indigo-700 border border-indigo-200"
                               : "bg-rose-50 text-rose-700 border border-rose-200"
                           }`}
                         >
@@ -399,6 +662,11 @@ export const DailyCashView = React.memo(function DailyCashView({
                             <>
                               <ArrowDownLeft size={13} className="text-emerald-600" />
                               <span>{lang === "gu" ? "જમા" : "Cash In"}</span>
+                            </>
+                          ) : isTransfer ? (
+                            <>
+                              <ArrowLeftRight size={13} className="text-indigo-600" />
+                              <span>{lang === "gu" ? "ટ્રાન્સફર" : "Transfer"}</span>
                             </>
                           ) : (
                             <>
@@ -424,14 +692,42 @@ export const DailyCashView = React.memo(function DailyCashView({
                         </span>
                       </td>
 
+                      {/* Member / Handled By Column */}
+                      <td className="py-3 px-3 sm:px-4 whitespace-nowrap text-xs">
+                        {isCashIn ? (
+                          <div>
+                            <span className="font-bold text-emerald-800">
+                              To: {tx.recipientName || tx.supervisorName || "Rajubhai"}
+                            </span>
+                            {tx.paidByName && (
+                              <span className="text-[10px] text-slate-400 block">
+                                By: {tx.paidByName}
+                              </span>
+                            )}
+                          </div>
+                        ) : isTransfer ? (
+                          <div className="flex items-center gap-1 font-bold">
+                            <span className="text-indigo-900">{tx.paidByName || "Sender"}</span>
+                            <span className="text-slate-400 font-normal">➔</span>
+                            <span className="text-emerald-800">{tx.recipientName || "Receiver"}</span>
+                          </div>
+                        ) : (
+                          <div>
+                            <span className="font-bold text-rose-800">
+                              By: {tx.paidByName || tx.supervisorName || tx.enteredBy}
+                            </span>
+                          </div>
+                        )}
+                      </td>
+
                       {/* Cash In Column */}
                       <td className="py-3 px-3 sm:px-4 text-right font-bold text-emerald-700 whitespace-nowrap">
-                        {isCashIn ? formatINR(tx.amount) : "-"}
+                        {isCashIn ? formatINR(tx.amount) : isTransfer ? "-" : "-"}
                       </td>
 
                       {/* Cash Out Column */}
                       <td className="py-3 px-3 sm:px-4 text-right font-bold text-rose-700 whitespace-nowrap">
-                        {!isCashIn ? formatINR(tx.amount) : "-"}
+                        {!isCashIn && !isTransfer ? formatINR(tx.amount) : "-"}
                       </td>
 
                       {/* Running Balance Column */}
@@ -441,10 +737,6 @@ export const DailyCashView = React.memo(function DailyCashView({
                         }`}
                       >
                         {formatINR(tx.runningBalance)}
-                      </td>
-
-                      <td className="py-3 px-3 sm:px-4 text-slate-600 whitespace-nowrap text-xs">
-                        {tx.supervisorName || tx.enteredBy}
                       </td>
 
                       {/* Action icons */}
@@ -481,14 +773,15 @@ export const DailyCashView = React.memo(function DailyCashView({
                           {isAdmin && (
                             <button
                               onClick={() => {
-                                const isCashIn = tx.type === "cash_in";
                                 const typeLabel = isCashIn
-                                  ? (lang === "gu" ? "કેશ ઇન (જમા)" : lang === "hi" ? "कैश इन (जमा)" : "Cash In")
-                                  : (lang === "gu" ? "કેશ આઉટ (ખર્ચ/ઉધાર)" : lang === "hi" ? "कैश आउट (खર્ચ)" : "Cash Out");
+                                  ? (lang === "gu" ? "કેશ ઇન (જમા)" : "Cash In")
+                                  : isTransfer
+                                  ? (lang === "gu" ? "આંતરિક ટ્રાન્સફર" : "Transfer")
+                                  : (lang === "gu" ? "કેશ આઉટ (ખર્ચ/ઉધાર)" : "Cash Out");
 
                                 setDeleteTarget({
                                   id: tx.id,
-                                  title: lang === "gu" ? "કેશ એન્ટ્રી ડિલીટ" : lang === "hi" ? "कैश प्रविष्टि हटाएं" : "Delete Cash Entry",
+                                  title: lang === "gu" ? "કેશ એન્ટ્રી ડિલીટ" : "Delete Cash Entry",
                                   itemName: tx.details,
                                   itemDetails: `${tx.project} • ${tx.date} • ${tx.category || "General"} ${tx.supervisorName || tx.enteredBy ? `• By: ${tx.supervisorName || tx.enteredBy}` : ""}`,
                                   itemAmount: formatINR(tx.amount),

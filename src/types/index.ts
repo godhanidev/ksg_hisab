@@ -44,18 +44,31 @@ export type Project = {
 };
 
 // ── 1. Site Daily Cash / Expense (Petty Cash & Supervisor Wallet) ─────────────
-export type CashTransactionType = "cash_in" | "cash_out";
+export type CashTransactionType = "cash_in" | "cash_out" | "transfer";
 
 export type CashTransaction = {
   id: number;
   date: string;
-  type: CashTransactionType; // "cash_in" = જમા (Office to Supervisor), "cash_out" = ઉધાર / ખર્ચ (Site Expense)
+  type: CashTransactionType; // "cash_in" = જમા, "cash_out" = ઉધાર / ખર્ચ, "transfer" = આંતરિક રોકડ ફેરબદલી
   details: string;           // e.g. "Cash to Rajubhai" or "JCB Bhut Pagla", "MP Labour Kharchi"
   amount: number;            // Amount in INR
   project: string;
-  category?: string;         // e.g. "JCB", "Labour", "Tractor", "Material", "Pooja", "Other"
+  category?: string;         // e.g. "JCB", "Labour", "Tractor", "Material", "Pooja", "Other", "Internal Transfer"
+
+  // Person tracking: Who received cash (for Cash In & Transfer)
+  recipientId?: number;
+  recipientName?: string;
+  recipientRole?: Role;
+
+  // Person tracking: Who paid / gave cash (for Cash Out & Transfer)
+  paidById?: number;
+  paidByName?: string;
+  paidByRole?: Role;
+
+  // Legacy compatibility:
   supervisorId?: number;
   supervisorName?: string;
+
   paymentMode: "Cash" | "UPI" | "Cheque";
   voucherNo?: string;
   attachments?: Attachment[];

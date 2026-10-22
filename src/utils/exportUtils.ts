@@ -74,9 +74,11 @@ export function exportCashTransactionsExcel(transactions: CashTransaction[], pro
     "Type",
     "Details / Purpose",
     "Category",
+    "Handled By (સભ્ય હિસાબ)",
+    "Paid By / From",
+    "Received By / To",
     "Amount (Rs)",
     "Payment Mode",
-    "Supervisor",
     "Entered By",
     "Notes"
   ];
@@ -84,12 +86,22 @@ export function exportCashTransactionsExcel(transactions: CashTransaction[], pro
     t.id,
     t.date,
     t.project,
-    t.type === "cash_in" ? "Cash In (જમા)" : "Cash Out (ઉધાર)",
+    t.type === "cash_in"
+      ? "Cash In (જમા)"
+      : t.type === "transfer"
+      ? "Internal Transfer (આંતરિક ફેરબદલી)"
+      : "Cash Out (ઉધાર / ખર્ચ)",
     t.details,
     t.category || "-",
+    t.type === "cash_in"
+      ? `To: ${t.recipientName || t.supervisorName || "-"}`
+      : t.type === "transfer"
+      ? `${t.paidByName || "Sender"} -> ${t.recipientName || "Receiver"}`
+      : `By: ${t.paidByName || t.supervisorName || t.enteredBy || "-"}`,
+    t.paidByName || (t.type === "cash_in" ? "Head Office" : t.supervisorName || "-"),
+    t.recipientName || (t.type === "cash_in" ? t.supervisorName || "-" : "-"),
     t.amount,
     t.paymentMode,
-    t.supervisorName || "-",
     t.enteredBy,
     t.notes || "-"
   ]);

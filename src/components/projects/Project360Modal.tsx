@@ -200,14 +200,37 @@ export function Project360Modal({
                       <tr key={c.id} className="hover:bg-slate-50">
                         <td className="p-3 font-mono">{c.date}</td>
                         <td className="p-3 font-bold">
-                          <span className={c.type === "cash_in" ? "text-emerald-700" : "text-rose-700"}>
-                            {c.type === "cash_in" ? "જમા (In)" : "ઉધાર (Out)"}
+                          <span
+                            className={
+                              c.type === "cash_in"
+                                ? "text-emerald-700"
+                                : c.type === "transfer"
+                                ? "text-indigo-700"
+                                : "text-rose-700"
+                            }
+                          >
+                            {c.type === "cash_in"
+                              ? "જમા (In)"
+                              : c.type === "transfer"
+                              ? "ટ્રાન્સફર (Transfer)"
+                              : "ઉધાર (Out)"}
                           </span>
                         </td>
-                        <td className="p-3 font-medium">{c.details}</td>
+                        <td className="p-3 font-medium">
+                          <div>{c.details}</div>
+                          {c.type === "transfer" ? (
+                            <div className="text-[10px] text-slate-500 font-normal">
+                              {c.paidByName || "Sender"} ➔ {c.recipientName || "Receiver"}
+                            </div>
+                          ) : c.recipientName || c.paidByName ? (
+                            <div className="text-[10px] text-slate-500 font-normal">
+                              {c.type === "cash_in" ? `To: ${c.recipientName || c.supervisorName}` : `By: ${c.paidByName || c.supervisorName}`}
+                            </div>
+                          ) : null}
+                        </td>
                         <td className="p-3 text-slate-600">{c.category || "-"}</td>
                         <td className="p-3 text-right font-bold text-emerald-700">
-                          {c.type === "cash_in" ? formatINR(c.amount) : "-"}
+                          {c.type === "cash_in" ? formatINR(c.amount) : c.type === "transfer" ? `⇄ ${formatINR(c.amount)}` : "-"}
                         </td>
                         <td className="p-3 text-right font-bold text-rose-700">
                           {c.type === "cash_out" ? formatINR(c.amount) : "-"}

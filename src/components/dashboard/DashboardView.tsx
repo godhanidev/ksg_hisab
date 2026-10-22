@@ -114,7 +114,7 @@ export const DashboardView = React.memo(function DashboardView({
       title: string;
       subtitle: string;
       amount: number;
-      type: "cash_in" | "cash_out" | "bank" | "gst";
+      type: "cash_in" | "cash_out" | "transfer" | "bank" | "gst";
       attachment?: Attachment;
       targetTab: string;
     }> = [];
@@ -124,8 +124,8 @@ export const DashboardView = React.memo(function DashboardView({
         id: `cash_${c.id}`,
         rawId: c.id,
         date: c.date || "",
-        title: c.details || (c.type === "cash_in" ? "Cash Received" : "Site Expense"),
-        subtitle: `${c.project || "General"} • ${c.category || (c.type === "cash_in" ? "Office Cash" : "Site")}`,
+        title: c.details || (c.type === "cash_in" ? "Cash Received" : c.type === "transfer" ? "Internal Transfer" : "Site Expense"),
+        subtitle: `${c.project || "General"} • ${c.category || (c.type === "cash_in" ? "Office Cash" : c.type === "transfer" ? "Transfer" : "Site")}`,
         amount: Number(c.amount) || 0,
         type: c.type,
         attachment: c.attachments?.[0],
@@ -466,6 +466,8 @@ export const DashboardView = React.memo(function DashboardView({
                             ? "bg-emerald-100 text-emerald-800"
                             : item.type === "cash_out"
                             ? "bg-rose-100 text-rose-800"
+                            : item.type === "transfer"
+                            ? "bg-indigo-100 text-indigo-800"
                             : item.type === "bank"
                             ? "bg-blue-100 text-blue-800"
                             : "bg-purple-100 text-purple-800"
@@ -475,6 +477,8 @@ export const DashboardView = React.memo(function DashboardView({
                           ? lang === "gu" ? "રોકડ જમા" : lang === "hi" ? "रोकड़ जमा" : "Cash In"
                           : item.type === "cash_out"
                           ? lang === "gu" ? "સાઇટ ખર્ચ (ઉધાર)" : lang === "hi" ? "साइट खर्च" : "Site Expense"
+                          : item.type === "transfer"
+                          ? lang === "gu" ? "આંતરિક ટ્રાન્સફર" : lang === "hi" ? "आंतरिक ट्रांसफर" : "Transfer"
                           : item.type === "bank"
                           ? lang === "gu" ? "બેંક RTGS" : lang === "hi" ? "बैंक आरटीजीएस" : "Bank RTGS"
                           : lang === "gu" ? "GST બીલ" : lang === "hi" ? "जीएसटी बिल" : "GST Bill"}
@@ -494,6 +498,8 @@ export const DashboardView = React.memo(function DashboardView({
                             ? "text-emerald-700"
                             : item.type === "cash_out"
                             ? "text-rose-700"
+                            : item.type === "transfer"
+                            ? "text-indigo-700"
                             : item.type === "bank"
                             ? "text-blue-700"
                             : "text-purple-700"
