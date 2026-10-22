@@ -913,6 +913,11 @@ export function App() {
             setCashModalType("cash_out");
             setShowCashModal(true);
           }}
+          onOpenCashTransferModal={() => {
+            setEditingCashTx(null);
+            setCashModalType("transfer");
+            setShowCashModal(true);
+          }}
           onOpenBankPaymentModal={() => {
             setEditingBankPayment(null);
             setShowBankModal(true);

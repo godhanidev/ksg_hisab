@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import {
   LayoutDashboard, Wallet, Landmark, FileCheck,
-  Plus, X, ArrowDownLeft, ArrowUpRight
+  Plus, X, ArrowDownLeft, ArrowUpRight, ArrowLeftRight
 } from "lucide-react";
 import { Language, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
@@ -13,6 +13,7 @@ type MobileNavBarProps = {
   lang: Language;
   onOpenCashInModal: () => void;
   onOpenCashOutModal: () => void;
+  onOpenCashTransferModal?: () => void;
   onOpenBankPaymentModal: () => void;
   onOpenGstBillModal: () => void;
 };
@@ -24,6 +25,7 @@ export const MobileNavBar = React.memo(function MobileNavBar({
   lang,
   onOpenCashInModal,
   onOpenCashOutModal,
+  onOpenCashTransferModal,
   onOpenBankPaymentModal,
   onOpenGstBillModal,
 }: MobileNavBarProps) {
@@ -158,6 +160,28 @@ export const MobileNavBar = React.memo(function MobileNavBar({
                 <p className="text-[10px] text-red-400 mt-0.5">JCB, Labour, Material, Kharchi</p>
               </button>
 
+              {/* Internal Transfer (આંતરિક ફેરબદલી) */}
+              {onOpenCashTransferModal && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowQuickSheet(false);
+                    onOpenCashTransferModal();
+                  }}
+                  className="flex flex-col items-start p-3.5 rounded-2xl bg-indigo-500/15 hover:bg-indigo-500/25 border border-indigo-500/30 text-left transition active:scale-95"
+                >
+                  <div className="h-9 w-9 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center mb-2">
+                    <ArrowLeftRight size={20} />
+                  </div>
+                  <p className="text-xs font-bold text-white leading-tight">
+                    {lang === "gu" ? "આંતરિક ટ્રાન્સફર" : "Internal Transfer"}
+                  </p>
+                  <p className="text-[10px] text-indigo-400 mt-0.5">
+                    {lang === "gu" ? "ટીમ સભ્યો વચ્ચે ફેરબદલી" : "Handover between site team"}
+                  </p>
+                </button>
+              )}
+
               {/* Direct Bank Payment */}
               {isAdmin && (
                 <button
@@ -184,7 +208,7 @@ export const MobileNavBar = React.memo(function MobileNavBar({
                   onOpenGstBillModal();
                 }}
                 className={`flex flex-col items-start p-3.5 rounded-2xl bg-amber-500/15 hover:bg-amber-500/25 border border-amber-500/30 text-left transition active:scale-95 ${
-                  !isAdmin ? "col-span-2" : ""
+                  !isAdmin && !onOpenCashTransferModal ? "col-span-2" : ""
                 }`}
               >
                 <div className="h-9 w-9 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center mb-2">

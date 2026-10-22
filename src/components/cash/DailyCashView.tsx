@@ -616,8 +616,183 @@ export const DailyCashView = React.memo(function DailyCashView({
             <p className="text-xs text-slate-400 mt-1">Try changing filters or add a new cash transaction</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs sm:text-sm border-collapse">
+          <>
+            {/* ── Mobile Phone Card View (sm:hidden) ────────────────── */}
+            <div className="sm:hidden divide-y divide-slate-100">
+              {paginatedTransactions.map(tx => {
+                const isCashIn = tx.type === "cash_in";
+                const isTransfer = tx.type === "transfer";
+
+                return (
+                  <div key={tx.id} className="p-3.5 space-y-2.5 hover:bg-slate-50/60 transition">
+                    {/* Top Row: Type Badge, Date, Site */}
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-1.5 min-w-0">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-lg px-2 py-0.5 text-[11px] font-bold ${
+                            isCashIn
+                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                              : isTransfer
+                              ? "bg-indigo-50 text-indigo-700 border border-indigo-200"
+                              : "bg-rose-50 text-rose-700 border border-rose-200"
+                          }`}
+                        >
+                          {isCashIn ? (
+                            <>
+                              <ArrowDownLeft size={13} className="text-emerald-600" />
+                              <span>{lang === "gu" ? "જમા" : "Cash In"}</span>
+                            </>
+                          ) : isTransfer ? (
+                            <>
+                              <ArrowLeftRight size={13} className="text-indigo-600" />
+                              <span>{lang === "gu" ? "ટ્રાન્સફર" : "Transfer"}</span>
+                            </>
+                          ) : (
+                            <>
+                              <ArrowUpRight size={13} className="text-rose-600" />
+                              <span>{lang === "gu" ? "ઉધાર" : "Cash Out"}</span>
+                            </>
+                          )}
+                        </span>
+                        <span className="text-[11px] font-medium text-slate-500">
+                          {tx.date}
+                        </span>
+                      </div>
+
+                      {/* Site Tag */}
+                      <span className="text-[10px] font-bold text-slate-700 bg-slate-100 px-2 py-0.5 rounded-md truncate max-w-[130px]">
+                        {tx.project}
+                      </span>
+                    </div>
+
+                    {/* Middle Row: Details & Amount */}
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 flex-1">
+                        <p className="text-sm font-bold text-slate-900 leading-snug">
+                          {tx.details}
+                        </p>
+                        {tx.notes && (
+                          <p className="text-[11px] text-slate-400 mt-0.5">
+                            {tx.notes}
+                          </p>
+                        )}
+                        <div className="flex flex-wrap items-center gap-1.5 mt-1">
+                          <span className="rounded-md bg-slate-100 px-1.5 py-0.5 text-[10px] font-semibold text-slate-600">
+                            {tx.category || "General"}
+                          </span>
+                          {tx.voucherNo && (
+                            <span className="rounded-md bg-amber-50 px-1.5 py-0.5 text-[10px] font-bold text-amber-800 border border-amber-200">
+                              #{tx.voucherNo}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Big Amount & Running Balance */}
+                      <div className="text-right shrink-0">
+                        <p
+                          className={`text-base font-black ${
+                            isCashIn
+                              ? "text-emerald-700"
+                              : isTransfer
+                              ? "text-indigo-700"
+                              : "text-rose-700"
+                          }`}
+                        >
+                          {isCashIn ? `+${formatINR(tx.amount)}` : isTransfer ? `${formatINR(tx.amount)}` : `-${formatINR(tx.amount)}`}
+                        </p>
+                        <p className="text-[10px] text-slate-500 font-semibold mt-0.5">
+                          સિલક: <strong className={tx.runningBalance >= 0 ? "text-slate-800" : "text-rose-600"}>{formatINR(tx.runningBalance)}</strong>
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Handled By Row */}
+                    <div className="rounded-xl bg-slate-50 border border-slate-100 p-2 text-xs text-slate-700 flex items-center justify-between">
+                      <div className="min-w-0 flex-1">
+                        {isCashIn ? (
+                          <span className="text-[11px] font-semibold">
+                            🟢 મેળવનાર: <strong className="text-emerald-900">{tx.recipientName || tx.supervisorName || "Rajubhai"}</strong>
+                            {tx.paidByName && <span className="text-slate-400 ml-1">({tx.paidByName})</span>}
+                          </span>
+                        ) : isTransfer ? (
+                          <span className="text-[11px] font-semibold flex items-center gap-1 flex-wrap">
+                            🔴 <strong className="text-indigo-900">{tx.paidByName || "Sender"}</strong>
+                            <span className="text-slate-400">➔</span>
+                            🟢 <strong className="text-emerald-900">{tx.recipientName || "Receiver"}</strong>
+                          </span>
+                        ) : (
+                          <span className="text-[11px] font-semibold">
+                            💳 ખર્ચ કરનાર: <strong className="text-rose-900">{tx.paidByName || tx.supervisorName || tx.enteredBy}</strong>
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Action Buttons for Mobile */}
+                      <div className="flex items-center gap-1 shrink-0 ml-2">
+                        {tx.attachments && tx.attachments.length > 0 && (
+                          <button
+                            type="button"
+                            onClick={() =>
+                              onViewAttachment({
+                                attachment: tx.attachments![0],
+                                title: tx.details,
+                                subtitle: `${tx.project} • ${tx.date}`,
+                                amount: formatINR(tx.amount),
+                              })
+                            }
+                            className="p-1.5 rounded-lg text-blue-600 bg-blue-50 border border-blue-200 hover:bg-blue-100"
+                            title={t.viewPhoto}
+                          >
+                            <Paperclip size={14} />
+                          </button>
+                        )}
+
+                        <button
+                          type="button"
+                          onClick={() => onEditTransaction(tx)}
+                          className="p-1.5 rounded-lg text-slate-600 bg-white border border-slate-200 hover:bg-slate-100"
+                          title={t.edit}
+                        >
+                          <Edit2 size={14} />
+                        </button>
+
+                        {isAdmin && (
+                          <button
+                            type="button"
+                            onClick={() => {
+                              const typeLabel = isCashIn
+                                ? (lang === "gu" ? "કેશ ઇન (જમા)" : "Cash In")
+                                : isTransfer
+                                ? (lang === "gu" ? "આંતરિક ટ્રાન્સફર" : "Transfer")
+                                : (lang === "gu" ? "કેશ આઉટ (ખર્ચ/ઉધાર)" : "Cash Out");
+
+                              setDeleteTarget({
+                                id: tx.id,
+                                title: lang === "gu" ? "કેશ એન્ટ્રી ડિલીટ" : "Delete Cash Entry",
+                                itemName: tx.details,
+                                itemDetails: `${tx.project} • ${tx.date} • ${tx.category || "General"} ${tx.supervisorName || tx.enteredBy ? `• By: ${tx.supervisorName || tx.enteredBy}` : ""}`,
+                                itemAmount: formatINR(tx.amount),
+                                itemTypeBadge: typeLabel,
+                                onConfirm: () => onDeleteTransaction(tx.id),
+                              });
+                            }}
+                            className="p-1.5 rounded-lg text-rose-600 bg-rose-50 border border-rose-200 hover:bg-rose-100"
+                            title={t.delete}
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* ── Desktop & Tablet Table View (hidden sm:block) ────── */}
+            <div className="hidden sm:block overflow-x-auto">
+              <table className="w-full text-left text-xs sm:text-sm border-collapse">
               <thead>
                 <tr className="border-b border-slate-200 bg-slate-50/80 text-[11px] font-bold uppercase tracking-wider text-slate-600">
                   <th className="py-3 px-3 sm:px-4">{t.date}</th>
@@ -803,6 +978,7 @@ export const DailyCashView = React.memo(function DailyCashView({
               </tbody>
             </table>
           </div>
+          </>
         )}
 
         {/* Pagination Controls */}

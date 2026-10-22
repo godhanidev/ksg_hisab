@@ -204,19 +204,19 @@ export function CashTransactionModal({
           }
           if (!recipientName || !siteMembers.some(m => m.name === recipientName)) {
             const nonAdmin = siteMembers.find(m => m.role !== "admin");
-            setRecipientName(nonAdmin ? nonAdmin.name : siteMembers[0].name);
+            setRecipientName(nonAdmin ? nonAdmin.name : (siteMembers[0]?.name || currentUser.name));
           }
         } else if (type === "cash_out") {
           if (!paidByName || !siteMembers.some(m => m.name === paidByName)) {
             const currentMatch = siteMembers.find(m => m.name === currentUser.name);
-            setPaidByName(currentMatch ? currentMatch.name : siteMembers[0].name);
+            setPaidByName(currentMatch ? currentMatch.name : (siteMembers[0]?.name || currentUser.name));
           }
         } else if (type === "transfer") {
           if (!paidByName || !siteMembers.some(m => m.name === paidByName)) {
-            setPaidByName(siteMembers[0].name);
+            setPaidByName(siteMembers[0]?.name || currentUser.name);
           }
           if (!recipientName || recipientName === paidByName || !siteMembers.some(m => m.name === recipientName)) {
-            const other = siteMembers.find(m => m.name !== (paidByName || siteMembers[0].name));
+            const other = siteMembers.find(m => m.name !== (paidByName || siteMembers[0]?.name));
             setRecipientName(other ? other.name : "");
           }
         }
@@ -400,13 +400,13 @@ export function CashTransactionModal({
                 setCategory("Office Cash Top-up");
                 setCustomCategory("");
               }}
-              className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-black transition-all ${
+              className={`flex items-center justify-center gap-1 sm:gap-1.5 py-2 sm:py-2.5 px-1 sm:px-2 rounded-xl text-[11px] sm:text-xs font-black transition-all ${
                 type === "cash_in"
                   ? "bg-emerald-600 text-white shadow-md shadow-emerald-600/20 scale-[1.02]"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <ArrowDownLeft size={16} className="shrink-0" />
+              <ArrowDownLeft size={15} className="shrink-0" />
               <span className="truncate">{t.cashIn}</span>
             </button>
 
@@ -418,13 +418,13 @@ export function CashTransactionModal({
                 setCategory("Labour");
                 setCustomCategory("");
               }}
-              className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-black transition-all ${
+              className={`flex items-center justify-center gap-1 sm:gap-1.5 py-2 sm:py-2.5 px-1 sm:px-2 rounded-xl text-[11px] sm:text-xs font-black transition-all ${
                 type === "cash_out"
                   ? "bg-rose-600 text-white shadow-md shadow-rose-600/20 scale-[1.02]"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <ArrowUpRight size={16} className="shrink-0" />
+              <ArrowUpRight size={15} className="shrink-0" />
               <span className="truncate">{t.cashOut}</span>
             </button>
 
@@ -436,13 +436,13 @@ export function CashTransactionModal({
                 setCategory("Site Internal Transfer");
                 setCustomCategory("");
               }}
-              className={`flex items-center justify-center gap-1.5 py-2.5 px-2 rounded-xl text-xs font-black transition-all ${
+              className={`flex items-center justify-center gap-1 sm:gap-1.5 py-2 sm:py-2.5 px-1 sm:px-2 rounded-xl text-[11px] sm:text-xs font-black transition-all ${
                 type === "transfer"
                   ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20 scale-[1.02]"
                   : "text-slate-600 hover:text-slate-900"
               }`}
             >
-              <ArrowLeftRight size={15} className="shrink-0" />
+              <ArrowLeftRight size={14} className="shrink-0" />
               <span className="truncate">{lang === "gu" ? "આંતરિક ટ્રાન્સફર" : "Transfer"}</span>
             </button>
           </div>

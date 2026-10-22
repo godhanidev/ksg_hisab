@@ -40,11 +40,13 @@ export function ProjectModal({
   const candidateUsers = users && users.length > 0 ? users : supervisors;
 
   useEffect(() => {
+    if (!isOpen) return;
+
     if (editingProject) {
-      setCode(editingProject.code);
-      setName(editingProject.name);
-      setDepartment(editingProject.department);
-      setValue(String(editingProject.value));
+      setCode(editingProject.code || "");
+      setName(editingProject.name || "");
+      setDepartment(editingProject.department || "Gujarat Water Supply & Sewerage Board (GWSSB)");
+      setValue(editingProject.value ? String(editingProject.value) : "");
       setStartDate(editingProject.startDate || "");
       setTargetDate(editingProject.targetDate || "");
       setLocation(editingProject.location || "");
@@ -52,7 +54,7 @@ export function ProjectModal({
 
       // Pre-select users currently assigned to this project
       const preselected = candidateUsers
-        .filter(u => u.role !== "admin" && u.assignedProjects && u.assignedProjects.includes(editingProject.name))
+        .filter(u => u && u.role !== "admin" && u.assignedProjects && Array.isArray(u.assignedProjects) && u.assignedProjects.includes(editingProject.name))
         .map(u => u.id);
       setSelectedUserIds(preselected);
     } else {
@@ -67,7 +69,7 @@ export function ProjectModal({
       setSelectedUserIds([]);
     }
     setErrorMsg(null);
-  }, [editingProject, isOpen, candidateUsers]);
+  }, [editingProject, isOpen]);
 
   if (!isOpen) return null;
 
