@@ -1,5 +1,5 @@
 // ─── KSG Hisab Ultra-Fast Service Worker ─────────────────────────────────────
-const CACHE_NAME = "ksg-hisab-v5";
+const CACHE_NAME = "ksg-hisab-v6";
 
 const STATIC_PRECACHE = [
   "/",
@@ -26,7 +26,7 @@ self.addEventListener("message", (event) => {
   }
 });
 
-// Activate: Clean up older cache versions immediately
+// Activate: Clean up older cache versions immediately and notify open tabs
 self.addEventListener("activate", (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -37,7 +37,13 @@ self.addEventListener("activate", (event) => {
           }
         })
       );
-    }).then(() => self.clients.claim())
+    }).then(() => self.clients.claim()).then(() => {
+      return self.clients.matchAll().then((clients) => {
+        clients.forEach((client) => {
+          client.postMessage({ type: "VERSION_UPDATED", version: CACHE_NAME });
+        });
+      });
+    })
   );
 });
 

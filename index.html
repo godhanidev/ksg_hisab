@@ -21,14 +21,23 @@
     <script>
       if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
         var refreshing = false;
-        navigator.serviceWorker.addEventListener('controllerchange', function() {
+        var reloadPage = function() {
           if (!refreshing) {
             refreshing = true;
             window.location.reload();
           }
+        };
+
+        navigator.serviceWorker.addEventListener('controllerchange', reloadPage);
+        navigator.serviceWorker.addEventListener('message', function(event) {
+          if (event.data && event.data.type === 'VERSION_UPDATED') {
+            reloadPage();
+          }
         });
+
         window.addEventListener('load', function() {
-          navigator.serviceWorker.register('/sw.js').then(function(reg) {
+          // updateViaCache: 'none' forces the browser to ALWAYS check the server for new sw.js immediately
+          navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' }).then(function(reg) {
             reg.update();
             reg.addEventListener('updatefound', function() {
               var newWorker = reg.installing;
@@ -40,17 +49,25 @@
                 });
               }
             });
+            // Proactively check for updates every 15 seconds
             setInterval(function() {
               reg.update();
-            }, 60 * 1000);
+            }, 15 * 1000);
           }).catch(function() {});
         });
+
         document.addEventListener('visibilitychange', function() {
           if (document.visibilityState === 'visible') {
             navigator.serviceWorker.getRegistration().then(function(reg) {
               if (reg) reg.update();
             });
           }
+        });
+
+        window.addEventListener('focus', function() {
+          navigator.serviceWorker.getRegistration().then(function(reg) {
+            if (reg) reg.update();
+          });
         });
       }
     </script>
