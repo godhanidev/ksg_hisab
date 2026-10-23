@@ -95,8 +95,11 @@ export const DailyCashView = React.memo(function DailyCashView({
         const paidBy = (tx.paidByName || tx.supervisorName || tx.enteredBy || "").toLowerCase().trim();
         const inDetails = (tx.details || "").toLowerCase().includes(target);
 
-        const matchRecipient = recipient === target || recipient.includes(target) || target.includes(recipient);
-        const matchPaidBy = paidBy === target || paidBy.includes(target) || target.includes(paidBy);
+        const isAdminTarget = target.includes("admin") || target.includes("owner") || target.includes("head office");
+        const matchRecipient = recipient === target || recipient.includes(target) || target.includes(recipient) ||
+          (isAdminTarget && (recipient.includes("admin") || recipient.includes("owner") || recipient.includes("head office")));
+        const matchPaidBy = paidBy === target || paidBy.includes(target) || target.includes(paidBy) ||
+          (isAdminTarget && (paidBy.includes("admin") || paidBy.includes("owner") || paidBy.includes("head office")));
 
         if (!matchRecipient && !matchPaidBy && !inDetails) {
           return false;
@@ -163,11 +166,33 @@ export const DailyCashView = React.memo(function DailyCashView({
   // If a specific member is filtered, show that member's net cash balance; else show overall site cash balance
   const activeMemberSummary = useMemo(() => {
     if (selectedMemberFilter === "ALL") return null;
-    return siteTeamBalances.find(b =>
+    const found = siteTeamBalances.find(b =>
       b.name.toLowerCase() === selectedMemberFilter.toLowerCase() ||
       b.name.toLowerCase().includes(selectedMemberFilter.toLowerCase())
-    ) || null;
-  }, [selectedMemberFilter, siteTeamBalances]);
+    );
+    if (found) return found;
+
+    // Fallback for newly added users who don't have transactions yet
+    const matchedUser = (users || []).find(u =>
+      u && u.name && (
+        u.name.toLowerCase().trim() === selectedMemberFilter.toLowerCase().trim() ||
+        u.name.toLowerCase().includes(selectedMemberFilter.toLowerCase())
+      )
+    );
+    if (matchedUser) {
+      return {
+        userId: matchedUser.id,
+        name: matchedUser.name,
+        role: matchedUser.role || "supervisor",
+        totalReceived: 0,
+        totalSpent: 0,
+        totalTransferredOut: 0,
+        balance: 0,
+        transactionCount: 0,
+      };
+    }
+    return null;
+  }, [selectedMemberFilter, siteTeamBalances, users]);
 
   const cashInHand = activeMemberSummary
     ? activeMemberSummary.balance
@@ -187,19 +212,27 @@ export const DailyCashView = React.memo(function DailyCashView({
         const rec = (tx.recipientName || tx.supervisorName || "").toLowerCase().trim();
         const pBy = (tx.paidByName || tx.supervisorName || tx.enteredBy || "").toLowerCase().trim();
 
+        const isAdminMem = mem.includes("admin") || mem.includes("owner") || mem.includes("head office");
+        const isReceiver = rec === mem || rec.includes(mem) || mem.includes(rec) ||
+          (isAdminMem && (rec.includes("admin") || rec.includes("owner") || rec.includes("head office")));
+        const isGiver = pBy === mem || pBy.includes(mem) || mem.includes(pBy) ||
+          (isAdminMem && (pBy.includes("admin") || pBy.includes("owner") || pBy.includes("head office")));
+
         if (tx.type === "cash_in") {
-          if (rec === mem || rec.includes(mem) || mem.includes(rec)) {
+          // If member received cash in, balance increases
+          if (isReceiver && !isGiver) {
             currentBalance += amt;
+          } else if (isGiver && !isReceiver) {
+            // If member gave cash to someone via cash in, balance decreases!
+            currentBalance -= amt;
           }
         } else if (tx.type === "cash_out") {
-          if (pBy === mem || pBy.includes(mem) || mem.includes(pBy)) {
+          if (isGiver) {
             currentBalance -= amt;
           }
         } else if (tx.type === "transfer") {
-          const isReceiver = rec === mem || rec.includes(mem) || mem.includes(rec);
-          const isGiver = pBy === mem || pBy.includes(mem) || mem.includes(pBy);
-          if (isReceiver) currentBalance += amt;
-          if (isGiver) currentBalance -= amt;
+          if (isReceiver && !isGiver) currentBalance += amt;
+          if (isGiver && !isReceiver) currentBalance -= amt;
         }
       } else {
         // Site running balance: cash_in increases, cash_out decreases, internal transfers do not affect site total
@@ -285,7 +318,7 @@ export const DailyCashView = React.memo(function DailyCashView({
         {/* Action Buttons */}
         <div className="flex flex-wrap items-center gap-2 shrink-0">
           {/* Add Cash In (જમા) Button */}
-          {isAdmin && (
+          {(isAdmin || currentUser.role === "site_partner" || currentUser.role === "site_engineer") && (
             <button
               onClick={onAddCashIn}
               className="flex items-center gap-1.5 rounded-xl bg-emerald-600 px-3.5 py-2.5 text-xs sm:text-sm font-bold text-white shadow-md shadow-emerald-600/20 hover:bg-emerald-700 transition active:scale-95"
@@ -348,22 +381,30 @@ export const DailyCashView = React.memo(function DailyCashView({
           </p>
         </div>
 
-        {/* Total Site Cash Expense (ઉધાર) */}
+        {/* Total Site Cash Expense / Outflow (ઉધાર / આપેલ રકમ) */}
         <div className="rounded-2xl border border-rose-200/80 bg-gradient-to-br from-rose-500/10 via-rose-500/5 to-white p-4 sm:p-5 shadow-xs">
           <div className="flex items-center justify-between">
             <p className="text-xs font-bold text-rose-800 uppercase tracking-wider">
-              {activeMemberSummary ? `${activeMemberSummary.name}: ખર્ચ કરેલ` : t.totalSiteExpense}
+              {activeMemberSummary ? `${activeMemberSummary.name}: ચૂકવેલ / આપેલ` : t.totalSiteExpense}
             </p>
             <div className="rounded-xl bg-rose-500/20 p-2 text-rose-700">
               <ArrowUpRight size={18} />
             </div>
           </div>
           <p className="mt-2 text-2xl sm:text-3xl font-black text-rose-700 tracking-tight">
-            {formatINR(activeMemberSummary ? activeMemberSummary.totalSpent : totalCashOut)}
+            {formatINR(
+              activeMemberSummary
+                ? (activeMemberSummary.totalSpent + activeMemberSummary.totalTransferredOut)
+                : totalCashOut
+            )}
           </p>
           <p className="mt-1 text-[11px] text-rose-600 font-medium">
-            {activeMemberSummary && activeMemberSummary.totalTransferredOut > 0
-              ? `+ ${formatINR(activeMemberSummary.totalTransferredOut)} અન્યને આપેલ`
+            {activeMemberSummary
+              ? lang === "gu"
+                ? `ખર્ચ: ${formatINR(activeMemberSummary.totalSpent)} • આપેલ: ${formatINR(activeMemberSummary.totalTransferredOut)}`
+                : `Spent: ${formatINR(activeMemberSummary.totalSpent)} • Transferred: ${formatINR(activeMemberSummary.totalTransferredOut)}`
+              : totalTransfers > 0
+              ? `${filteredTransactions.filter(t => t.type === "cash_out").length} ${lang === "gu" ? "ખર્ચ" : "Expenses"} • ${formatINR(totalTransfers)} ${lang === "gu" ? "આંતરિક ટ્રાન્સફર" : "Transfers"}`
               : `${filteredTransactions.filter(t => t.type === "cash_out").length} ${lang === "gu" ? "ખર્ચ વ્યવહારો" : "Expenses Incurred"}`}
           </p>
         </div>
@@ -570,6 +611,13 @@ export const DailyCashView = React.memo(function DailyCashView({
                   {m.name} (₹{m.balance.toLocaleString("en-IN")})
                 </option>
               ))}
+              {users
+                .filter(u => u && u.name && !siteTeamBalances.some(b => b.name.toLowerCase().trim() === u.name.toLowerCase().trim()))
+                .map(u => (
+                  <option key={u.id} value={u.name}>
+                    {u.name} (₹0)
+                  </option>
+                ))}
             </select>
           </div>
 
@@ -690,17 +738,50 @@ export const DailyCashView = React.memo(function DailyCashView({
 
                       {/* Big Amount & Running Balance */}
                       <div className="text-right shrink-0">
-                        <p
-                          className={`text-base font-black ${
-                            isCashIn
-                              ? "text-emerald-700"
-                              : isTransfer
-                              ? "text-indigo-700"
-                              : "text-rose-700"
-                          }`}
-                        >
-                          {isCashIn ? `+${formatINR(tx.amount)}` : isTransfer ? `${formatINR(tx.amount)}` : `-${formatINR(tx.amount)}`}
-                        </p>
+                        {(() => {
+                          let isNeg = false;
+                          let isPos = false;
+
+                          if (selectedMemberFilter !== "ALL") {
+                            const mem = selectedMemberFilter.toLowerCase().trim();
+                            const rec = (tx.recipientName || tx.supervisorName || "").toLowerCase().trim();
+                            const pBy = (tx.paidByName || tx.supervisorName || tx.enteredBy || "").toLowerCase().trim();
+                            const isAdminMem = mem.includes("admin") || mem.includes("owner") || mem.includes("head office");
+                            const isRec = rec === mem || rec.includes(mem) || mem.includes(rec) || (isAdminMem && (rec.includes("admin") || rec.includes("owner")));
+                            const isPBy = pBy === mem || pBy.includes(mem) || mem.includes(pBy) || (isAdminMem && (pBy.includes("admin") || pBy.includes("owner")));
+
+                            if (tx.type === "cash_out") {
+                              if (isPBy) isNeg = true;
+                            } else if (tx.type === "transfer") {
+                              if (isPBy) isNeg = true;
+                              else if (isRec) isPos = true;
+                            } else if (tx.type === "cash_in") {
+                              if (isRec) isPos = true;
+                              else if (isPBy) isNeg = true;
+                            }
+                          } else {
+                            if (isCashIn) isPos = true;
+                            else if (!isTransfer) isNeg = true;
+                          }
+
+                          return (
+                            <p
+                              className={`text-base font-black ${
+                                isPos
+                                  ? "text-emerald-700"
+                                  : isNeg
+                                  ? "text-rose-700"
+                                  : "text-indigo-700"
+                              }`}
+                            >
+                              {isPos
+                                ? `+${formatINR(tx.amount)}`
+                                : isNeg
+                                ? `-${formatINR(tx.amount)}`
+                                : `⇄ ${formatINR(tx.amount)}`}
+                            </p>
+                          );
+                        })()}
                         <p className="text-[10px] text-slate-500 font-semibold mt-0.5">
                           સિલક: <strong className={tx.runningBalance >= 0 ? "text-slate-800" : "text-rose-600"}>{formatINR(tx.runningBalance)}</strong>
                         </p>
@@ -881,10 +962,15 @@ export const DailyCashView = React.memo(function DailyCashView({
                             )}
                           </div>
                         ) : isTransfer ? (
-                          <div className="flex items-center gap-1 font-bold">
-                            <span className="text-indigo-900">{tx.paidByName || "Sender"}</span>
-                            <span className="text-slate-400 font-normal">➔</span>
-                            <span className="text-emerald-800">{tx.recipientName || "Receiver"}</span>
+                          <div>
+                            <div className="flex items-center gap-1 font-bold">
+                              <span className="text-rose-800 font-black">{tx.paidByName || "Sender"}</span>
+                              <span className="text-slate-400 font-normal">➔</span>
+                              <span className="text-emerald-800 font-black">{tx.recipientName || "Receiver"}</span>
+                            </div>
+                            <span className="text-[10px] text-indigo-600 font-semibold block">
+                              {lang === "gu" ? "આંતરિક ફેરબદલી" : "Internal Transfer"}
+                            </span>
                           </div>
                         ) : (
                           <div>
@@ -896,13 +982,75 @@ export const DailyCashView = React.memo(function DailyCashView({
                       </td>
 
                       {/* Cash In Column */}
-                      <td className="py-3 px-3 sm:px-4 text-right font-bold text-emerald-700 whitespace-nowrap">
-                        {isCashIn ? formatINR(tx.amount) : isTransfer ? "-" : "-"}
+                      <td className="py-3 px-3 sm:px-4 text-right font-bold whitespace-nowrap">
+                        {(() => {
+                          if (selectedMemberFilter !== "ALL") {
+                            const mem = selectedMemberFilter.toLowerCase().trim();
+                            const rec = (tx.recipientName || tx.supervisorName || "").toLowerCase().trim();
+                            const pBy = (tx.paidByName || tx.supervisorName || tx.enteredBy || "").toLowerCase().trim();
+                            const isAdminMem = mem.includes("admin") || mem.includes("owner") || mem.includes("head office");
+                            const isRec = rec === mem || rec.includes(mem) || mem.includes(rec) || (isAdminMem && (rec.includes("admin") || rec.includes("owner")));
+
+                            if (tx.type === "cash_in" && isRec) {
+                              return <span className="text-emerald-700 font-bold">+{formatINR(tx.amount)}</span>;
+                            }
+                            if (tx.type === "transfer" && isRec) {
+                              return <span className="text-emerald-700 font-bold">+{formatINR(tx.amount)}</span>;
+                            }
+                            return <span className="text-slate-300 font-normal">-</span>;
+                          }
+
+                          if (isCashIn) {
+                            return <span className="text-emerald-700 font-bold">+{formatINR(tx.amount)}</span>;
+                          }
+                          if (isTransfer) {
+                            return (
+                              <div>
+                                <span className="text-emerald-700 font-bold">+{formatINR(tx.amount)}</span>
+                                <span className="text-[10px] text-slate-400 block font-normal">To: {tx.recipientName || "Receiver"}</span>
+                              </div>
+                            );
+                          }
+                          return <span className="text-slate-300 font-normal">-</span>;
+                        })()}
                       </td>
 
                       {/* Cash Out Column */}
-                      <td className="py-3 px-3 sm:px-4 text-right font-bold text-rose-700 whitespace-nowrap">
-                        {!isCashIn && !isTransfer ? formatINR(tx.amount) : "-"}
+                      <td className="py-3 px-3 sm:px-4 text-right font-bold whitespace-nowrap">
+                        {(() => {
+                          if (selectedMemberFilter !== "ALL") {
+                            const mem = selectedMemberFilter.toLowerCase().trim();
+                            const rec = (tx.recipientName || tx.supervisorName || "").toLowerCase().trim();
+                            const pBy = (tx.paidByName || tx.supervisorName || tx.enteredBy || "").toLowerCase().trim();
+                            const isAdminMem = mem.includes("admin") || mem.includes("owner") || mem.includes("head office");
+                            const isPBy = pBy === mem || pBy.includes(mem) || mem.includes(pBy) || (isAdminMem && (pBy.includes("admin") || pBy.includes("owner")));
+                            const isRec = rec === mem || rec.includes(mem) || mem.includes(rec) || (isAdminMem && (rec.includes("admin") || rec.includes("owner")));
+
+                            if (tx.type === "cash_out" && isPBy) {
+                              return <span className="text-rose-700 font-bold">-{formatINR(tx.amount)}</span>;
+                            }
+                            if (tx.type === "transfer" && isPBy) {
+                              return <span className="text-rose-700 font-bold">-{formatINR(tx.amount)}</span>;
+                            }
+                            if (tx.type === "cash_in" && isPBy && !isRec) {
+                              return <span className="text-rose-700 font-bold">-{formatINR(tx.amount)}</span>;
+                            }
+                            return <span className="text-slate-300 font-normal">-</span>;
+                          }
+
+                          if (tx.type === "cash_out") {
+                            return <span className="text-rose-700 font-bold">-{formatINR(tx.amount)}</span>;
+                          }
+                          if (isTransfer) {
+                            return (
+                              <div>
+                                <span className="text-rose-700 font-bold">-{formatINR(tx.amount)}</span>
+                                <span className="text-[10px] text-slate-400 block font-normal">By: {tx.paidByName || "Sender"}</span>
+                              </div>
+                            );
+                          }
+                          return <span className="text-slate-300 font-normal">-</span>;
+                        })()}
                       </td>
 
                       {/* Running Balance Column */}

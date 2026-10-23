@@ -67,7 +67,7 @@ export const UserManagement = React.memo(function UserManagement({
       name: "",
       role: "supervisor",
       phone: "",
-      assignedProjects: projects.length > 0 ? [projects[0].name] : [],
+      assignedProjects: projects.length > 0 ? projects.map(p => p.name) : [],
     });
     setShowFormPassword(false);
     setShowModal(true);
@@ -476,10 +476,28 @@ export const UserManagement = React.memo(function UserManagement({
             {/* Site Isolation Section for Non-Admin roles */}
             {form.role !== "admin" && (
               <div className="rounded-2xl bg-slate-50 border border-slate-200 p-4 space-y-3">
-                <p className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
-                  <MapPin size={14} className="text-amber-600" />
-                  Assign Construction Sites (સાઇટ ફાળવો)
-                </p>
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <p className="text-xs font-bold text-slate-800 flex items-center gap-1.5">
+                    <MapPin size={14} className="text-amber-600" />
+                    Assign Construction Sites (સાઇટ ફાળવો)
+                  </p>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, assignedProjects: projects.map(p => p.name) }))}
+                      className="text-[10px] font-bold text-amber-800 bg-amber-100 hover:bg-amber-200 px-2 py-0.5 rounded-lg border border-amber-300 transition"
+                    >
+                      ✓ બધી સાઇટ પસંદ કરો
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setForm(f => ({ ...f, assignedProjects: [] }))}
+                      className="text-[10px] font-bold text-slate-600 bg-slate-200 hover:bg-slate-300 px-2 py-0.5 rounded-lg border border-slate-300 transition"
+                    >
+                      ✕ કાઢી નાખો
+                    </button>
+                  </div>
+                </div>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {projects.map(p => (
                     <label

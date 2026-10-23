@@ -24,12 +24,13 @@ export function getSiteTeamMembers(
     return [];
   }
 
+  // Across all sites, return all registered users
   if (!projectName || projectName === "ALL") {
-    return users;
+    return users.filter(u => u && u.name && u.name.trim());
   }
 
   const team = users.filter(u => {
-    if (!u) return false;
+    if (!u || !u.name || !u.name.trim()) return false;
     // 1. Explicitly assigned to this project
     if (u.assignedProjects && Array.isArray(u.assignedProjects) && u.assignedProjects.includes(projectName)) {
       return true;
@@ -38,7 +39,11 @@ export function getSiteTeamMembers(
     if (u.role === "admin") {
       return true;
     }
-    // 3. Match project supervisor name if set
+    // 3. Site Partner has access across all sites
+    if (u.role === "site_partner") {
+      return true;
+    }
+    // 4. Match project supervisor name if set
     if (
       project?.supervisorName &&
       u.name &&
@@ -46,12 +51,15 @@ export function getSiteTeamMembers(
     ) {
       return true;
     }
+    // 5. If user has empty or unassigned projects array, treat as accessible to prevent being hidden
+    if (!u.assignedProjects || (Array.isArray(u.assignedProjects) && u.assignedProjects.length === 0)) {
+      return true;
+    }
     return false;
   });
 
-  // Safe fallback: If no members are explicitly assigned to this site yet,
-  // return all non-empty users so the UI never displays an empty select or crashes
-  return team.length > 0 ? team : users;
+  // Safe fallback: If no members matched, return all users so no dropdown is ever empty
+  return team.length > 0 ? team : users.filter(u => u && u.name && u.name.trim());
 }
 
 /**
@@ -98,14 +106,53 @@ export function calculateSiteTeamBalances(
     let existing = summaryMap.get(key);
 
     if (!existing) {
-      // Try matching by id or partial name
+      // 1. Try matching by id
+      if (id) {
+        for (const v of summaryMap.values()) {
+          if (v.userId === id) return v;
+        }
+      }
+
+      // 2. Try matching by key substring
       for (const [k, v] of summaryMap.entries()) {
-        if (id && v.userId === id) {
+        if (key && (k === key || k.includes(key) || key.includes(k))) {
           return v;
         }
-        if (key && (k.includes(key) || key.includes(k))) {
-          return v;
+      }
+
+      // 3. Match admin/owner alias
+      if (key === "admin" || key === "owner" || key.includes("admin") || key.includes("owner") || key.includes("head office")) {
+        for (const v of summaryMap.values()) {
+          if (v.role === "admin") return v;
         }
+      }
+
+      // 4. Try matching against safeUsers
+      const matchedUser = safeUsers.find(u => {
+        if (id && u.id === id) return true;
+        const uName = (u.name || "").toLowerCase().trim();
+        if (uName === key || (key.length >= 3 && (uName.includes(key) || key.includes(uName)))) return true;
+        if ((key === "admin" || key === "owner" || key.includes("admin") || key.includes("owner")) && u.role === "admin") return true;
+        return false;
+      });
+
+      if (matchedUser) {
+        const userKey = matchedUser.name.toLowerCase().trim();
+        let userEntry = summaryMap.get(userKey);
+        if (!userEntry) {
+          userEntry = {
+            userId: matchedUser.id,
+            name: matchedUser.name,
+            role: matchedUser.role || "supervisor",
+            totalReceived: 0,
+            totalSpent: 0,
+            totalTransferredOut: 0,
+            balance: 0,
+            transactionCount: 0,
+          };
+          summaryMap.set(userKey, userEntry);
+        }
+        return userEntry;
       }
 
       existing = {
@@ -130,9 +177,33 @@ export function calculateSiteTeamBalances(
     if (tx.type === "cash_in") {
       // Recipient gets cash
       const recipientName = tx.recipientName || tx.supervisorName || "Rajubhai";
-      const person = getOrCreate(recipientName, tx.recipientId, tx.recipientRole);
-      person.totalReceived += amt;
-      person.transactionCount += 1;
+      const receiver = getOrCreate(recipientName, tx.recipientId, tx.recipientRole);
+      receiver.totalReceived += amt;
+      receiver.transactionCount += 1;
+
+      // If giver is specified and is an internal team member/admin/user, deduct from them!
+      const giverName = tx.paidByName?.trim();
+      if (giverName) {
+        const isInternalUser = safeUsers.some(u => {
+          if (tx.paidById && u.id === tx.paidById) return true;
+          const uName = (u.name || "").toLowerCase().trim();
+          const gName = giverName.toLowerCase();
+          if (uName === gName || (gName.length >= 3 && (uName.includes(gName) || gName.includes(uName)))) return true;
+          if ((gName === "admin" || gName === "owner" || gName.includes("admin") || gName.includes("owner")) && u.role === "admin") return true;
+          return false;
+        });
+
+        const giverKey = giverName.toLowerCase();
+        const existsInSummary = summaryMap.has(giverKey) || Array.from(summaryMap.keys()).some(k => k.includes(giverKey) || giverKey.includes(k));
+
+        if (isInternalUser || existsInSummary) {
+          const giver = getOrCreate(giverName, tx.paidById, tx.paidByRole);
+          if (giver !== receiver) {
+            giver.totalTransferredOut += amt;
+            giver.transactionCount += 1;
+          }
+        }
+      }
     } else if (tx.type === "cash_out") {
       // Payer spends cash
       const paidByName = tx.paidByName || tx.supervisorName || tx.enteredBy || "Rajubhai";
