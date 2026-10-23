@@ -2,7 +2,7 @@ import React, { useState, useMemo, useEffect } from "react";
 import {
   Wallet, Plus, ArrowDownLeft, ArrowUpRight, ArrowLeftRight, Search, Filter,
   Download, Printer, Eye, Trash2, Edit2, Paperclip, Calendar, CheckCircle2,
-  AlertCircle, Users, ArrowRight, UserCheck, Shield
+  AlertCircle, Users, ArrowRight, UserCheck, Shield, Lock
 } from "lucide-react";
 import { Attachment, CashTransaction, Language, Project, Role, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
@@ -11,6 +11,7 @@ import { exportCashTransactionsExcel } from "../../utils/exportUtils";
 import { DeleteConfirmModal, DeleteTargetInfo } from "../common/DeleteConfirmModal";
 import { Pagination } from "../common/Pagination";
 import { calculateSiteTeamBalances, getSiteTeamMembers } from "../../utils/cashCalculations";
+import { canEditEntry } from "../../utils/permissionUtils";
 
 type DailyCashViewProps = {
   transactions: CashTransaction[];
@@ -807,6 +808,14 @@ export const DailyCashView = React.memo(function DailyCashView({
                             💳 ખર્ચ કરનાર: <strong className="text-rose-900">{tx.paidByName || tx.supervisorName || tx.enteredBy}</strong>
                           </span>
                         )}
+                        {tx.enteredBy && (
+                          <div className="flex items-center gap-1.5 text-[10px] text-slate-500 mt-0.5">
+                            <span>✍️ {t.enteredBy}: <strong className="text-slate-700">{tx.enteredBy}</strong></span>
+                            {tx.updatedBy && tx.updatedBy !== tx.enteredBy && (
+                              <span className="text-amber-600 font-medium">({lang === "gu" ? "સુધારેલ:" : "Updated:"} {tx.updatedBy})</span>
+                            )}
+                          </div>
+                        )}
                       </div>
 
                       {/* Action Buttons for Mobile */}
@@ -829,14 +838,27 @@ export const DailyCashView = React.memo(function DailyCashView({
                           </button>
                         )}
 
-                        <button
-                          type="button"
-                          onClick={() => onEditTransaction(tx)}
-                          className="p-1.5 rounded-lg text-slate-600 bg-white border border-slate-200 hover:bg-slate-100"
-                          title={t.edit}
-                        >
-                          <Edit2 size={14} />
-                        </button>
+                        {canEditEntry(tx, currentUser, users) ? (
+                          <button
+                            type="button"
+                            onClick={() => onEditTransaction(tx)}
+                            className="p-1.5 rounded-lg text-slate-600 bg-white border border-slate-200 hover:bg-slate-100 hover:text-slate-900 transition"
+                            title={t.edit}
+                          >
+                            <Edit2 size={14} />
+                          </button>
+                        ) : (
+                          <span
+                            className="p-1.5 rounded-lg text-slate-300 bg-slate-50 border border-slate-100 cursor-not-allowed inline-flex items-center justify-center"
+                            title={
+                              lang === "gu"
+                                ? `આ એન્ટ્રી ફક્ત ${tx.enteredBy || "એન્ટ્રી કરનાર"} અથવા એડમિન જ એડિટ કરી શકે છે`
+                                : `Only ${tx.enteredBy || "the creator"} or Admin can edit this entry`
+                            }
+                          >
+                            <Lock size={13} />
+                          </span>
+                        )}
 
                         {isAdmin && (
                           <button
@@ -1083,14 +1105,27 @@ export const DailyCashView = React.memo(function DailyCashView({
                             </button>
                           )}
 
-                          {/* Edit Button */}
-                          <button
-                            onClick={() => onEditTransaction(tx)}
-                            title={t.edit}
-                            className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
-                          >
-                            <Edit2 size={15} />
-                          </button>
+                          {/* Edit Button or Permission Lock */}
+                          {canEditEntry(tx, currentUser, users) ? (
+                            <button
+                              onClick={() => onEditTransaction(tx)}
+                              title={t.edit}
+                              className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
+                            >
+                              <Edit2 size={15} />
+                            </button>
+                          ) : (
+                            <span
+                              title={
+                                lang === "gu"
+                                  ? `આ એન્ટ્રી ફક્ત ${tx.enteredBy || "એન્ટ્રી કરનાર"} અથવા એડમિન જ એડિટ કરી શકે છે`
+                                  : `Only ${tx.enteredBy || "the creator"} or Admin can edit this entry`
+                              }
+                              className="rounded-lg p-1.5 text-slate-300 cursor-not-allowed inline-flex items-center justify-center"
+                            >
+                              <Lock size={14} />
+                            </span>
+                          )}
 
                           {/* Delete Button (Admin only or Creator) */}
                           {isAdmin && (

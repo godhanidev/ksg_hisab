@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import {
   Landmark, Plus, Search, Filter, Download, Printer,
-  Eye, Trash2, Edit2, Paperclip, CheckCircle2, Building, ArrowRight
+  Eye, Trash2, Edit2, Paperclip, CheckCircle2, Building, ArrowRight, Lock
 } from "lucide-react";
 import { Attachment, BankPayment, Language, Project, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
@@ -9,6 +9,7 @@ import { formatINR } from "../../utils/formatters";
 import { exportBankPaymentsExcel } from "../../utils/exportUtils";
 import { DeleteConfirmModal, DeleteTargetInfo } from "../common/DeleteConfirmModal";
 import { Pagination } from "../common/Pagination";
+import { canEditEntry } from "../../utils/permissionUtils";
 
 type BankPaymentsViewProps = {
   payments: BankPayment[];
@@ -20,6 +21,7 @@ type BankPaymentsViewProps = {
   selectedSiteFilter: string;
   setSelectedSiteFilter: (site: string) => void;
   currentUser: UserAccount;
+  users?: UserAccount[];
   lang: Language;
 };
 
@@ -33,6 +35,7 @@ export const BankPaymentsView = React.memo(function BankPaymentsView({
   selectedSiteFilter,
   setSelectedSiteFilter,
   currentUser,
+  users = [],
   lang,
 }: BankPaymentsViewProps) {
   const t = getTranslation(lang);
@@ -333,6 +336,14 @@ export const BankPaymentsView = React.memo(function BankPaymentsView({
                             {p.notes}
                           </p>
                         )}
+                        {p.enteredBy && (
+                          <p className="text-[10px] text-slate-500 font-medium truncate max-w-[200px] mt-0.5">
+                            ✍️ {t.enteredBy}: <span className="font-semibold text-slate-700">{p.enteredBy}</span>
+                            {p.updatedBy && p.updatedBy !== p.enteredBy && (
+                              <span className="text-amber-600 font-medium ml-1">({lang === "gu" ? "સુધારેલ:" : "Updated:"} {p.updatedBy})</span>
+                            )}
+                          </p>
+                        )}
                       </div>
                     </td>
                     <td className="py-3 px-3 sm:px-4 font-semibold text-slate-700 max-w-[150px] truncate">
@@ -373,33 +384,45 @@ export const BankPaymentsView = React.memo(function BankPaymentsView({
                           </button>
                         )}
 
+                        {canEditEntry(p, currentUser, users) ? (
+                          <button
+                            onClick={() => onEditPayment(p)}
+                            title={t.edit}
+                            className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
+                          >
+                            <Edit2 size={15} />
+                          </button>
+                        ) : (
+                          <span
+                            title={
+                              lang === "gu"
+                                ? `આ પેમેન્ટ ફક્ત ${p.enteredBy || "એન્ટ્રી કરનાર"} અથવા એડમિન જ એડિટ કરી શકે છે`
+                                : `Only ${p.enteredBy || "the creator"} or Admin can edit this payment`
+                            }
+                            className="rounded-lg p-1.5 text-slate-300 cursor-not-allowed inline-flex items-center justify-center"
+                          >
+                            <Lock size={14} />
+                          </span>
+                        )}
+
                         {isAdmin && (
-                          <>
-                            <button
-                              onClick={() => onEditPayment(p)}
-                              title={t.edit}
-                              className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
-                            >
-                              <Edit2 size={15} />
-                            </button>
-                            <button
-                              onClick={() => {
-                                setDeleteTarget({
-                                  id: p.id,
-                                  title: lang === "gu" ? "બેંક પેમેન્ટ ડિલીટ" : lang === "hi" ? "बैंक भुगतान हटाएं" : "Delete Bank Payment",
-                                  itemName: p.partyName,
-                                  itemDetails: `${p.project} • ${p.date} • ${p.category || "General"} ${p.referenceNo ? `• Ref/UTR: ${p.referenceNo}` : ""}`,
-                                  itemAmount: formatINR(p.amount),
-                                  itemTypeBadge: p.paymentMode,
-                                  onConfirm: () => onDeletePayment(p.id),
-                                });
-                              }}
-                              title={t.delete}
-                              className="rounded-lg p-1.5 text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition"
-                            >
-                              <Trash2 size={15} />
-                            </button>
-                          </>
+                          <button
+                            onClick={() => {
+                              setDeleteTarget({
+                                id: p.id,
+                                title: lang === "gu" ? "બેંક પેમેન્ટ ડિલીટ" : lang === "hi" ? "बैंक भुगतान हटाएं" : "Delete Bank Payment",
+                                itemName: p.partyName,
+                                itemDetails: `${p.project} • ${p.date} • ${p.category || "General"} ${p.referenceNo ? `• Ref/UTR: ${p.referenceNo}` : ""}`,
+                                itemAmount: formatINR(p.amount),
+                                itemTypeBadge: p.paymentMode,
+                                onConfirm: () => onDeletePayment(p.id),
+                              });
+                            }}
+                            title={t.delete}
+                            className="rounded-lg p-1.5 text-rose-500 hover:bg-rose-50 hover:text-rose-700 transition"
+                          >
+                            <Trash2 size={15} />
+                          </button>
                         )}
                       </div>
                     </td>

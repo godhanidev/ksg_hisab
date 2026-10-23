@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import {
   FileCheck, Plus, Search, Filter, Download, Printer,
-  Eye, Trash2, Edit2, Paperclip, CheckCircle2, Clock, AlertTriangle, FileText
+  Eye, Trash2, Edit2, Paperclip, CheckCircle2, Clock, AlertTriangle, FileText, Lock
 } from "lucide-react";
 import { Attachment, GSTBill, Language, Project, UserAccount } from "../../types";
 import { getTranslation } from "../../i18n/translations";
@@ -9,6 +9,7 @@ import { formatINR } from "../../utils/formatters";
 import { exportGSTBillsExcel } from "../../utils/exportUtils";
 import { DeleteConfirmModal, DeleteTargetInfo } from "../common/DeleteConfirmModal";
 import { Pagination } from "../common/Pagination";
+import { canEditEntry } from "../../utils/permissionUtils";
 
 type GSTBillsViewProps = {
   bills: GSTBill[];
@@ -20,6 +21,7 @@ type GSTBillsViewProps = {
   selectedSiteFilter: string;
   setSelectedSiteFilter: (site: string) => void;
   currentUser: UserAccount;
+  users?: UserAccount[];
   lang: Language;
 };
 
@@ -33,6 +35,7 @@ export const GSTBillsView = React.memo(function GSTBillsView({
   selectedSiteFilter,
   setSelectedSiteFilter,
   currentUser,
+  users = [],
   lang,
 }: GSTBillsViewProps) {
   const t = getTranslation(lang);
@@ -328,6 +331,14 @@ export const GSTBillsView = React.memo(function GSTBillsView({
                             {b.notes}
                           </p>
                         )}
+                        {b.enteredBy && (
+                          <p className="text-[10px] text-slate-500 font-medium truncate max-w-[200px] mt-0.5">
+                            ✍️ {t.enteredBy}: <span className="font-semibold text-slate-700">{b.enteredBy}</span>
+                            {b.updatedBy && b.updatedBy !== b.enteredBy && (
+                              <span className="text-amber-600 font-medium ml-1">({lang === "gu" ? "સુધારેલ:" : "Updated:"} {b.updatedBy})</span>
+                            )}
+                          </p>
+                        )}
                       </div>
                     </td>
                     <td className="py-3 px-3 sm:px-4 whitespace-nowrap">
@@ -382,13 +393,26 @@ export const GSTBillsView = React.memo(function GSTBillsView({
                           </button>
                         )}
 
-                        <button
-                          onClick={() => onEditBill(b)}
-                          title={t.edit}
-                          className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
-                        >
-                          <Edit2 size={15} />
-                        </button>
+                        {canEditEntry(b, currentUser, users) ? (
+                          <button
+                            onClick={() => onEditBill(b)}
+                            title={t.edit}
+                            className="rounded-lg p-1.5 text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition"
+                          >
+                            <Edit2 size={15} />
+                          </button>
+                        ) : (
+                          <span
+                            title={
+                              lang === "gu"
+                                ? `આ બિલ ફક્ત ${b.enteredBy || "એન્ટ્રી કરનાર"} અથવા એડમિન જ એડિટ કરી શકે છે`
+                                : `Only ${b.enteredBy || "the creator"} or Admin can edit this bill`
+                            }
+                            className="rounded-lg p-1.5 text-slate-300 cursor-not-allowed inline-flex items-center justify-center"
+                          >
+                            <Lock size={14} />
+                          </span>
+                        )}
 
                         {isAdmin && (
                           <button

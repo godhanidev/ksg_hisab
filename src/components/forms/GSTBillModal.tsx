@@ -16,6 +16,7 @@ type GSTBillModalProps = {
   editingBill?: GSTBill | null;
   projects: Project[];
   currentUser: UserAccount;
+  users?: UserAccount[];
   lang: Language;
   selectedSiteFilter?: string;
 };
@@ -41,6 +42,7 @@ export function GSTBillModal({
   editingBill,
   projects,
   currentUser,
+  users = [],
   lang,
   selectedSiteFilter,
 }: GSTBillModalProps) {
@@ -188,6 +190,32 @@ export function GSTBillModal({
       ? (customProduct.trim() || "Other")
       : product;
 
+    const isEditing = !!editingBill;
+
+    const originalCreator = isEditing && editingBill
+      ? users.find(u =>
+          u.id === editingBill.enteredById ||
+          (editingBill.enteredByUsername && u.username.toLowerCase() === editingBill.enteredByUsername.toLowerCase()) ||
+          (editingBill.enteredBy && (
+            u.name.toLowerCase() === editingBill.enteredBy.toLowerCase() ||
+            u.username.toLowerCase() === editingBill.enteredBy.toLowerCase() ||
+            u.name.toLowerCase().includes(editingBill.enteredBy.toLowerCase())
+          ))
+        )
+      : null;
+
+    const preservedEnteredById = isEditing && editingBill
+      ? (editingBill.enteredById ?? originalCreator?.id ?? currentUser.id)
+      : currentUser.id;
+
+    const preservedEnteredByUsername = isEditing && editingBill
+      ? (editingBill.enteredByUsername ?? originalCreator?.username ?? currentUser.username)
+      : currentUser.username;
+
+    const preservedEnteredBy = isEditing && editingBill
+      ? (editingBill.enteredBy || originalCreator?.name || currentUser.name)
+      : currentUser.name;
+
     const payload = {
       ...(editingBill ? { id: editingBill.id } : {}),
       billNo: billNo.trim(),
@@ -202,7 +230,14 @@ export function GSTBillModal({
       status,
       paymentReference: paymentReference.trim() || undefined,
       notes: editingBill?.notes,
-      enteredBy: currentUser.name,
+      enteredBy: preservedEnteredBy,
+      enteredById: preservedEnteredById,
+      enteredByUsername: preservedEnteredByUsername,
+      ...(isEditing ? {
+        updatedAt: new Date().toISOString(),
+        updatedBy: currentUser.name,
+        updatedById: currentUser.id,
+      } : {}),
       attachments: attachments.length > 0 ? attachments : undefined,
     };
 

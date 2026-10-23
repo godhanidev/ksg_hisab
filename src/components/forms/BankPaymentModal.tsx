@@ -16,6 +16,7 @@ type BankPaymentModalProps = {
   editingPayment?: BankPayment | null;
   projects: Project[];
   currentUser: UserAccount;
+  users?: UserAccount[];
   lang: Language;
   selectedSiteFilter?: string;
 };
@@ -38,6 +39,7 @@ export function BankPaymentModal({
   editingPayment,
   projects,
   currentUser,
+  users = [],
   lang,
   selectedSiteFilter,
 }: BankPaymentModalProps) {
@@ -171,6 +173,32 @@ export function BankPaymentModal({
       ? (customCategory.trim() || "Other")
       : category;
 
+    const isEditing = !!editingPayment;
+
+    const originalCreator = isEditing && editingPayment
+      ? users.find(u =>
+          u.id === editingPayment.enteredById ||
+          (editingPayment.enteredByUsername && u.username.toLowerCase() === editingPayment.enteredByUsername.toLowerCase()) ||
+          (editingPayment.enteredBy && (
+            u.name.toLowerCase() === editingPayment.enteredBy.toLowerCase() ||
+            u.username.toLowerCase() === editingPayment.enteredBy.toLowerCase() ||
+            u.name.toLowerCase().includes(editingPayment.enteredBy.toLowerCase())
+          ))
+        )
+      : null;
+
+    const preservedEnteredById = isEditing && editingPayment
+      ? (editingPayment.enteredById ?? originalCreator?.id ?? currentUser.id)
+      : currentUser.id;
+
+    const preservedEnteredByUsername = isEditing && editingPayment
+      ? (editingPayment.enteredByUsername ?? originalCreator?.username ?? currentUser.username)
+      : currentUser.username;
+
+    const preservedEnteredBy = isEditing && editingPayment
+      ? (editingPayment.enteredBy || originalCreator?.name || currentUser.name)
+      : currentUser.name;
+
     const payload = {
       ...(editingPayment ? { id: editingPayment.id } : {}),
       date,
@@ -181,7 +209,14 @@ export function BankPaymentModal({
       referenceNo: referenceNo.trim() || undefined,
       category: finalCategory,
       notes: editingPayment?.notes,
-      enteredBy: currentUser.name,
+      enteredBy: preservedEnteredBy,
+      enteredById: preservedEnteredById,
+      enteredByUsername: preservedEnteredByUsername,
+      ...(isEditing ? {
+        updatedAt: new Date().toISOString(),
+        updatedBy: currentUser.name,
+        updatedById: currentUser.id,
+      } : {}),
       attachments: attachments.length > 0 ? attachments : undefined,
     };
 

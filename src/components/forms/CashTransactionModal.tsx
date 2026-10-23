@@ -378,6 +378,33 @@ export function CashTransactionModal({
       return false;
     });
 
+    const isEditing = !!editingTransaction;
+
+    // Resolve original creator if editing to preserve creator rights even when an admin edits the entry
+    const originalCreator = isEditing && editingTransaction
+      ? users.find(u =>
+          u.id === editingTransaction.enteredById ||
+          (editingTransaction.enteredByUsername && u.username.toLowerCase() === editingTransaction.enteredByUsername.toLowerCase()) ||
+          (editingTransaction.enteredBy && (
+            u.name.toLowerCase() === editingTransaction.enteredBy.toLowerCase() ||
+            u.username.toLowerCase() === editingTransaction.enteredBy.toLowerCase() ||
+            u.name.toLowerCase().includes(editingTransaction.enteredBy.toLowerCase())
+          ))
+        )
+      : null;
+
+    const preservedEnteredById = isEditing && editingTransaction
+      ? (editingTransaction.enteredById ?? originalCreator?.id ?? currentUser.id)
+      : currentUser.id;
+
+    const preservedEnteredByUsername = isEditing && editingTransaction
+      ? (editingTransaction.enteredByUsername ?? originalCreator?.username ?? currentUser.username)
+      : currentUser.username;
+
+    const preservedEnteredBy = isEditing && editingTransaction
+      ? (editingTransaction.enteredBy || originalCreator?.name || currentUser.name)
+      : currentUser.name;
+
     const payload = {
       ...(editingTransaction ? { id: editingTransaction.id } : {}),
       date,
@@ -403,7 +430,16 @@ export function CashTransactionModal({
       supervisorId: type === "cash_in" ? receiverObj?.id : giverObj?.id || currentUser.id,
       supervisorName: type === "cash_in" ? recipientName : paidByName || currentUser.name,
 
-      enteredBy: currentUser.name,
+      enteredBy: preservedEnteredBy,
+      enteredById: preservedEnteredById,
+      enteredByUsername: preservedEnteredByUsername,
+
+      ...(isEditing ? {
+        updatedAt: new Date().toISOString(),
+        updatedBy: currentUser.name,
+        updatedById: currentUser.id,
+      } : {}),
+
       attachments: attachments.length > 0 ? attachments : undefined,
     };
 

@@ -73,7 +73,12 @@ export type CashTransaction = {
   voucherNo?: string;
   attachments?: Attachment[];
   enteredBy: string;
+  enteredById?: number;
+  enteredByUsername?: string;
   notes?: string;
+  updatedAt?: string;
+  updatedBy?: string;
+  updatedById?: number;
 };
 
 // ── 2. Direct Office Bank Payment (Bank RTGS / Transfers to Parties) ─────────
@@ -88,7 +93,12 @@ export type BankPayment = {
   category?: string;         // e.g. "Material", "Subcontractor", "Steel", "Transport"
   attachments?: Attachment[];
   enteredBy: string;
+  enteredById?: number;
+  enteredByUsername?: string;
   notes?: string;
+  updatedAt?: string;
+  updatedBy?: string;
+  updatedById?: number;
 };
 
 // ── 3. GST Bills (Tax Invoices with Auto Calculations) ────────────────────────
@@ -108,6 +118,11 @@ export type GSTBill = {
   attachments?: Attachment[];
   notes?: string;
   enteredBy: string;
+  enteredById?: number;
+  enteredByUsername?: string;
+  updatedAt?: string;
+  updatedBy?: string;
+  updatedById?: number;
 };
 
 // ── Offline Sync Queue ────────────────────────────────────────────────────────

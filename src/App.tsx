@@ -19,6 +19,7 @@ import {
   initFirestore, getActiveFirestore, subscribeToCollection,
   saveDocumentToCloud, deleteDocumentFromCloud, ensureInitialCloudSeed
 } from "./services/firestoreSync";
+import { canEditEntry } from "./utils/permissionUtils";
 
 
 import { Header } from "./components/common/Header";
@@ -377,6 +378,15 @@ export function App() {
     let savedTx: CashTransaction;
     if ("id" in txData && txData.id) {
       savedTx = txData as CashTransaction;
+      const existing = cashTransactions.find(item => item.id === savedTx.id);
+      if (existing && !canEditEntry(existing, currentUser, users)) {
+        showToast(
+          lang === "gu"
+            ? "પરવાનગી નથી: તમે ફક્ત તમારી પોતાની એન્ટ્રી જ એડિટ કરી શકો છો"
+            : "Access Denied: You can only edit your own entries"
+        );
+        return;
+      }
       setCashTransactions(prev =>
         prev.map(item => (item.id === savedTx.id ? savedTx : item))
       );
@@ -402,7 +412,7 @@ export function App() {
     }
 
     showToast(t.recordSavedSuccess);
-  }, [isOnline, isCloudConnected, showToast, t.recordSavedSuccess]);
+  }, [isOnline, isCloudConnected, showToast, t.recordSavedSuccess, cashTransactions, currentUser, users, lang]);
 
   const handleDeleteCashTransaction = useCallback((id: number) => {
     setCashTransactions(prev => prev.filter(item => item.id !== id));
@@ -421,6 +431,15 @@ export function App() {
     let savedPayment: BankPayment;
     if ("id" in paymentData && paymentData.id) {
       savedPayment = paymentData as BankPayment;
+      const existing = bankPayments.find(item => item.id === savedPayment.id);
+      if (existing && !canEditEntry(existing, currentUser, users)) {
+        showToast(
+          lang === "gu"
+            ? "પરવાનગી નથી: તમે ફક્ત તમારી પોતાની એન્ટ્રી જ એડિટ કરી શકો છો"
+            : "Access Denied: You can only edit your own entries"
+        );
+        return;
+      }
       setBankPayments(prev =>
         prev.map(item => (item.id === savedPayment.id ? savedPayment : item))
       );
@@ -445,7 +464,7 @@ export function App() {
     }
 
     showToast(t.recordSavedSuccess);
-  }, [isOnline, isCloudConnected, showToast, t.recordSavedSuccess]);
+  }, [isOnline, isCloudConnected, showToast, t.recordSavedSuccess, bankPayments, currentUser, users, lang]);
 
   const handleDeleteBankPayment = useCallback((id: number) => {
     setBankPayments(prev => prev.filter(item => item.id !== id));
@@ -464,6 +483,15 @@ export function App() {
     let savedBill: GSTBill;
     if ("id" in billData && billData.id) {
       savedBill = billData as GSTBill;
+      const existing = gstBills.find(item => item.id === savedBill.id);
+      if (existing && !canEditEntry(existing, currentUser, users)) {
+        showToast(
+          lang === "gu"
+            ? "પરવાનગી નથી: તમે ફક્ત તમારી પોતાની એન્ટ્રી જ એડિટ કરી શકો છો"
+            : "Access Denied: You can only edit your own entries"
+        );
+        return;
+      }
       setGstBills(prev =>
         prev.map(item => (item.id === savedBill.id ? savedBill : item))
       );
@@ -488,7 +516,7 @@ export function App() {
     }
 
     showToast(t.recordSavedSuccess);
-  }, [isOnline, isCloudConnected, showToast, t.recordSavedSuccess]);
+  }, [isOnline, isCloudConnected, showToast, t.recordSavedSuccess, gstBills, currentUser, users, lang]);
 
   const handleDeleteGSTBill = useCallback((id: number) => {
     setGstBills(prev => prev.filter(item => item.id !== id));
@@ -793,6 +821,14 @@ export function App() {
                   setShowCashModal(true);
                 }}
                 onEditTransaction={tx => {
+                  if (!canEditEntry(tx, currentUser, users)) {
+                    showToast(
+                      lang === "gu"
+                        ? "પરવાનગી નથી: તમે ફક્ત તમારી પોતાની એન્ટ્રી જ એડિટ કરી શકો છો"
+                        : "Access Denied: You can only edit your own entries"
+                    );
+                    return;
+                  }
                   setEditingCashTx(tx);
                   setCashModalType(tx.type);
                   setShowCashModal(true);
@@ -816,6 +852,14 @@ export function App() {
                   setShowBankModal(true);
                 }}
                 onEditPayment={p => {
+                  if (!canEditEntry(p, currentUser, users)) {
+                    showToast(
+                      lang === "gu"
+                        ? "પરવાનગી નથી: તમે ફક્ત તમારી પોતાની એન્ટ્રી જ એડિટ કરી શકો છો"
+                        : "Access Denied: You can only edit your own entries"
+                    );
+                    return;
+                  }
                   setEditingBankPayment(p);
                   setShowBankModal(true);
                 }}
@@ -825,6 +869,7 @@ export function App() {
                 selectedSiteFilter={selectedSiteFilter}
                 setSelectedSiteFilter={setSelectedSiteFilter}
                 currentUser={currentUser}
+                users={users}
                 lang={lang}
               />
             )}
@@ -837,6 +882,14 @@ export function App() {
                   setShowGstModal(true);
                 }}
                 onEditBill={b => {
+                  if (!canEditEntry(b, currentUser, users)) {
+                    showToast(
+                      lang === "gu"
+                        ? "પરવાનગી નથી: તમે ફક્ત તમારી પોતાની એન્ટ્રી જ એડિટ કરી શકો છો"
+                        : "Access Denied: You can only edit your own entries"
+                    );
+                    return;
+                  }
                   setEditingGstBill(b);
                   setShowGstModal(true);
                 }}
@@ -846,6 +899,7 @@ export function App() {
                 selectedSiteFilter={selectedSiteFilter}
                 setSelectedSiteFilter={setSelectedSiteFilter}
                 currentUser={currentUser}
+                users={users}
                 lang={lang}
               />
             )}
@@ -958,6 +1012,7 @@ export function App() {
             projects={userAllowedProjects}
             selectedSiteFilter={selectedSiteFilter}
             currentUser={currentUser}
+            users={users}
             lang={lang}
           />
         )}
@@ -972,6 +1027,7 @@ export function App() {
             projects={userAllowedProjects}
             selectedSiteFilter={selectedSiteFilter}
             currentUser={currentUser}
+            users={users}
             lang={lang}
           />
         )}

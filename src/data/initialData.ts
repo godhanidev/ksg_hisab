@@ -81,6 +81,8 @@ export const initialCashTransactions: CashTransaction[] = [
     supervisorName: "Rajubhai",
     paymentMode: "Cash",
     enteredBy: "Kanjibhai S. Godhani",
+    enteredById: 1,
+    enteredByUsername: "admin",
     notes: "Initial petty cash advance for site work"
   },
   {
@@ -101,6 +103,8 @@ export const initialCashTransactions: CashTransaction[] = [
     supervisorName: "Rajubhai",
     paymentMode: "Cash",
     enteredBy: "Kanjibhai S. Godhani",
+    enteredById: 1,
+    enteredByUsername: "admin",
     notes: "Second cash installment for labour & site expenses"
   },
   {
@@ -118,6 +122,8 @@ export const initialCashTransactions: CashTransaction[] = [
     supervisorName: "Rajubhai",
     paymentMode: "Cash",
     enteredBy: "Rajubhai",
+    enteredById: 4,
+    enteredByUsername: "rajubhai",
     notes: "Foundation & boundary trench digging"
   },
   {
@@ -132,6 +138,8 @@ export const initialCashTransactions: CashTransaction[] = [
     supervisorName: "Rajubhai",
     paymentMode: "Cash",
     enteredBy: "Rajubhai",
+    enteredById: 4,
+    enteredByUsername: "rajubhai",
     notes: "MP labour group weekly food & kharchi"
   },
   {
@@ -145,7 +153,9 @@ export const initialCashTransactions: CashTransaction[] = [
     supervisorId: 4,
     supervisorName: "Rajubhai",
     paymentMode: "Cash",
-    enteredBy: "Rajubhai"
+    enteredBy: "Rajubhai",
+    enteredById: 4,
+    enteredByUsername: "rajubhai"
   },
   {
     id: 6,
@@ -158,7 +168,9 @@ export const initialCashTransactions: CashTransaction[] = [
     supervisorId: 4,
     supervisorName: "Rajubhai",
     paymentMode: "Cash",
-    enteredBy: "Rajubhai"
+    enteredBy: "Rajubhai",
+    enteredById: 4,
+    enteredByUsername: "rajubhai"
   },
   {
     id: 7,
@@ -171,7 +183,9 @@ export const initialCashTransactions: CashTransaction[] = [
     supervisorId: 4,
     supervisorName: "Rajubhai",
     paymentMode: "Cash",
-    enteredBy: "Rajubhai"
+    enteredBy: "Rajubhai",
+    enteredById: 4,
+    enteredByUsername: "rajubhai"
   },
   {
     id: 8,
@@ -185,6 +199,8 @@ export const initialCashTransactions: CashTransaction[] = [
     supervisorName: "Rajubhai",
     paymentMode: "Cash",
     enteredBy: "Rajubhai",
+    enteredById: 4,
+    enteredByUsername: "rajubhai",
     notes: "Lime powder, marking tape, and nylon dori"
   },
   {
@@ -198,7 +214,9 @@ export const initialCashTransactions: CashTransaction[] = [
     supervisorId: 4,
     supervisorName: "Rajubhai",
     paymentMode: "Cash",
-    enteredBy: "Rajubhai"
+    enteredBy: "Rajubhai",
+    enteredById: 4,
+    enteredByUsername: "rajubhai"
   },
   {
     id: 10,
@@ -212,6 +230,8 @@ export const initialCashTransactions: CashTransaction[] = [
     supervisorName: "Rajubhai",
     paymentMode: "Cash",
     enteredBy: "Rajubhai",
+    enteredById: 4,
+    enteredByUsername: "rajubhai",
     notes: "Site opening pooja sweets and prasad"
   }
 ];
@@ -228,6 +248,8 @@ export const initialBankPayments: BankPayment[] = [
     referenceNo: "RTGS-HDFC2026031891",
     category: "Material & Spares",
     enteredBy: "Kanjibhai S. Godhani",
+    enteredById: 1,
+    enteredByUsername: "admin",
     notes: "Direct bank payment for site pipes & fittings"
   },
   {
@@ -240,6 +262,8 @@ export const initialBankPayments: BankPayment[] = [
     referenceNo: "NEFT-SBIN2026032411",
     category: "Subcontractor",
     enteredBy: "Kanjibhai S. Godhani",
+    enteredById: 1,
+    enteredByUsername: "admin",
     notes: "Civil excavation contract payment"
   },
   {
@@ -252,6 +276,8 @@ export const initialBankPayments: BankPayment[] = [
     referenceNo: "RTGS-HDFC2026032488",
     category: "Steel",
     enteredBy: "Kanjibhai S. Godhani",
+    enteredById: 1,
+    enteredByUsername: "admin",
     notes: "TMT Steel supply bank advance"
   }
 ];
@@ -272,6 +298,8 @@ export const initialGSTBills: GSTBill[] = [
     status: "Paid",
     paymentReference: "INV-413",
     enteredBy: "Kanjibhai S. Godhani",
+    enteredById: 1,
+    enteredByUsername: "admin",
     attachments: [
       {
         id: "att-gst-1",
@@ -296,6 +324,8 @@ export const initialGSTBills: GSTBill[] = [
     status: "Paid",
     paymentReference: "INV-4128",
     enteredBy: "Kanjibhai S. Godhani",
+    enteredById: 1,
+    enteredByUsername: "admin",
     attachments: [
       {
         id: "att-gst-2",
@@ -320,6 +350,8 @@ export const initialGSTBills: GSTBill[] = [
     status: "Paid",
     paymentReference: "INV-4130",
     enteredBy: "Kanjibhai S. Godhani",
+    enteredById: 1,
+    enteredByUsername: "admin",
     attachments: [
       {
         id: "att-gst-3",
