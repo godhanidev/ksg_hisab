@@ -19,13 +19,13 @@ service cloud.firestore {
       allow delete: if true;
     }
 
-    // ── 2. Daily Cash Transactions (જમા & ઉધાર) ──────────────────────────────
+    // ── 2. Daily Cash Transactions (જમા, ઉધાર & આંતરિક ટ્રાન્સફર) ────────────
     match /daily_cash/{txId} {
       allow read: if true;
       allow create, update: if request.resource.data.id is number
                             && isValidNumber(request.resource.data.amount)
                             && isNonEmptyString(request.resource.data.project)
-                            && (request.resource.data.type == "cash_in" || request.resource.data.type == "cash_out");
+                            && (request.resource.data.type == "cash_in" || request.resource.data.type == "cash_out" || request.resource.data.type == "transfer");
       allow delete: if true;
     }
 

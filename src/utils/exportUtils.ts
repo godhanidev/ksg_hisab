@@ -363,12 +363,12 @@ export function printAuditReport({
         <tr>
           <td>${c.date}</td>
           <td>${c.project}</td>
-          <td><span style="color:${c.type === "cash_in" ? "#059669" : "#dc2626"}; font-weight:600;">${c.type === "cash_in" ? "જમા" : "ઉધાર"}</span></td>
+          <td><span style="color:${c.type === "cash_in" ? "#059669" : c.type === "transfer" ? "#4f46e5" : "#dc2626"}; font-weight:600;">${c.type === "cash_in" ? "જમા" : c.type === "transfer" ? "આંતરિક ટ્રાન્સફર" : "ઉધાર"}</span></td>
           <td><strong>${c.details}</strong></td>
           <td>${c.category || "-"}</td>
-          <td class="text-right" style="color:#059669;">${c.type === "cash_in" ? formatINR(c.amount) : "-"}</td>
-          <td class="text-right" style="color:#dc2626;">${c.type === "cash_out" ? formatINR(c.amount) : "-"}</td>
-          <td>${c.supervisorName || "-"}</td>
+          <td class="text-right" style="color:#059669;">${c.type === "cash_in" ? formatINR(c.amount) : c.type === "transfer" ? `⇄ ${formatINR(c.amount)}` : "-"}</td>
+          <td class="text-right" style="color:#dc2626;">${c.type === "cash_out" ? formatINR(c.amount) : c.type === "transfer" ? `⇄ ${formatINR(c.amount)}` : "-"}</td>
+          <td>${c.type === "transfer" ? `${c.paidByName || "Sender"} ➔ ${c.recipientName || "Receiver"}` : c.supervisorName || "-"}</td>
         </tr>
       `).join("")}
       <tr style="font-weight:bold; background:#e2e8f0;">

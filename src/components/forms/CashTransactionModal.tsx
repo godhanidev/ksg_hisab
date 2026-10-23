@@ -72,6 +72,8 @@ export function CashTransactionModal({
   const [paidByName, setPaidByName] = useState<string>("");
   const [recipientName, setRecipientName] = useState<string>("");
   const [isCustomGiver, setIsCustomGiver] = useState<boolean>(false);
+  const [isCustomTransferSender, setIsCustomTransferSender] = useState<boolean>(false);
+  const [isCustomTransferReceiver, setIsCustomTransferReceiver] = useState<boolean>(false);
 
   // Get active site project object
   const activeProjectObj = useMemo(() => {
@@ -161,6 +163,8 @@ export function CashTransactionModal({
       setType(defaultType);
       setDate(todayStr());
       setIsCustomGiver(false);
+      setIsCustomTransferSender(false);
+      setIsCustomTransferReceiver(false);
 
       const siteFilterMatch = selectedSiteFilter && selectedSiteFilter !== "ALL"
         ? projects.find(p => p.name === selectedSiteFilter)?.name
@@ -170,7 +174,6 @@ export function CashTransactionModal({
       );
       const defaultProj = siteFilterMatch || userAssignedMatch || projects[0]?.name || currentUser.assignedProjects[0] || "";
       setProject(defaultProj);
-      setDetails("");
 
       setCategory(
         defaultType === "cash_in"
@@ -194,13 +197,20 @@ export function CashTransactionModal({
       if (defaultType === "cash_in") {
         setPaidByName(currentUser.name);
         setRecipientName(defaultOther);
+        setDetails("");
       } else if (defaultType === "transfer") {
         setPaidByName(currentUser.name);
         setRecipientName(defaultOther);
+        setDetails(
+          lang === "gu"
+            ? `${currentUser.name} થી ${defaultOther || "સભ્ય"} ને આંતરિક રોકડ ટ્રાન્સફર`
+            : `Cash transfer from ${currentUser.name} to ${defaultOther || "Member"}`
+        );
       } else {
         // cash_out
         setPaidByName(currentUser.name);
         setRecipientName("");
+        setDetails("");
       }
     }
     setIsCompressing(false);
@@ -281,46 +291,57 @@ export function CashTransactionModal({
       setErrorMsg(lang === "gu" ? "કૃપા કરીને સાઇટ પસંદ કરો" : "Please select a project site");
       return;
     }
-    if (!details.trim()) {
-      setErrorMsg(lang === "gu" ? "કૃપા કરીને વિગત / હેતુ લખો" : "Please enter details / purpose of transaction");
-      return;
+
+    let finalDetails = details.trim();
+    if (!finalDetails) {
+      if (type === "transfer") {
+        finalDetails = lang === "gu"
+          ? `${paidByName || "સભ્ય"} થી ${recipientName || "સભ્ય"} ને આંતરિક રોકડ ટ્રાન્સફર`
+          : lang === "hi"
+          ? `${paidByName || "सदस्य"} से ${recipientName || "सदस्य"} को आंतरिक नकद ट्रांसफर`
+          : `Cash transfer from ${paidByName || "Sender"} to ${recipientName || "Recipient"}`;
+      } else {
+        setErrorMsg(lang === "gu" ? "કૃપા કરીને વિગત / હેતુ લખો" : "Please enter details / purpose of transaction");
+        return;
+      }
     }
+
     if (isNaN(numAmount) || numAmount <= 0) {
       setErrorMsg(lang === "gu" ? "કૃપા કરીને યોગ્ય રકમ દાખલ કરો" : "Please enter a valid amount greater than zero");
       return;
     }
 
     if (type === "cash_in") {
-      if (!paidByName) {
+      if (!paidByName || !paidByName.trim()) {
         setErrorMsg(lang === "gu" ? "કૃપા કરીને રકમ આપનાર વ્યક્તિ પસંદ કરો" : "Please select the person giving cash");
         return;
       }
-      if (!recipientName) {
+      if (!recipientName || !recipientName.trim()) {
         setErrorMsg(lang === "gu" ? "કૃપા કરીને રકમ મેળવનાર વ્યક્તિ પસંદ કરો" : "Please select the person receiving cash");
         return;
       }
-      if (paidByName === recipientName) {
+      if (paidByName.trim().toLowerCase() === recipientName.trim().toLowerCase()) {
         setErrorMsg(lang === "gu" ? "આપનાર અને મેળવનાર એક જ વ્યક્તિ ન હોઈ શકે!" : "Giver and recipient cannot be the same person!");
         return;
       }
     }
 
-    if (type === "cash_out" && !paidByName) {
+    if (type === "cash_out" && (!paidByName || !paidByName.trim())) {
       setErrorMsg(lang === "gu" ? "કૃપા કરીને ખર્ચ કરનાર વ્યક્તિ પસંદ કરો" : "Please select the person who paid the expense");
       return;
     }
 
     if (type === "transfer") {
-      if (!paidByName) {
+      if (!paidByName || !paidByName.trim()) {
         setErrorMsg(lang === "gu" ? "કૃપા કરીને રકમ આપનાર વ્યક્તિ પસંદ કરો" : "Please select the person transferring cash");
         return;
       }
-      if (!recipientName) {
+      if (!recipientName || !recipientName.trim()) {
         setErrorMsg(lang === "gu" ? "કૃપા કરીને રકમ મેળવનાર વ્યક્તિ પસંદ કરો" : "Please select the recipient person");
         return;
       }
-      if (paidByName === recipientName) {
-        setErrorMsg(lang === "gu" ? "આપનાર અને મેળવનાર એક જ વ્યક્તિ ન હોઈ શકે!" : "Sender and recipient cannot be the same person!");
+      if (paidByName.trim().toLowerCase() === recipientName.trim().toLowerCase()) {
+        setErrorMsg(lang === "gu" ? "આપનાર અને મેળવનાર એક જ વ્યક્તિ ન હોઈ શકે! કૃપા કરીને મેળવનારમાં અલગ વ્યક્તિ પસંદ કરો." : "Sender and recipient cannot be the same person!");
         return;
       }
     }
@@ -362,7 +383,7 @@ export function CashTransactionModal({
       date,
       type,
       project,
-      details: details.trim(),
+      details: finalDetails,
       category: finalCategory,
       amount: numAmount,
       paymentMode,
@@ -481,9 +502,20 @@ export function CashTransactionModal({
                 setType("transfer");
                 setCategory("Site Internal Transfer");
                 setCustomCategory("");
-                setPaidByName(currentUser.name);
-                const other = siteTeamMembers.find(m => m.name !== currentUser.name)?.name || "";
+                setIsCustomGiver(false);
+                setIsCustomTransferSender(false);
+                setIsCustomTransferReceiver(false);
+                const myName = currentUser.name;
+                setPaidByName(myName);
+                const other = siteTeamMembers.find(m => m.name !== myName)?.name || "";
                 setRecipientName(other);
+                if (!details.trim() || details.includes("રોકડ ટ્રાન્સફર") || details.includes("transfer") || details.includes("ટ્રાન્સફર")) {
+                  setDetails(
+                    lang === "gu"
+                      ? `${myName} થી ${other || "સભ્ય"} ને આંતરિક રોકડ ટ્રાન્સફર`
+                      : `Cash transfer from ${myName} to ${other || "Member"}`
+                  );
+                }
               }}
               className={`flex items-center justify-center gap-1 sm:gap-1.5 py-2 sm:py-2.5 px-1 sm:px-2 rounded-xl text-[11px] sm:text-xs font-black transition-all ${
                 type === "transfer"
@@ -774,30 +806,81 @@ export function CashTransactionModal({
                     </span>
                   )}
                 </label>
-                <select
-                  value={paidByName}
-                  onChange={e => {
-                    const newPaidBy = e.target.value;
-                    setPaidByName(newPaidBy);
-                    if (recipientName === newPaidBy) {
-                      const nextOther = siteTeamMembers.find(m => m.name !== newPaidBy);
-                      setRecipientName(nextOther ? nextOther.name : "");
-                    }
-                  }}
-                  required
-                  className="w-full rounded-xl border border-indigo-300 bg-white p-2 text-xs font-bold text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                >
-                  <option value="">-- {lang === "gu" ? "આપનાર પસંદ કરો" : lang === "hi" ? "देने वाला चुनें" : "Select Sender"} --</option>
-                  {siteTeamMembers.map(m => {
-                    const bal = getMemberBalance(m.name);
-                    const isSelf = m.name === currentUser.name;
-                    return (
-                      <option key={m.id} value={m.name}>
-                        {m.name} ({getMemberRoleLabel(m.role)}) {isSelf ? (lang === "gu" ? "★ (તમે)" : lang === "hi" ? "★ (आप)" : "★ (You)") : ""} • સિલક: ₹{bal.toLocaleString("en-IN")}
-                      </option>
-                    );
-                  })}
-                </select>
+                {!isCustomTransferSender ? (
+                  <select
+                    value={paidByName}
+                    onChange={e => {
+                      if (e.target.value === "__custom__") {
+                        setIsCustomTransferSender(true);
+                        setPaidByName("");
+                      } else {
+                        const newPaidBy = e.target.value;
+                        setPaidByName(newPaidBy);
+                        let targetRec = recipientName;
+                        if (recipientName === newPaidBy || !recipientName) {
+                          const nextOther = siteTeamMembers.find(m => m.name !== newPaidBy);
+                          targetRec = nextOther ? nextOther.name : "";
+                          setRecipientName(targetRec);
+                        }
+                        if (!details.trim() || details.includes("રોકડ ટ્રાન્સફર") || details.includes("transfer") || details.includes("ટ્રાન્સફર")) {
+                          setDetails(
+                            lang === "gu"
+                              ? `${newPaidBy || "સભ્ય"} થી ${targetRec || "સભ્ય"} ને આંતરિક રોકડ ટ્રાન્સફર`
+                              : `Cash transfer from ${newPaidBy || "Sender"} to ${targetRec || "Recipient"}`
+                          );
+                        }
+                      }
+                    }}
+                    required
+                    className="w-full rounded-xl border border-indigo-300 bg-white p-2 text-xs font-bold text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  >
+                    <option value="">-- {lang === "gu" ? "આપનાર પસંદ કરો" : lang === "hi" ? "देने वाला चुनें" : "Select Sender"} --</option>
+                    {siteTeamMembers.map(m => {
+                      const bal = getMemberBalance(m.name);
+                      const isSelf = m.name === currentUser.name;
+                      return (
+                        <option key={m.id} value={m.name}>
+                          {m.name} ({getMemberRoleLabel(m.role)}) {isSelf ? (lang === "gu" ? "★ (તમે)" : lang === "hi" ? "★ (आप)" : "★ (You)") : ""} • સિલક: ₹{bal.toLocaleString("en-IN")}
+                        </option>
+                      );
+                    })}
+                    <option value="__custom__">
+                      {lang === "gu" ? "✏️ અન્ય / કસ્ટમ નામ લખો..." : "✏️ Other / Custom Name..."}
+                    </option>
+                  </select>
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      value={paidByName}
+                      onChange={e => {
+                        const val = e.target.value;
+                        setPaidByName(val);
+                        if (!details.trim() || details.includes("રોકડ ટ્રાન્સફર") || details.includes("transfer") || details.includes("ટ્રાન્સફર")) {
+                          setDetails(
+                            lang === "gu"
+                              ? `${val || "સભ્ય"} થી ${recipientName || "સભ્ય"} ને આંતરિક રોકડ ટ્રાન્સફર`
+                              : `Cash transfer from ${val || "Sender"} to ${recipientName || "Recipient"}`
+                          );
+                        }
+                      }}
+                      placeholder={lang === "gu" ? "આપનારનું નામ લખો..." : "Enter sender name..."}
+                      required
+                      autoFocus
+                      className="flex-1 rounded-xl border border-indigo-300 bg-white p-2 text-xs font-semibold text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsCustomTransferSender(false);
+                        setPaidByName(currentUser.name);
+                      }}
+                      className="text-[11px] font-bold text-indigo-800 bg-indigo-100 hover:bg-indigo-200 px-2.5 py-2 rounded-xl border border-indigo-300 transition shrink-0"
+                    >
+                      {lang === "gu" ? "સાઇટ લિસ્ટ જુઓ" : "Show List"}
+                    </button>
+                  </div>
+                )}
               </div>
 
               {/* To Person */}
@@ -810,25 +893,78 @@ export function CashTransactionModal({
                     </span>
                   )}
                 </label>
-                <select
-                  value={recipientName}
-                  onChange={e => setRecipientName(e.target.value)}
-                  required
-                  className="w-full rounded-xl border border-indigo-300 bg-white p-2 text-xs font-bold text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
-                >
-                  <option value="">-- {lang === "gu" ? "મેળવનાર પસંદ કરો" : lang === "hi" ? "प्राप्तकर्ता चुनें" : "Select Recipient"} --</option>
-                  {siteTeamMembers
-                    .filter(m => m.name !== paidByName)
-                    .map(m => {
-                      const bal = getMemberBalance(m.name);
-                      const isSelf = m.name === currentUser.name;
-                      return (
-                        <option key={m.id} value={m.name}>
-                          {m.name} ({getMemberRoleLabel(m.role)}) {isSelf ? (lang === "gu" ? "★ (તમે)" : lang === "hi" ? "★ (आप)" : "★ (You)") : ""} • સિલક: ₹{bal.toLocaleString("en-IN")}
-                        </option>
-                      );
-                    })}
-                </select>
+                {!isCustomTransferReceiver ? (
+                  <select
+                    value={recipientName}
+                    onChange={e => {
+                      if (e.target.value === "__custom__") {
+                        setIsCustomTransferReceiver(true);
+                        setRecipientName("");
+                      } else {
+                        const newRecipient = e.target.value;
+                        setRecipientName(newRecipient);
+                        if (!details.trim() || details.includes("રોકડ ટ્રાન્સફર") || details.includes("transfer") || details.includes("ટ્રાન્સફર")) {
+                          setDetails(
+                            lang === "gu"
+                              ? `${paidByName || "સભ્ય"} થી ${newRecipient || "સભ્ય"} ને આંતરિક રોકડ ટ્રાન્સફર`
+                              : `Cash transfer from ${paidByName || "Sender"} to ${newRecipient || "Recipient"}`
+                          );
+                        }
+                      }
+                    }}
+                    required
+                    className="w-full rounded-xl border border-indigo-300 bg-white p-2 text-xs font-bold text-slate-900 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                  >
+                    <option value="">-- {lang === "gu" ? "મેળવનાર પસંદ કરો" : lang === "hi" ? "प्राप्तकर्ता चुनें" : "Select Recipient"} --</option>
+                    {siteTeamMembers
+                      .filter(m => m.name !== paidByName)
+                      .map(m => {
+                        const bal = getMemberBalance(m.name);
+                        const isSelf = m.name === currentUser.name;
+                        return (
+                          <option key={m.id} value={m.name}>
+                            {m.name} ({getMemberRoleLabel(m.role)}) {isSelf ? (lang === "gu" ? "★ (તમે)" : lang === "hi" ? "★ (आप)" : "★ (You)") : ""} • સિલક: ₹{bal.toLocaleString("en-IN")}
+                          </option>
+                        );
+                      })}
+                    <option value="__custom__">
+                      {lang === "gu" ? "✏️ અન્ય / કસ્ટમ નામ લખો..." : "✏️ Other / Custom Name..."}
+                    </option>
+                  </select>
+                ) : (
+                  <div className="flex items-center gap-1.5">
+                    <input
+                      type="text"
+                      value={recipientName}
+                      onChange={e => {
+                        const val = e.target.value;
+                        setRecipientName(val);
+                        if (!details.trim() || details.includes("રોકડ ટ્રાન્સફર") || details.includes("transfer") || details.includes("ટ્રાન્સફર")) {
+                          setDetails(
+                            lang === "gu"
+                              ? `${paidByName || "સભ્ય"} થી ${val || "સભ્ય"} ને આંતરિક રોકડ ટ્રાન્સફર`
+                              : `Cash transfer from ${paidByName || "Sender"} to ${val || "Recipient"}`
+                          );
+                        }
+                      }}
+                      placeholder={lang === "gu" ? "મેળવનારનું નામ લખો..." : "Enter recipient name..."}
+                      required
+                      autoFocus
+                      className="flex-1 rounded-xl border border-indigo-300 bg-white p-2 text-xs font-semibold text-slate-800 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsCustomTransferReceiver(false);
+                        const other = siteTeamMembers.find(m => m.name !== paidByName)?.name || "";
+                        setRecipientName(other);
+                      }}
+                      className="text-[11px] font-bold text-indigo-800 bg-indigo-100 hover:bg-indigo-200 px-2.5 py-2 rounded-xl border border-indigo-300 transition shrink-0"
+                    >
+                      {lang === "gu" ? "સાઇટ લિસ્ટ જુઓ" : "Show List"}
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -856,14 +992,19 @@ export function CashTransactionModal({
 
         {/* ── Details Input ── */}
         <div>
-          <label className="block text-xs font-bold text-slate-700 mb-1">
-            {t.details} *
+          <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center justify-between">
+            <span>{t.details} {type === "transfer" ? (lang === "gu" ? "(આપોઆપ ભરેલ)" : "(Auto-filled)") : "*"}</span>
+            {type === "transfer" && (
+              <span className="text-[10px] text-indigo-700 font-bold bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+                {lang === "gu" ? "સ્વયં-સંચાલિત" : "Automatic"}
+              </span>
+            )}
           </label>
           <input
             type="text"
             value={details}
             onChange={e => setDetails(e.target.value)}
-            required
+            required={type !== "transfer"}
             placeholder={
               type === "cash_in"
                 ? (lang === "gu"
